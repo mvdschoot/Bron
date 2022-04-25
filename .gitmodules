@@ -1,3 +1,6 @@
 [submodule "Cheets"]
 	path = Cheets
 	url = https://github.com/mvdschoot/Cheets.git
+[submodule "vendor/spdlog"]
+	path = vendor/spdlog
+	url = https://github.com/gabime/spdlog.git
