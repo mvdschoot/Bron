@@ -1,0 +1,3 @@
+[submodule "Cheets"]
+	path = Cheets
+	url = https://github.com/mvdschoot/Cheets.git
