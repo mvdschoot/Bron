@@ -10,6 +10,8 @@ include_directories(
 	src 
 	Cheets/src 
 	vendor/glad/include
+	vendor/imgui
+	vendor/imgui/backends
 )
 add_executable(LuigiMaker src/Program.cpp)
 
