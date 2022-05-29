@@ -5,6 +5,7 @@ project(LuigiMaker VERSION 1.0)
 add_subdirectory(Cheets)
 
 add_compile_definitions(COMPILING_CHEETS)
+add_compile_definitions(CH_PROFILE)
 
 include_directories(
 	src 
