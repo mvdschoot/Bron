@@ -16,38 +16,7 @@ namespace LuigiMaker
 			CH_PROFILE_FUNCTION();
 			_shaderlib.addShader(_shader_loc, _shader_name);
 
-			float vertices[4 * 7] = {
-				-0.5f, -0.5f, 0.0f, 0.0f, 0.0f,
-				0.5f, -0.5f, 0.0f, 1.0f, 0.0f,
-				-0.5f, 0.5f, 0.0f, 0.0f, 1.0f,
-				0.5f, 0.5f, 0.0f, 1.0f, 1.0f};
-			std_int indices[6] = {
-				0, 1, 2,
-				1, 2, 3};
-
-			_pos = glm::vec3(0.0f, 0.0f, 1.0f);
-
-			Cheets::Renderer::Init();
-
 			_texture = Cheets::Texture2D::Create(_texture_loc);
-			_texture->bind(0);
-			_shaderlib.getShader(_shader_name)->bind();
-			_shaderlib.getShader(_shader_name)->setUniform1i("text", 0);
-
-			Cheets::Ref<Cheets::VertexBuffer> _vertex_buffer = Cheets::VertexBuffer::Create(vertices, sizeof(vertices));
-			Cheets::Ref<Cheets::IndexBuffer> _index_buffer = Cheets::IndexBuffer::Create(indices, 6);
-
-			Cheets::BufferLayout layout =
-				{
-					Cheets::BufferElement{"a_Position", Cheets::ShaderDataType::Float3},
-					Cheets::BufferElement{"a_uv", Cheets::ShaderDataType::Float2}};
-
-			_vertex_buffer->setBufferLayout(layout);
-
-			_vertex_array = Cheets::VertexArray::Create();
-			_vertex_array->addVertexBuffer(_vertex_buffer);
-			_vertex_array->setIndexBuffer(_index_buffer);
-
 			_camera = Cheets::createRef<Cheets::OrthographicCamera>(-1.0f, 1.0f, -1.0f, 1.0f,
 																	_pos, 0.0f);
 		}
@@ -101,11 +70,11 @@ namespace LuigiMaker
 			isKeyPressed(ts);
 			_camera->setPosition(_pos);
 			_camera->setRotation(_rot);
-			Cheets::Renderer::beginScene(*_camera);
+			Cheets::Renderer2D::beginScene(*_camera);
 
-			Cheets::Renderer::submit(_shaderlib.getShader(_shader_name), _vertex_array);
+			Cheets::Renderer2D::drawQuad({-0.5, -0.5},{1.0f, 1.0f}, _texture);
 
-			Cheets::Renderer::endScene();
+			Cheets::Renderer2D::endScene();
 		}
 
 		virtual void OnImGuiRender()
