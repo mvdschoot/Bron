@@ -14,6 +14,7 @@ namespace LuigiMaker
 		virtual void OnAttach()
 		{
 			CH_PROFILE_FUNCTION();
+			Cheets::Renderer::Init();
 			_shaderlib.addShader(_shader_loc, _shader_name);
 
 			_texture = Cheets::Texture2D::Create(_texture_loc);
@@ -53,18 +54,18 @@ namespace LuigiMaker
 			}
 			if (Cheets::Input::isKeyPressed(Cheets::Key::Tab))
 			{
-				_pos.z -= _speed * dt;
+				//glm::scale(glm::mat4(1.0f), glm::vec3(_scale));
 			}
 			if (Cheets::Input::isKeyPressed(Cheets::Key::CapsLock))
 			{
-				_pos.z += _speed * dt;
+				//glm::scale(glm::mat4(1.0f), glm::vec3(_scale));
 			}
 		}
 
 		virtual void OnUpdate(Cheets::Timestep ts)
 		{
 			CH_PROFILE_FUNCTION();
-			Cheets::RendererCommand::ClearColor({1.0f, 0.1f, 0.1f, 1.0f});
+			Cheets::RendererCommand::ClearColor({1.0f, 1.0f, 0.1f, 1.0f});
 			Cheets::RendererCommand::clear();
 
 			isKeyPressed(ts);
@@ -72,7 +73,12 @@ namespace LuigiMaker
 			_camera->setRotation(_rot);
 			Cheets::Renderer2D::beginScene(*_camera);
 
-			Cheets::Renderer2D::drawQuad({-0.5, -0.5},{1.0f, 1.0f}, _texture);
+			float size = 0.05;
+			for(int x = 0; x < 100; x++){
+				for(int y = 0; y < 101; y++) {
+					Cheets::Renderer2D::drawQuad({-1.0 + x * size, -1.0 + y * size},{size, size}, _texture);
+				}
+			}
 
 			Cheets::Renderer2D::endScene();
 		}
@@ -87,7 +93,8 @@ namespace LuigiMaker
 		Cheets::Ref<Cheets::Camera> _camera;
 		glm::vec3 _pos;
 		float _rot;
-		const float _speed = 1.0;
+		const float _speed = 1.0f;
+		const float _scale = 0.5f;
 
 		Cheets::Ref<Cheets::Texture> _texture;
 
