@@ -21,9 +21,17 @@ namespace LuigiMaker
 			_pos = {0.0f, 0.0f, -0.7};
 			_rot = 0.0f;
 
+			uint wwidth = Cheets::Application::getWindow()->getWindowWidth();
+			uint wheight = Cheets::Application::getWindow()->getWindowHeight();
+
 			_texture = Cheets::Texture2D::Create(_texture_loc);
 			_camera = Cheets::createRef<Cheets::OrthographicCamera>(-1.0f, 1.0f, -1.0f, 1.0f,
-																	_pos, 0.0f);
+				(float)wwidth / (float)wheight, _pos, 0.0f);
+
+			Cheets::FramebufferSpecification spec;
+			spec.width = wwidth;
+			spec.height = wheight;
+			_framebuffer = Cheets::Framebuffer::Create(spec);
 		}
 		virtual void OnDetach()
 		{
@@ -31,8 +39,17 @@ namespace LuigiMaker
 		virtual void OnEvent(Cheets::Event &event)
 		{
 			// APP_INFO("Event: {}", event.GetName());
-			// Cheets::EventDispatcher e(event);
-			// e.Dispatch<Cheets::KeyPressedEvent>(BIND_EVENT_FN(SomeLayer::onKeyPressed));
+			Cheets::EventDispatcher e(event);
+			e.Dispatch<Cheets::MouseScrolledEvent>(BIND_EVENT_FN(SomeLayer::onMouseScrolled));
+		}
+
+		bool onMouseScrolled(Cheets::MouseScrolledEvent& e)
+		{
+			_zoom -= e.getOffsetY() * 0.15f;
+			_zoom = std::max(_zoom, 0.15f);
+
+			_camera->setZoom(_zoom);
+			return true;
 		}
 
 		void isKeyPressed(Cheets::Timestep ts)
@@ -56,18 +73,12 @@ namespace LuigiMaker
 			{
 				_pos.y -= _speed * dt;
 			}
-			if (Cheets::Input::isKeyPressed(Cheets::Key::Tab))
-			{
-				//glm::scale(glm::mat4(1.0f), glm::vec3(_scale));
-			}
-			if (Cheets::Input::isKeyPressed(Cheets::Key::CapsLock))
-			{
-				//glm::scale(glm::mat4(1.0f), glm::vec3(_scale));
-			}
 		}
 
 		virtual void OnUpdate(Cheets::Timestep ts)
 		{
+			_framebuffer->bind();
+
 			CH_PROFILE_FUNCTION();
 			_frame_times.push_back(ts.getMilliseconds());
 
@@ -87,6 +98,8 @@ namespace LuigiMaker
 			}
 
 			Cheets::Renderer2D::endScene();
+
+			_framebuffer->unbind();
 		}
 
 		virtual void OnImGuiRender()
@@ -100,6 +113,9 @@ namespace LuigiMaker
 				_frame_times.clear();
 			}
 			ImGui::Text("Frame Time: %f (FPS %d)", _avg_frame_time, (int)(1.0f / _avg_frame_time * 1000.0f));
+
+			uint32_t textureID = _framebuffer->getColorAttachID();
+			ImGui::Image((void*)(intptr_t)textureID, ImVec2(355.0f, 200.0f), {0, 1}, {1, 0});
 			ImGui::End();
 		}
 
@@ -114,7 +130,9 @@ namespace LuigiMaker
 		std::vector<float> _frame_times;
 		float _avg_frame_time;
 		const float _speed = 1.0f;
-		const float _scale = 0.5f;
+		float _zoom = 1.0f;
+
+		Cheets::Ref<Cheets::Framebuffer> _framebuffer;
 
 		Cheets::Ref<Cheets::Texture> _texture;
 
