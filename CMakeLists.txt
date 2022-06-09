@@ -12,6 +12,9 @@ include_directories(
 	vendor/imgui
 	vendor/imgui/backends
 )
-add_executable(LuigiMaker src/Program.cpp)
+add_executable(LuigiMaker 
+	src/Core/App.cpp
+	src/Core/AppLayer.cpp
+)
 
 target_link_libraries(LuigiMaker PUBLIC Cheets)

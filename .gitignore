@@ -1,6 +1,10 @@
 build
 .vscode
 .git
+.ccls-cache
+.ccls
+.clang*
+compile_commands.json
 
 # Prerequisites
 *.d
