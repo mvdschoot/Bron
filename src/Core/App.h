@@ -1,7 +1,10 @@
 #ifndef __APP_HEADER__
 #define __APP_HEADER__
 
-#include "Cheets.h"
+#include "Cheets/Core/EntryPoint.h"
+#include "Core.h"
+
+#include "AppLayer.h"
 
 namespace Cheets
 {
@@ -10,6 +13,10 @@ namespace Cheets
 		public:
 			App();
 			~App();
+
+		private:
+			Overlay m_overlay;
+			AppLayer m_applayer;
 	};
 }
 
