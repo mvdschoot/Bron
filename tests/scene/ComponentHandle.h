@@ -1,11 +1,7 @@
 #ifndef __HANDLE_HEADER__ 
 #define __HANDLE_HEADER__ 
 
-#include "Cheets/Core/Core.h"
-#include "Cheets/Core/Logger.h"
-#include "Cheets/Core/Profiling.h"
-
-#include "Components.h"
+#include "Component.h"
 
 #include <typeindex>
 #include <typeinfo>
@@ -13,9 +9,10 @@
 namespace Cheets
 {
 	class IComponentHandle {
+		public:
+			std::type_index p_Type;
 		protected:
 			Component* m_Component;
-			std::type_index m_Type;
 	};
 
 	template<class T>

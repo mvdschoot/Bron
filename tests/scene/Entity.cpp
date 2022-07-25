@@ -1,60 +1,56 @@
 #include "Entity.h"
 
-namespace Cheets
-{
-	Entity::Entity(std::string name)
-	{
-		p_Name = name;
-	}
-	
-	Entity::~Entity(){}
+namespace Cheets {
+	Entity::Entity() {}
 
-	void Entity::AddedComponent(IComponentHandle* handle)
-	{
+	Entity::~Entity() {}
+
+	void Entity::AddedComponent(IComponentHandle* handle) {
+		for (std::set<IComponentHandle*>::iterator it = m_Components.begin(); it != m_Components.end(); ++it)
+		{
+			if (handle->p_Type == (*it)->p_Type)
+			{
+				m_Components.erase(it);
+			}
+		}
 		m_Components.insert(handle);
 	}
 
-	template<class ...Args>
-	std::tuple<Args&...> Entity::GetComponents()
+	template <unsigned int I, class Tuple, class Components>
+	void Entity::HelperStruct<I, Tuple, Components>::GetCompSpecialization(Tuple& tup, Components& components) 
 	{
-		std::tuple<Args&...> res;
-		GetCompSpecialization<1, declspec(res), Args...>(res);
-	}
-
-	template<std::size_t I, class Tuple, class First>
-	void Entity::GetCompSpecialization(Tuple& tup)
-	{
-		std::type_index index(typeid(First));
-		std::set<IComponentHandle*>::iterator it = m_Components.begin();
-		for (; it != m_Components.end(); ++it)
-		{
-			if ((*it)->m_Type == index){
-				std::get<0>(tup) = *((First*)(*it));
+		using Component = std::tuple_element_t<I, Tuple>;
+		std::type_index index(typeid(Component));
+		std::set<Cheets::IComponentHandle>::iterator it = components.begin();
+		for (; it != components.end(); ++it) {
+			if (it->p_Type == index) {
+				std::get<I>(tup) = *((Component*)(&(*it)));
 				break;
 			}
 		}
-		if(it == m_Components.end()) {
-			First temp;
-			std::get<0>(tup) = temp;
-		}
-	}
-	
-	template <std::size_t I, class Tuple, class First, class Second, class ...Rest>
-	void Entity::GetCompSpecialization(Tuple& tup)
-	{
-		std::type_index index(typeid(Second));
-		std::set<IComponentHandle*>::iterator it = m_Components.begin();
-		for (; it != m_Components.end(); ++it)
-		{
-			if ((*it)->m_Type == index){
-				std::get<I>(tup) = *((Second*)(*it));
-				break;
-			}
-		}
-		if(it == m_Components.end()) {
-			Second temp;
+		if (it == components.end()) {
+			Component temp;
+			temp.p_IsEmpty = true;
 			std::get<I>(tup) = temp;
 		}
-		GetCompSpecialization<++I, Tuple, First, Rest...>(tup);
+
+		HelperStruct<I-1, Tuple, Components>::GetCompSpecialization(tup, components);
 	}
-}
+
+
+	template<class Tuple, class Components>
+	void Entity::HelperStruct<0, Tuple, Components>::GetCompSpecialization(Tuple& tup, Components& components) 
+	{
+		return;
+	}
+
+	template <class... Args>
+	std::tuple<Args...> Entity::GetComponents() {
+		if (sizeof...(Args) == 0)
+			exit(0);
+
+		std::tuple<Args...> res;
+		HelperStruct<sizeof...(Args)-1, decltype(res), decltype(m_Components)>::GetCompSpecialization(res, m_Components);
+		return res;
+	}
+}  // namespace Cheets

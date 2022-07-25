@@ -1,20 +1,16 @@
 #ifndef __GROUP_HEADER__
 #define __GROUP_HEADER__
 
-#include "Cheets/Core/Core.h"
-#include "Cheets/Core/Logger.h"
-#include "Cheets/Core/Profiling.h"
-
-#include "Cheets/Utils/UUID.hpp"
-
-#include "Components.h"
-#include "Handle.h"
+#include "UUID.h"
+#include "Component.h"
+#include "ComponentHandle.h"
 
 #include <string>
 #include <tuple>
 #include <typeinfo>
 #include <typeindex>
 #include <type_traits>
+#include <functional>
 
 namespace Cheets
 {
@@ -24,22 +20,24 @@ namespace Cheets
 		public:
 			using Tuple = std::tuple<T...>;
 
-			Group();
-			~Group();
+			Group() {};
+			~Group() {};
 
-			void Insert(T... args);
-
+			void Insert(ComponentHandle<T>... args);
 			void Replace();
 
 		private:
+			template<class Tup, class R, class ...Args>
+			std::vector<R> Loop(std::function<R(Args...)> func, Tup input);
+
 			UUID m_Id;
-			Tuple* m_Storage;
+			void* m_Storage;
 
 			// In number of tuples
 			uint32_t m_StorageSize;
 			uint32_t m_StorageUsed;
 
-			std::tuple<std::vector<ComponentHandle<T>>...> m_Handles;
+			std::tuple<std::vector<IComponentHandle*>> m_Handles;
 	};
 }
 

@@ -1,21 +1,20 @@
 #ifndef __CORE_COMPONENT_HEADER__
 #define __CORE_COMPONENT_HEADER__
 
-#include "Cheets/Core/Core.h"
-#include "Cheets/Core/Logger.h"
-
-#include "Cheets/Utils/UUID.hpp"
+#include "UUID.h"
 
 namespace Cheets
 {
 	struct Component 
 	{
 		public:
-			UUID Id;
-			
+			UUID p_Id;
+			bool p_IsEmpty = false;
 		protected:
 			Component() {}
 	};
+
+	struct EmptyComponent : Component {};
 }
 
 #endif

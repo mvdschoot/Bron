@@ -1,16 +1,12 @@
 #ifndef __REGISTRY_HEADER__
 #define __REGISTRY_HEADER__
 
-#include "Cheets/Core/Core.h"
-#include "Cheets/Core/Logger.h"
-#include "Cheets/Core/Profiling.h"
-
 #include "Component.h"
 #include "Entity.h"
 #include "Group.h"
 #include "ComponentHandle.h"
 
-#include "Cheets/Utils/TemplateContainer.hpp"
+#include "TemplateContainer.hpp"
 
 #include <string>
 #include <set>
@@ -29,13 +25,10 @@ namespace Cheets
 			Registry();
 			~Registry();
 
-			void CreateEntity(std::string name);
+			UUID& CreateEntity();
 
-			template<Entity T, class C, class ...Args>
-			void CreateComponent(Args&& ...args);
-
-			template<Entity T, class C>
-			void AddComponent(C& component);
+			template<class C>
+			void AddComponent(UUID& entity, C& component);
 
 			template<class ...Ts>
 			std::tuple<std::vector<Ts>...> Get();
@@ -49,7 +42,7 @@ namespace Cheets
 
 		private:
 			// First element in pair is Component types, second is group type
-			std::set<std::pair<std::vector<std::type_index>, std::type_index>> m_GroupTypes;
+			std::vector<std::pair<std::vector<std::type_index>, std::type_index>> m_GroupTypes;
 			TemplateContainer m_Groups;
 
 			std::set<Entity> m_Entities;

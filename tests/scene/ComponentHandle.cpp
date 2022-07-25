@@ -6,7 +6,7 @@ namespace Cheets
 	ComponentHandle<T>::ComponentHandle(void* location, T e)
 	{
 		m_Component = new(location) T(e);
-		m_Type = std::type_index(typeid(T));
+		p_Type = std::type_index(typeid(T));
 	}
 
 	
@@ -15,7 +15,7 @@ namespace Cheets
 	ComponentHandle<T>::ComponentHandle(void* location, Args&& ...args)
 	{
 		m_Component = new(location) T(std::forward<Args>(args)...);
-		m_Type = std::type_index(typeid(T));
+		p_Type = std::type_index(typeid(T));
 	}
 
 	template<class T>

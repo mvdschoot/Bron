@@ -1,12 +1,7 @@
 #ifndef __ENTITY_HEADER__
 #define __ENTITY_HEADER__
 
-#include "Cheets/Core/Core.h"
-#include "Cheets/Core/Logger.h"
-#include "Cheets/Core/Profiling.h"
-
-#include "Cheets/Utils/UUID.hpp"
-
+#include "UUID.h"
 #include "Component.h"
 #include "ComponentHandle.h"
 
@@ -16,37 +11,42 @@
 #include <cstring>
 #include <typeindex>
 #include <typeinfo>
+#include <utility>
 
 namespace Cheets
 {
+
 	class Entity
 	{
-		friend Registry;
+		friend class Registry;
 
 		public:
-			Entity(std::string name);
+			Entity();
 			~Entity();
 
-			bool operator==(const Entity& other){return m_Id == other.GetId();}
+			bool operator==(const Entity& other){return p_Id == other.p_Id;}
 
 			template<class ...Args>
-			std::tuple<Args&...> GetComponents();
+			std::tuple<Args...> GetComponents();
 
 		private:
 			void AddedComponent(IComponentHandle* handle);
 
-			template <std::size_t I, class Tuple, class First>
-			void GetCompSpecialization(Tuple& tup);
-
-			template <std::size_t I, class Tuple, class First, class Second, class ...Rest>
-			void GetCompSpecialization(Tuple& tup);
-
 		public:
 			UUID p_Id;
-			std::string p_Name;
 		private:
 			std::set<IComponentHandle*> m_Components;
 
+
+			template<unsigned int I, class Tuple, class Components>
+			struct HelperStruct {
+				static void GetCompSpecialization(Tuple& tup, Components& components);
+			};
+			template<class Tuple, class Components>
+			struct HelperStruct<0, Tuple, Components> {
+				public:
+					static void GetCompSpecialization(Tuple& tup, Components& components);
+			};
 	};
 }
 
