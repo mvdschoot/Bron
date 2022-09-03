@@ -1,10 +1,13 @@
 build
-.vscode
 .git
 .ccls-cache
 .ccls
 .clang*
 compile_commands.json
+.vs
+.vscode
+cmake-build-debug-visual-studio
+Folder.DotSettings.user
 
 # Prerequisites
 *.d
