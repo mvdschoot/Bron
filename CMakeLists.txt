@@ -4,6 +4,8 @@ project(LuigiMaker VERSION 1.0)
 
 add_subdirectory(Cheets)
 
+add_compile_definitions(COMPILING_CHEETS)
+add_compile_definitions(CH_PROFILE)
 
 include_directories(
 	src 
@@ -12,11 +14,9 @@ include_directories(
 	vendor/imgui
 	vendor/imgui/backends
 )
-add_executable(LuigiMaker 
+add_executable(LuigiMaker
 	src/Core/App.cpp
 	src/Core/AppLayer.cpp
 )
 
 target_link_libraries(LuigiMaker PUBLIC Cheets)
-
-add_subdirectory("sceneTest")
