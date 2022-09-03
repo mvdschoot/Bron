@@ -1,14 +1,13 @@
 build
 .git
-.ccls-cache
-.ccls
-.clang*
-compile_commands.json
 .vs
 .vscode
+.idea
 cmake-build-debug-visual-studio
-Folder.DotSettings.user
 vendor
+
+compile_commands.json
+Folder.DotSettings.user
 
 # Prerequisites
 *.d
