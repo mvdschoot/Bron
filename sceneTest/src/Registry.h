@@ -63,16 +63,16 @@ namespace Cheets
 			void AddComponent(UUID& entity, T& component)
             {
                 Entity& ent = m_Entities[entity];
-                ent.AddedComponent(createRef<ComponentHandle<T>>(component));
                 auto groupIt = IsInGroup<T>();
                 if (groupIt == m_GroupTypes.end())
                 {
                     m_RestComponents.insert(component);
-                    ent.AddedComponent(createRef<ComponentHandle<T>>(m_RestComponents.get<T>(ent.p_Id)));
+                    T& a = m_RestComponents.get<T>(component.p_Id);
+                    ent.AddedComponent(createRef<ComponentHandle<T>>(a));
                 }
                 else
                 {
-                    ent.AddedComponent(createRef<ComponentHandle<T>>(ent));
+                    ent.AddedComponent(createRef<ComponentHandle<T>>(component));
                 }
             }
 

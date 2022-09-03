@@ -59,6 +59,25 @@ namespace Cheets
 				}(), ...);
 			}
 
+            template<class ...T>
+            bool ContainsAny()
+            {
+                bool res = false;
+                ([&, this]()
+                {
+                    std::type_index type(typeid(T));
+                    for(auto it = m_Components.begin(); it != m_Components.end(); ++it)
+                    {
+                        if (type == (*it)->p_Type) {
+                            res = true;
+                            return;
+                        }
+                    }
+                }(), ...);
+
+                return res;
+            }
+
 			void AddedComponent(const Ref<IComponentHandle> handle) {
 				for (auto it = m_Components.begin(); it != m_Components.end(); ++it)
 				{
