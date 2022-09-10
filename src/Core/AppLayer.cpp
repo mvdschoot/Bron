@@ -16,9 +16,10 @@ namespace Cheets
 		spec.height = m_Height;
 		m_Framebuffer = Framebuffer::Create(spec);
 
-		m_Texture = Texture2D::Create("../../src/Assets/muscular_rick.png");
+		m_Texture = Texture2D::Create("../../../Assets/muscular_rick.png");
 		m_Camera = Cheets::createRef<Cheets::OrthographicCamera>(-1.0f, 1.0f, -1.0f, 1.0f,
 				(float)m_Width / (float)m_Height, m_Pos, 0.0f);
+		m_Camera->SetZoom(m_Zoom);
 
 		RendererCommand::ClearColor({1.0, 0.0, 1.0, 0.5});
 	}
@@ -31,25 +32,52 @@ namespace Cheets
 	{
 		// APP_INFO("Event: {}", event.GetName());
 		Cheets::EventDispatcher e(event);
-		e.Dispatch<Cheets::MouseScrolledEvent>(BIND_EVENT_FN(AppLayer::onMouseScrolled));
+		e.Dispatch<Cheets::MouseScrolledEvent>(BIND_EVENT_FN(AppLayer::OnMouseScrolled));
 	}
 
-	bool AppLayer::onMouseScrolled(Cheets::MouseScrolledEvent& e)
+	bool AppLayer::OnMouseScrolled(Cheets::MouseScrolledEvent& e)
 	{
 		m_Zoom -= e.getOffsetY() * 0.15f;
 		m_Zoom = std::max(m_Zoom, 0.15f);
 
-		m_Camera->setZoom(m_Zoom);
+		m_Camera->SetZoom(m_Zoom);
 		return true;
 	}
 
-	void AppLayer::OnUpdate(Timestep ts) {
-		m_Framebuffer->bind();
+	void AppLayer::IsKeyPressed(const Timestep ts)
+	{
+		float dt = ts.getSeconds();
+		if (Cheets::Input::isKeyPressed(Cheets::Key::A))
+		{
+			m_Pos.x -= dt;
+		}
+		if (Cheets::Input::isKeyPressed(Cheets::Key::D))
+		{
+			m_Pos.x += dt;
+		}
+
+		if (Cheets::Input::isKeyPressed(Cheets::Key::W))
+		{
+			m_Pos.y += dt;
+		}
+
+		if (Cheets::Input::isKeyPressed(Cheets::Key::S))
+		{
+			m_Pos.y -= dt;
+		}
+	}
+
+	void AppLayer::OnUpdate(const Timestep ts) {
+		//m_Framebuffer->bind();
 		RendererCommand::clear();
 
-		Renderer2D::beginScene(*m_Camera);
-		Renderer2D::drawQuad({-0.25, -0.25}, {0.5, 0.5}, m_Texture);
-		Renderer2D::endScene();
+		IsKeyPressed(ts);
+		m_Camera->SetPosition(m_Pos);
+
+		Renderer2D::BeginScene(*m_Camera);
+		Renderer2D::DrawQuad({ -0.25, -0.25 }, { 0.5, 0.5 }, m_Texture);
+		Renderer2D::DrawQuad({ 0.25, 0.25 }, { 0.5, 0.5 }, {0.4, 0.8, 0.9, 1.0});
+		Renderer2D::EndScene();
 
 		m_Framebuffer->unbind();
 	}
@@ -59,7 +87,7 @@ namespace Cheets
 
 		uint32_t textureID = m_Framebuffer->getColorAttachID();
 		ImGui::Image((void*)(intptr_t)textureID, ImVec2(355, 200), {0, 1}, {1, 0});
-		
+		ImGui::Text("test");
 		ImGui::End();
 	}
 }

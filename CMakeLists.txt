@@ -17,6 +17,6 @@ include_directories(
 add_executable(LuigiMaker
 	src/Core/App.cpp
 	src/Core/AppLayer.cpp
-)
+ "src/Core/Components.h")
 
 target_link_libraries(LuigiMaker PUBLIC Cheets)

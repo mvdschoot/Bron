@@ -7,23 +7,25 @@
 
 namespace Cheets
 {
-	class AppLayer : public Layer
+	class AppLayer final : public Layer
 	{
 		public:
-			virtual void OnAttach() override;
-			virtual void OnDetach() override;
-			virtual void OnEvent(Event& event) override;
-			virtual void OnUpdate(Timestep ts) override;
-			virtual void OnImGuiRender() override;
-			bool onMouseScrolled(MouseScrolledEvent& e);
+			void OnAttach() override;
+			void OnDetach() override;
+			void OnEvent(Event& event) override;
+			void OnUpdate(Timestep ts) override;
+			void OnImGuiRender() override;
+
+			bool OnMouseScrolled(MouseScrolledEvent& e);
+			void IsKeyPressed(Timestep ts);
 		private:
-			uint32_t m_Width;
-			uint32_t m_Height;
+			uint32_t m_Width = 0;
+			uint32_t m_Height = 0;
 
 			Ref<Framebuffer> m_Framebuffer;
 	
 			Ref<OrthographicCamera> m_Camera;
-			float m_Zoom = 0.0f;
+			float m_Zoom = 1.0f;
 			glm::vec3 m_Pos{0.0f, 0.0f, -1.0f};
 
 			Ref<Texture> m_Texture;
