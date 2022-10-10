@@ -13,10 +13,11 @@ include_directories(
 	vendor/glad/include
 	vendor/imgui
 	vendor/imgui/backends
-)
+) 
 add_executable(LuigiMaker
 	src/Core/App.cpp
 	src/Core/AppLayer.cpp
- "src/Core/Components.h")
+)
 
+set_property(TARGET LuigiMaker PROPERTY CXX_STANDARD 20)
 target_link_libraries(LuigiMaker PUBLIC Cheets)

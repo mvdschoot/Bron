@@ -1,8 +1,4 @@
 #include "AppLayer.h"
-#include "Cheets/Core/Core.h"
-#include "Cheets/Renderer/Framebuffer.h"
-#include "Cheets/Renderer/OrthographicCamera.h"
-#include "Cheets/Renderer/Renderer2D.h"
 
 namespace Cheets
 {
@@ -11,12 +7,24 @@ namespace Cheets
 		m_Width = Application::getWindow()->getWindowWidth();
 		m_Height = Application::getWindow()->getWindowHeight();
 
+		m_RickEntity = m_Registry.CreateEntity();
+		m_BlockEntity = m_Registry.CreateEntity();
+
+
+		m_Registry.AddComponent(m_RickEntity, TransformComponent({ -0.5, -0.5, 0 }));
+		m_Registry.AddComponent(m_BlockEntity, TransformComponent({ 0.5, 0.5, 0 }));
+		m_Registry.AddComponent(m_RickEntity, SizeComponent({ 0.5, 0.5, 0 }));
+		m_Registry.AddComponent(m_BlockEntity, SizeComponent({ 0.5, 0.5, 0 }));
+
+		m_Registry.AddComponent(m_RickEntity, SpriteComponent("../../../Assets/muscular_rick.png"));
+		auto* a = m_Registry.GetComponentE<SpriteComponent>(m_RickEntity);
+		m_Registry.AddComponent(m_BlockEntity, ColorComponent(0.9f, 0.1f, 0.5f, 1.0f));
+
 		FramebufferSpecification spec;
 		spec.width = m_Width;
 		spec.height = m_Height;
 		m_Framebuffer = Framebuffer::Create(spec);
-
-		m_Texture = Texture2D::Create("../../../Assets/muscular_rick.png");
+		
 		m_Camera = Cheets::createRef<Cheets::OrthographicCamera>(-1.0f, 1.0f, -1.0f, 1.0f,
 				(float)m_Width / (float)m_Height, m_Pos, 0.0f);
 		m_Camera->SetZoom(m_Zoom);
@@ -75,8 +83,8 @@ namespace Cheets
 		m_Camera->SetPosition(m_Pos);
 
 		Renderer2D::BeginScene(*m_Camera);
-		Renderer2D::DrawQuad({ -0.25, -0.25 }, { 0.5, 0.5 }, m_Texture);
-		Renderer2D::DrawQuad({ 0.25, 0.25 }, { 0.5, 0.5 }, {0.4, 0.8, 0.9, 1.0});
+		Renderer2D::DrawQuad(GET_COMPONENTE(TransformComponent, m_RickEntity), GET_COMPONENTE(SizeComponent, m_RickEntity), GET_COMPONENTE(SpriteComponent, m_RickEntity));
+		Renderer2D::DrawQuad(GET_COMPONENTE(TransformComponent, m_BlockEntity),GET_COMPONENTE(SizeComponent, m_BlockEntity),GET_COMPONENTE(ColorComponent, m_BlockEntity));
 		Renderer2D::EndScene();
 
 		m_Framebuffer->unbind();
