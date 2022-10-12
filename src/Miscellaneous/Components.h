@@ -21,7 +21,10 @@ namespace Cheets
 
 		SpriteComponent() = default;
 		SpriteComponent(Ref<Texture> texture) : TextureRef(std::move(texture)) {}
-		SpriteComponent(const char* loc) {TextureRef = Texture2D::Create(loc);}
+		SpriteComponent(const char* loc)
+		{
+			TextureRef = Texture2D::Create(loc);
+		}
 
 		operator const glm::uint32_t() const {return TextureRef->getID();}
 		operator const Ref<Texture>() const { return TextureRef; }

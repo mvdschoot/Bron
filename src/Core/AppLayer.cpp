@@ -10,14 +10,15 @@ namespace Cheets
 		m_RickEntity = m_Registry.CreateEntity();
 		m_BlockEntity = m_Registry.CreateEntity();
 
-
+		m_Registry.GroupComponents<TransformComponent, SizeComponent>();
 		m_Registry.AddComponent(m_RickEntity, TransformComponent({ -0.5, -0.5, 0 }));
 		m_Registry.AddComponent(m_BlockEntity, TransformComponent({ 0.5, 0.5, 0 }));
 		m_Registry.AddComponent(m_RickEntity, SizeComponent({ 0.5, 0.5, 0 }));
 		m_Registry.AddComponent(m_BlockEntity, SizeComponent({ 0.5, 0.5, 0 }));
 
-		m_Registry.AddComponent(m_RickEntity, SpriteComponent("../../../Assets/muscular_rick.png"));
-		auto* a = m_Registry.GetComponentE<SpriteComponent>(m_RickEntity);
+		SpriteComponent sprite = SpriteComponent("../../../Assets/muscular_rick.png");
+		m_Registry.AddComponent(m_RickEntity, std::move(sprite));
+		ComponentHandle<SpriteComponent>* a = m_Registry.GetComponentE<SpriteComponent>(m_RickEntity);
 		m_Registry.AddComponent(m_BlockEntity, ColorComponent(0.9f, 0.1f, 0.5f, 1.0f));
 
 		FramebufferSpecification spec;
@@ -83,7 +84,8 @@ namespace Cheets
 		m_Camera->SetPosition(m_Pos);
 
 		Renderer2D::BeginScene(*m_Camera);
-		Renderer2D::DrawQuad(GET_COMPONENTE(TransformComponent, m_RickEntity), GET_COMPONENTE(SizeComponent, m_RickEntity), GET_COMPONENTE(SpriteComponent, m_RickEntity));
+		TransformComponent& trans = GET_COMPONENTE(TransformComponent, m_RickEntity);
+		Renderer2D::DrawQuad(trans, GET_COMPONENTE(SizeComponent, m_RickEntity), GET_COMPONENTE(SpriteComponent, m_RickEntity));
 		Renderer2D::DrawQuad(GET_COMPONENTE(TransformComponent, m_BlockEntity),GET_COMPONENTE(SizeComponent, m_BlockEntity),GET_COMPONENTE(ColorComponent, m_BlockEntity));
 		Renderer2D::EndScene();
 
