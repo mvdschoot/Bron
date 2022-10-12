@@ -2,7 +2,6 @@
 
 namespace Cheets
 {
-		
 	void AppLayer::OnAttach() {
 		m_Width = Application::getWindow()->getWindowWidth();
 		m_Height = Application::getWindow()->getWindowHeight();
@@ -14,6 +13,8 @@ namespace Cheets
 		m_Registry.AddComponent(m_RickEntity, TransformComponent({ -0.5, -0.5, 0 }));
 		m_Registry.AddComponent(m_BlockEntity, TransformComponent({ 0.5, 0.5, 0 }));
 		m_Registry.AddComponent(m_RickEntity, SizeComponent({ 0.5, 0.5, 0 }));
+		m_Registry.AddComponent(m_BlockEntity, SizeComponent({ 0.5, 0.5, 0 }));
+		m_Registry.DestroyComponent<SizeComponent>(m_BlockEntity);
 		m_Registry.AddComponent(m_BlockEntity, SizeComponent({ 0.5, 0.5, 0 }));
 
 		SpriteComponent sprite = SpriteComponent("../../../Assets/muscular_rick.png");
@@ -77,8 +78,11 @@ namespace Cheets
 	}
 
 	void AppLayer::OnUpdate(const Timestep ts) {
+		m_Ts = ts;
+
 		//m_Framebuffer->bind();
 		RendererCommand::clear();
+
 
 		IsKeyPressed(ts);
 		m_Camera->SetPosition(m_Pos);
@@ -94,10 +98,7 @@ namespace Cheets
 
 	void AppLayer::OnImGuiRender() {
 		ImGui::Begin("test");
-
-		uint32_t textureID = m_Framebuffer->getColorAttachID();
-		ImGui::Image((void*)(intptr_t)textureID, ImVec2(355, 200), {0, 1}, {1, 0});
-		ImGui::Text("test");
+		ImGui::Text("FPS: %f", 1.0f/m_Ts.getSeconds());
 		ImGui::End();
 	}
 }

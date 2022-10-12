@@ -35,6 +35,9 @@ namespace Cheets
 		Registry m_Registry;
 		UUID m_RickEntity;
 		UUID m_BlockEntity;
+
+		// timestep
+		Cheets::Timestep m_Ts;
 	};
 }
 
