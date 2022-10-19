@@ -6,21 +6,22 @@ namespace Cheets
 		m_Width = Application::getWindow()->getWindowWidth();
 		m_Height = Application::getWindow()->getWindowHeight();
 
-		m_RickEntity = m_Registry.CreateEntity();
-		m_BlockEntity = m_Registry.CreateEntity();
+		m_RickEntity = m_Scene.CreateEntity();
+		m_BlockEntity = m_Scene.CreateEntity();
 
-		m_Registry.GroupComponents<TransformComponent, SizeComponent>();
-		m_Registry.AddComponent(m_RickEntity, TransformComponent({ -0.5, -0.5, 0 }));
-		m_Registry.AddComponent(m_BlockEntity, TransformComponent({ 0.5, 0.5, 0 }));
-		m_Registry.AddComponent(m_RickEntity, SizeComponent({ 0.5, 0.5, 0 }));
-		m_Registry.AddComponent(m_BlockEntity, SizeComponent({ 0.5, 0.5, 0 }));
-		m_Registry.DestroyComponent<SizeComponent>(m_BlockEntity);
-		m_Registry.AddComponent(m_BlockEntity, SizeComponent({ 0.5, 0.5, 0 }));
+		m_Scene.AddComponent(m_RickEntity, TransformComponent({ -0.5, -0.5, 0 }));
+		m_Scene.AddComponent(m_BlockEntity, TransformComponent({ 0.5, 0.5, 0 }));
+		m_Scene.AddComponent(m_RickEntity, SizeComponent({ 0.5, 0.5, 0 }));
+		m_Scene.AddComponent(m_BlockEntity, SizeComponent({ 0.5, 0.5, 0 }));
+		m_Scene.DestroyComponent<SizeComponent>(m_BlockEntity);
+		m_Scene.AddComponent(m_BlockEntity, SizeComponent({ 0.5, 0.5, 0 }));
 
 		SpriteComponent sprite = SpriteComponent("../../../Assets/muscular_rick.png");
-		m_Registry.AddComponent(m_RickEntity, std::move(sprite));
-		ComponentHandle<SpriteComponent>* a = m_Registry.GetComponentE<SpriteComponent>(m_RickEntity);
-		m_Registry.AddComponent(m_BlockEntity, ColorComponent(0.9f, 0.1f, 0.5f, 1.0f));
+		m_Scene.AddComponent(m_RickEntity, std::move(sprite));
+		ComponentHandle<SpriteComponent>& a = m_Scene.GetComponentHandleE<SpriteComponent>(m_RickEntity);
+		m_Scene.AddComponent(m_BlockEntity, ColorComponent(0.9f, 0.1f, 0.5f, 1.0f));
+
+		m_Scene.GroupComponents<TransformComponent, SizeComponent>();
 
 		FramebufferSpecification spec;
 		spec.width = m_Width;
@@ -88,9 +89,8 @@ namespace Cheets
 		m_Camera->SetPosition(m_Pos);
 
 		Renderer2D::BeginScene(*m_Camera);
-		TransformComponent& trans = GET_COMPONENTE(TransformComponent, m_RickEntity);
-		Renderer2D::DrawQuad(trans, GET_COMPONENTE(SizeComponent, m_RickEntity), GET_COMPONENTE(SpriteComponent, m_RickEntity));
-		Renderer2D::DrawQuad(GET_COMPONENTE(TransformComponent, m_BlockEntity),GET_COMPONENTE(SizeComponent, m_BlockEntity),GET_COMPONENTE(ColorComponent, m_BlockEntity));
+		Renderer2D::DrawQuad(m_Scene.GetComponentE<TransformComponent>(m_RickEntity), m_Scene.GetComponentE<SizeComponent>(m_RickEntity), m_Scene.GetComponentE<SpriteComponent>(m_RickEntity));
+		Renderer2D::DrawQuad(m_Scene.GetComponentE<TransformComponent>(m_BlockEntity), m_Scene.GetComponentE<SizeComponent>(m_BlockEntity), m_Scene.GetComponentE<ColorComponent>(m_BlockEntity));
 		Renderer2D::EndScene();
 
 		m_Framebuffer->unbind();

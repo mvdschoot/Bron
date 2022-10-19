@@ -4,8 +4,6 @@
 #include "Cheets.h"
 #include "Miscellaneous/Components.h"
 
-#define GET_COMPONENTE_HANDLE(type, entity) *m_Registry.GetComponentE<type>(entity)
-#define GET_COMPONENTE(type, entity) **m_Registry.GetComponentE<type>(entity)
 
 namespace Cheets
 {
@@ -32,7 +30,7 @@ namespace Cheets
 		glm::vec3 m_Pos{0.0f, 0.0f, -1.0f};
 
 		// Registry
-		Registry m_Registry;
+		Scene m_Scene;
 		UUID m_RickEntity;
 		UUID m_BlockEntity;
 
