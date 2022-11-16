@@ -1,1 +1,7 @@
-RestStorage krijgt enorme gaten als groupcomponent wordt gecalled
+- Entities setup is shit
+- Unordered map is expensive
+
+GetUniformLocation is kenker slow:
+	- Kan opgeslagen worden
+	- Locatie verander alleen als de shader opnieuw gelinkt word
+

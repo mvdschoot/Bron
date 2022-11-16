@@ -15,6 +15,15 @@ namespace Cheets
 		operator const glm::vec3() const {return Transform;}
 	};
 
+	struct LineComponent : public Component
+	{
+		glm::vec3 A;
+		glm::vec3 B;
+
+		LineComponent() = default;
+		LineComponent(glm::vec3 a, glm::vec3 b) : A(a), B(b) {}
+	};
+
 	struct SpriteComponent : public Component
 	{
 		Ref<Texture> TextureRef;

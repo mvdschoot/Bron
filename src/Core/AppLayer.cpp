@@ -6,9 +6,11 @@ namespace Cheets
 		m_Width = Application::getWindow()->getWindowWidth();
 		m_Height = Application::getWindow()->getWindowHeight();
 
-		m_RickEntity = m_Scene.CreateEntity();
-		m_BlockEntity = m_Scene.CreateEntity();
+		m_RickEntity = m_Scene.CreateEntity("Rickert");
+		m_BlockEntity = m_Scene.CreateEntity("Block");
+		m_BlockEntity = m_Scene.CreateEntity("3");
 
+		View<TransformComponent, SizeComponent> view = m_Scene.GroupComponents<TransformComponent, SizeComponent>();
 		m_Scene.AddComponent(m_RickEntity, TransformComponent({ -0.5, -0.5, 0 }));
 		m_Scene.AddComponent(m_BlockEntity, TransformComponent({ 0.5, 0.5, 0 }));
 		m_Scene.AddComponent(m_RickEntity, SizeComponent({ 0.5, 0.5, 0 }));
@@ -16,12 +18,18 @@ namespace Cheets
 		m_Scene.DestroyComponent<SizeComponent>(m_BlockEntity);
 		m_Scene.AddComponent(m_BlockEntity, SizeComponent({ 0.5, 0.5, 0 }));
 
-		SpriteComponent sprite = SpriteComponent("../../../Assets/muscular_rick.png");
-		m_Scene.AddComponent(m_RickEntity, std::move(sprite));
-		ComponentHandle<SpriteComponent>& a = m_Scene.GetComponentHandleE<SpriteComponent>(m_RickEntity);
+		m_Scene.AddComponent(m_RickEntity, SpriteComponent("../../../Assets/muscular_rick.png"));
 		m_Scene.AddComponent(m_BlockEntity, ColorComponent(0.9f, 0.1f, 0.5f, 1.0f));
 
-		m_Scene.GroupComponents<TransformComponent, SizeComponent>();
+		View<TransformComponent, SizeComponent>::Iterator it = View<TransformComponent, SizeComponent>::FilterBy([](Entity* ent)
+		{
+			return ent->Contains<ColorComponent>();
+		});
+		for (; it != View<TransformComponent, SizeComponent>::end(); ++it)
+		{
+			auto ok = *it;
+			int a = 5;
+		}
 
 		FramebufferSpecification spec;
 		spec.width = m_Width;
@@ -33,6 +41,9 @@ namespace Cheets
 		m_Camera->SetZoom(m_Zoom);
 
 		RendererCommand::ClearColor({1.0, 0.0, 1.0, 0.5});
+
+		Renderer2D::init();
+		LineRenderer::Init();
 	}
 	
 	void AppLayer::OnDetach() {
@@ -93,12 +104,25 @@ namespace Cheets
 		Renderer2D::DrawQuad(m_Scene.GetComponentE<TransformComponent>(m_BlockEntity), m_Scene.GetComponentE<SizeComponent>(m_BlockEntity), m_Scene.GetComponentE<ColorComponent>(m_BlockEntity));
 		Renderer2D::EndScene();
 
-		m_Framebuffer->unbind();
-	}
+		LineRenderer::Start(m_Camera.get());
+		auto f = [](float x) -> float {return std::cos(x); };
+		float step = 0.01;
+		for(float x = -2*3.1415927f; x <= 2*3.1415927f; x += step)
+		{
+			LineRenderer::DrawLine({ x, f(x), 0.0f }, { x+step, f(x+step), 0.0f}, {1.0,0.5,0.25,1.0}, 0.01f);
+		}
+		LineRenderer::End();
 
+		//m_Framebuffer->unbind();
+	}
+	 
 	void AppLayer::OnImGuiRender() {
 		ImGui::Begin("test");
-		ImGui::Text("FPS: %f", 1.0f/m_Ts.getSeconds());
+		ImGui::Text("FPS: %f\n", 1.0f / m_Ts.getSeconds());
+		ImGui::Text("QuadCount: %u", Renderer2D::GetQuadCount());
+		ImGui::Text("QuadIndexCount: %u\n", Renderer2D::GetQuadIndexCount());
+		ImGui::Text("LineCount: %u", LineRenderer::GetLineCount());
+		ImGui::Text("LineIndexCount: %u\n", LineRenderer::GetLineIndexCount());
 		ImGui::End();
 	}
 }
