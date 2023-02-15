@@ -3,12 +3,14 @@
 namespace Cheets
 {
 	void AppLayer::OnAttach() {
+		TextRenderer::Init();
+		TextRenderer::LoadUnicodeFont("../../../Assets/bitter/BitterPro-Regular.ttf", 50);
+
 		m_Width = Application::getWindow()->getWindowWidth();
 		m_Height = Application::getWindow()->getWindowHeight();
 
 		m_RickEntity = m_Scene.CreateEntity("Rickert");
 		m_BlockEntity = m_Scene.CreateEntity("Block");
-		m_BlockEntity = m_Scene.CreateEntity("3");
 
 		View<TransformComponent, SizeComponent> view = m_Scene.GroupComponents<TransformComponent, SizeComponent>();
 		m_Scene.AddComponent(m_RickEntity, TransformComponent({ -0.5, -0.5, 0 }));
@@ -42,7 +44,7 @@ namespace Cheets
 
 		RendererCommand::ClearColor({1.0, 0.0, 1.0, 0.5});
 
-		Renderer2D::init();
+		Renderer2D::Init();
 		LineRenderer::Init();
 	}
 	
@@ -102,27 +104,37 @@ namespace Cheets
 		Renderer2D::BeginScene(*m_Camera);
 		Renderer2D::DrawQuad(m_Scene.GetComponentE<TransformComponent>(m_RickEntity), m_Scene.GetComponentE<SizeComponent>(m_RickEntity), m_Scene.GetComponentE<SpriteComponent>(m_RickEntity));
 		Renderer2D::DrawQuad(m_Scene.GetComponentE<TransformComponent>(m_BlockEntity), m_Scene.GetComponentE<SizeComponent>(m_BlockEntity), m_Scene.GetComponentE<ColorComponent>(m_BlockEntity));
+		TextRenderer::RenderText("test test", 0, 0, 0.01, { 0.0,0.0,0.0,0.0 });
 		Renderer2D::EndScene();
 
+		
+
 		LineRenderer::Start(m_Camera.get());
-		auto f = [](float x) -> float {return std::cos(x); };
-		float step = 0.01;
-		for(float x = -2*3.1415927f; x <= 2*3.1415927f; x += step)
+
+		int size = 50;
+		int halfsize = size / 2;
+		float gray_color = 200.0f;
+		float line_width = 0.005;
+		for(int x = -halfsize; x < halfsize; x++)
 		{
-			LineRenderer::DrawLine({ x, f(x), 0.0f }, { x+step, f(x+step), 0.0f}, {1.0,0.5,0.25,1.0}, 0.01f);
+			LineRenderer::DrawLine({ -halfsize, x, 0.0f }, { halfsize, x, 0.0f }, { gray_color, gray_color, gray_color, 0.8 }, line_width * m_Camera->AspectRatio);
+			LineRenderer::DrawLine({ x, -halfsize, 0.0f }, { x, halfsize, 0.0f }, { gray_color, gray_color, gray_color, 0.8 }, line_width);
 		}
+
 		LineRenderer::End();
 
-		//m_Framebuffer->unbind();
+		m_Framebuffer->unbind();
 	}
 	 
 	void AppLayer::OnImGuiRender() {
 		ImGui::Begin("test");
 		ImGui::Text("FPS: %f\n", 1.0f / m_Ts.getSeconds());
 		ImGui::Text("QuadCount: %u", Renderer2D::GetQuadCount());
-		ImGui::Text("QuadIndexCount: %u\n", Renderer2D::GetQuadIndexCount());
+		ImGui::Text("QuadIndexCount: %u\n\n", Renderer2D::GetQuadIndexCount());
 		ImGui::Text("LineCount: %u", LineRenderer::GetLineCount());
 		ImGui::Text("LineIndexCount: %u\n", LineRenderer::GetLineIndexCount());
+		ImGui::Text("Strip: LineCount: %u", LineRenderer::GetLineStripCount());
+		ImGui::Text("Strip: LineIndexCount: %u\n", LineRenderer::GetLineStripIndexCount());
 		ImGui::End();
 	}
 }

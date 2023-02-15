@@ -4,7 +4,6 @@ build
 .vscode
 .idea
 cmake-build-debug-visual-studio
-vendor
 
 compile_commands.json
 Folder.DotSettings.user
@@ -41,3 +40,4 @@ Folder.DotSettings.user
 *.exe
 *.out
 *.app
+/NOTES

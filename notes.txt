@@ -1,0 +1,4 @@
+text:
+	spritesheet / texture atlas
+		nieuwe en andere Renderer2D
+		texture hebben die je kan opbouwen

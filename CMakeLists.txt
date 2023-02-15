@@ -11,6 +11,8 @@ add_compile_definitions(CH_PROFILE)
 add_executable(LuigiMaker
 	src/Core/App.cpp
 	src/Core/AppLayer.cpp
+	
+	src/Graphing/Graph.cpp
 )
 target_include_directories(LuigiMaker 
 	PUBLIC .
