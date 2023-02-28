@@ -104,7 +104,7 @@ namespace Cheets
 		Renderer2D::BeginScene(*m_Camera);
 		Renderer2D::DrawQuad(m_Scene.GetComponentE<TransformComponent>(m_RickEntity), m_Scene.GetComponentE<SizeComponent>(m_RickEntity), m_Scene.GetComponentE<SpriteComponent>(m_RickEntity));
 		Renderer2D::DrawQuad(m_Scene.GetComponentE<TransformComponent>(m_BlockEntity), m_Scene.GetComponentE<SizeComponent>(m_BlockEntity), m_Scene.GetComponentE<ColorComponent>(m_BlockEntity));
-		TextRenderer::RenderText("test test", 0, 0, 0.01, { 0.0,0.0,0.0,0.0 });
+		TextRenderer::RenderText("gefopt kanker sukkel", 0, 0, 0.01, { 0.0,0.0,0.0,0.0 });
 		Renderer2D::EndScene();
 
 		

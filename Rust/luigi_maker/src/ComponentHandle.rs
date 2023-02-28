@@ -1,0 +1,5 @@
+
+
+trait ComponentHandle {
+    fn Move()
+}
