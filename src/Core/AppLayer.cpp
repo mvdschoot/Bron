@@ -3,8 +3,10 @@
 namespace Cheets
 {
 	void AppLayer::OnAttach() {
+		Renderer2D::Init();
+		LineRenderer::Init();
 		TextRenderer::Init();
-		TextRenderer::LoadUnicodeFont("../../../Assets/bitter/BitterPro-Regular.ttf", 50);
+		TextRenderer::LoadUnicodeFont("../../../Assets/bitter/BitterPro-Regular.ttf", 200);
 
 		m_Width = Application::getWindow()->getWindowWidth();
 		m_Height = Application::getWindow()->getWindowHeight();
@@ -44,8 +46,6 @@ namespace Cheets
 
 		RendererCommand::ClearColor({1.0, 0.0, 1.0, 0.5});
 
-		Renderer2D::Init();
-		LineRenderer::Init();
 	}
 	
 	void AppLayer::OnDetach() {
@@ -101,10 +101,10 @@ namespace Cheets
 		IsKeyPressed(ts);
 		m_Camera->SetPosition(m_Pos);
 
-		Renderer2D::BeginScene(*m_Camera);
+		Renderer2D::BeginScene(m_Camera.get());
 		Renderer2D::DrawQuad(m_Scene.GetComponentE<TransformComponent>(m_RickEntity), m_Scene.GetComponentE<SizeComponent>(m_RickEntity), m_Scene.GetComponentE<SpriteComponent>(m_RickEntity));
 		Renderer2D::DrawQuad(m_Scene.GetComponentE<TransformComponent>(m_BlockEntity), m_Scene.GetComponentE<SizeComponent>(m_BlockEntity), m_Scene.GetComponentE<ColorComponent>(m_BlockEntity));
-		TextRenderer::RenderText("gefopt kanker sukkel", 0, 0, 0.01, { 0.0,0.0,0.0,0.0 });
+		TextRenderer::RenderText("gefopt kanker sukkel", 0, 0, 1e-3, { 0.0,0.0,0.0,0.0 });
 		Renderer2D::EndScene();
 
 		
@@ -129,8 +129,8 @@ namespace Cheets
 	void AppLayer::OnImGuiRender() {
 		ImGui::Begin("test");
 		ImGui::Text("FPS: %f\n", 1.0f / m_Ts.getSeconds());
-		ImGui::Text("QuadCount: %u", Renderer2D::GetQuadCount());
-		ImGui::Text("QuadIndexCount: %u\n\n", Renderer2D::GetQuadIndexCount());
+		ImGui::Text("QuadCount: %u", Renderer2D::GetTotQuadCount());
+		ImGui::Text("QuadIndexCount: %u\n\n", Renderer2D::GetTotQuadIndexCount());
 		ImGui::Text("LineCount: %u", LineRenderer::GetLineCount());
 		ImGui::Text("LineIndexCount: %u\n", LineRenderer::GetLineIndexCount());
 		ImGui::Text("Strip: LineCount: %u", LineRenderer::GetLineStripCount());

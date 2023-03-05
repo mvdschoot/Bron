@@ -8,3 +8,5 @@ GetUniformLocation is kenker langzaam:
 
 Render setup is shit
 	- moet eigenlijk een renderComponent zijn die opgehaald kan worden vanuit Scene als Scene wordt doorgegeven aan een renderer
+
+	- multiple shader rendering is raar gedesigned
