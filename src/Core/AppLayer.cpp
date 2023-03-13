@@ -2,17 +2,24 @@
 
 namespace Cheets
 {
+	using namespace render;
+
 	void AppLayer::OnAttach() {
 		Renderer2D::Init();
+		Renderer3D::Init();
 		LineRenderer::Init();
 		TextRenderer::Init();
 		TextRenderer::LoadUnicodeFont("../../../Assets/bitter/BitterPro-Regular.ttf", 200);
+
 
 		m_Width = Application::getWindow()->getWindowWidth();
 		m_Height = Application::getWindow()->getWindowHeight();
 
 		m_RickEntity = m_Scene.CreateEntity("Rickert");
 		m_BlockEntity = m_Scene.CreateEntity("Block");
+		m_ModelEntity = m_Scene.CreateEntity("Model");
+		m_CubeEntity = m_Scene.CreateEntity("Light");
+		m_CubeMidEntity = m_Scene.CreateEntity("Mid");
 
 		View<TransformComponent, SizeComponent> view = m_Scene.GroupComponents<TransformComponent, SizeComponent>();
 		m_Scene.AddComponent(m_RickEntity, TransformComponent({ -0.5, -0.5, 0 }));
@@ -24,32 +31,36 @@ namespace Cheets
 
 		m_Scene.AddComponent(m_RickEntity, SpriteComponent("../../../Assets/muscular_rick.png"));
 		m_Scene.AddComponent(m_BlockEntity, ColorComponent(0.9f, 0.1f, 0.5f, 1.0f));
+		m_Scene.AddComponent(m_ModelEntity, ModelComponent("../../../Assets/big_car/textures/911_scene.obj"));
+		m_Scene.AddComponent(m_CubeEntity, CubeComponent({ 2.0, 2.0, 2.0 }, { 0.2, 0.2, 0.2 }));
+		std::get<1>(m_Scene.AddComponent(m_CubeMidEntity, CubeComponent({ -0.5, -0.5, -0.5}, {1.0, 1.0, 1.0}))).SetColor({0.1, 0.9, 0.5});
 
 		View<TransformComponent, SizeComponent>::Iterator it = View<TransformComponent, SizeComponent>::FilterBy([](Entity* ent)
 		{
 			return ent->Contains<ColorComponent>();
 		});
-		for (; it != View<TransformComponent, SizeComponent>::end(); ++it)
+		/*for (; it != View<TransformComponent, SizeComponent>::end(); ++it)
 		{
 			auto ok = *it;
 			int a = 5;
-		}
+		}*/
 
 		FramebufferSpecification spec;
 		spec.width = m_Width;
 		spec.height = m_Height;
 		m_Framebuffer = Framebuffer::Create(spec);
 		
-		m_Camera = Cheets::createRef<Cheets::OrthographicCamera>(-1.0f, 1.0f, -1.0f, 1.0f,
+		/*m_Camera = Cheets::createRef<Cheets::OrthographicCamera>(-1.0f, 1.0f, -1.0f, 1.0f,
 				(float)m_Width / (float)m_Height, m_Pos, 0.0f);
-		m_Camera->SetZoom(m_Zoom);
+		m_Camera->SetZoom(m_Zoom);*/
+		m_Camera = createRef<FrustumCamera>(glm::radians(80.0F), (float)m_Width / (float)m_Height, 0.1f, 100.0f, m_Pos, glm::vec3{ 0.0f, 0.0f, 0.0f }, glm::vec3{ 0.0f, 1.0f, 0.0f });
 
 		RendererCommand::ClearColor({1.0, 0.0, 1.0, 0.5});
 
 	}
 	
 	void AppLayer::OnDetach() {
-
+		Renderer3D::ShutDown();
 	}
 
 	void AppLayer::OnEvent(Cheets::Event &event)
@@ -61,10 +72,11 @@ namespace Cheets
 
 	bool AppLayer::OnMouseScrolled(Cheets::MouseScrolledEvent& e)
 	{
-		m_Zoom -= e.getOffsetY() * 0.15f;
-		m_Zoom = std::max(m_Zoom, 0.15f);
+		m_Radius -= e.getOffsetY() * 0.15f;
+		m_Radius = std::max(m_Radius, 0.15f);
+		m_Pos.x = cos(m_XZAngle) * m_Radius;
+		m_Pos.z = sin(m_XZAngle) * m_Radius;
 
-		m_Camera->SetZoom(m_Zoom);
 		return true;
 	}
 
@@ -73,21 +85,27 @@ namespace Cheets
 		float dt = ts.getSeconds();
 		if (Cheets::Input::isKeyPressed(Cheets::Key::A))
 		{
-			m_Pos.x -= dt;
+			m_XZAngle += dt;
+			m_Pos.x = cos(m_XZAngle) * m_Radius;
+			m_Pos.z = sin(m_XZAngle) * m_Radius;
 		}
 		if (Cheets::Input::isKeyPressed(Cheets::Key::D))
 		{
-			m_Pos.x += dt;
+			m_XZAngle -= dt;
+			m_Pos.x = cos(m_XZAngle) * m_Radius;
+			m_Pos.z = sin(m_XZAngle) * m_Radius;
 		}
 
 		if (Cheets::Input::isKeyPressed(Cheets::Key::W))
 		{
-			m_Pos.y += dt;
+			m_YAngle += m_YAngle > 0.5*PI ? 0 : dt;
+			m_Pos.y = sin(m_YAngle) * m_Radius;
 		}
 
 		if (Cheets::Input::isKeyPressed(Cheets::Key::S))
 		{
-			m_Pos.y -= dt;
+			m_YAngle -= m_YAngle < -0.5*PI ? 0 : dt;
+			m_Pos.y = sin(m_YAngle) * m_Radius;
 		}
 	}
 
@@ -101,35 +119,59 @@ namespace Cheets
 		IsKeyPressed(ts);
 		m_Camera->SetPosition(m_Pos);
 
-		Renderer2D::BeginScene(m_Camera.get());
-		Renderer2D::DrawQuad(m_Scene.GetComponentE<TransformComponent>(m_RickEntity), m_Scene.GetComponentE<SizeComponent>(m_RickEntity), m_Scene.GetComponentE<SpriteComponent>(m_RickEntity));
-		Renderer2D::DrawQuad(m_Scene.GetComponentE<TransformComponent>(m_BlockEntity), m_Scene.GetComponentE<SizeComponent>(m_BlockEntity), m_Scene.GetComponentE<ColorComponent>(m_BlockEntity));
-		TextRenderer::RenderText("gefopt kanker sukkel", 0, 0, 1e-3, { 0.0,0.0,0.0,0.0 });
-		Renderer2D::EndScene();
+		// Renderer2D::BeginScene(m_Camera.get());
+		// Renderer2D::DrawQuad(m_Scene.GetComponentE<TransformComponent>(m_RickEntity), m_Scene.GetComponentE<SizeComponent>(m_RickEntity), m_Scene.GetComponentE<SpriteComponent>(m_RickEntity));
+		// Renderer2D::DrawQuad(m_Scene.GetComponentE<TransformComponent>(m_BlockEntity), m_Scene.GetComponentE<SizeComponent>(m_BlockEntity), m_Scene.GetComponentE<ColorComponent>(m_BlockEntity));
+		// for (int x = 0; x < 16000; x++) {
+		// 	Renderer2D::DrawQuad(glm::vec2(1.0f), glm::vec2(1.0f), glm::vec4(1.0f));
+		// }
+		// Renderer2D::EndScene();
 
-		
+		// Ref<OrthographicCamera> c = createRef<OrthographicCamera>(-1.0f, 1.0f, -1.0f, 1.0f,
+		// 	(float)m_Width / (float)m_Height, glm::vec3{ 0.0f, 0.0f, -1.0f }, 0.0f);
+		// Renderer2D::BeginScene(c.get());
+		// TextRenderer::RenderText("gefopt kanker sukkel", 0, 0, 1e-3, { 0.0,0.0,0.0,0.0 });
+		// Renderer2D::EndScene();
 
-		LineRenderer::Start(m_Camera.get());
+		PointLight light;
+		light.Position = { 2.0, 2.0, 2.0 };
+		light.Ambient = glm::vec3(1.0f);
+		light.Diffuse = glm::vec3(1.0f);
+		light.Specular = glm::vec3(1.0f);
+		light.show = true;
 
-		int size = 50;
-		int halfsize = size / 2;
-		float gray_color = 200.0f;
-		float line_width = 0.005;
-		for(int x = -halfsize; x < halfsize; x++)
+		Renderer3D::BeginScene(m_Camera.get());
+		Renderer3D::AddLight(light);
+		ModelComponent& model = m_Scene.GetComponentE<ModelComponent>(m_ModelEntity);
+		for(MeshComponent& mesh : model.GetMeshes())
 		{
-			LineRenderer::DrawLine({ -halfsize, x, 0.0f }, { halfsize, x, 0.0f }, { gray_color, gray_color, gray_color, 0.8 }, line_width * m_Camera->AspectRatio);
-			LineRenderer::DrawLine({ x, -halfsize, 0.0f }, { x, halfsize, 0.0f }, { gray_color, gray_color, gray_color, 0.8 }, line_width);
+			Renderer3D::DrawModel(&mesh);
 		}
+		Renderer3D::DrawModel(&m_Scene.GetComponentE<CubeComponent>(m_CubeEntity).GetMesh());
+		Renderer3D::DrawModel(&m_Scene.GetComponentE<CubeComponent>(m_CubeMidEntity).GetMesh());
+		Renderer3D::EndScene();
 
-		LineRenderer::End();
 
 		m_Framebuffer->unbind();
 	}
 	 
 	void AppLayer::OnImGuiRender() {
 		ImGui::Begin("test");
+		
+		ImGui::DragFloat("Specular exponent", &m_Specular, 0.0, 1.0, 50.0f);
+
+
+		auto& meshes = m_Scene.GetComponentE<ModelComponent>(m_ModelEntity).GetMeshes();
+		for(MeshComponent& mesh : meshes)
+		{
+			Ref<MaterialComponent>& material = mesh.GetMaterial();
+			material->Shininess = m_Specular;
+		}
+
 		ImGui::Text("FPS: %f\n", 1.0f / m_Ts.getSeconds());
 		ImGui::Text("QuadCount: %u", Renderer2D::GetTotQuadCount());
+		ImGui::Text("QuadIndexCount: %u\n\n", Renderer2D::GetTotQuadIndexCount());
+		ImGui::Text("3D index count: %u", Renderer3D::GetIndexCount());
 		ImGui::Text("QuadIndexCount: %u\n\n", Renderer2D::GetTotQuadIndexCount());
 		ImGui::Text("LineCount: %u", LineRenderer::GetLineCount());
 		ImGui::Text("LineIndexCount: %u\n", LineRenderer::GetLineIndexCount());

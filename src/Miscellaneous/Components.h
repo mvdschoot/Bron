@@ -26,17 +26,17 @@ namespace Cheets
 
 	struct SpriteComponent : public Component
 	{
-		Ref<Texture> TextureRef;
+		Ref<render::Texture> TextureRef;
 
 		SpriteComponent() = default;
-		SpriteComponent(Ref<Texture> texture) : TextureRef(std::move(texture)) {}
+		SpriteComponent(Ref<render::Texture> texture) : TextureRef(std::move(texture)) {}
 		SpriteComponent(const char* loc)
 		{
-			TextureRef = Texture2D::Create(loc);
+			TextureRef = render::Texture2D::Create(loc);
 		}
 
 		operator const glm::uint32_t() const {return TextureRef->getID();}
-		operator const Ref<Texture>() const { return TextureRef; }
+		operator const Ref<render::Texture>() const { return TextureRef; }
 	};
 
 	struct ColorComponent : public Component

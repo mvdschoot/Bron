@@ -5,6 +5,21 @@ GetUniformLocation is kenker langzaam:
 	- Kan opgeslagen worden
 	- Locatie verander alleen als de shader opnieuw gelinkt word
 
+LineRenderer werkt totaal niet
 
 Render setup is shit
 	- moet eigenlijk een renderComponent zijn die opgehaald kan worden vanuit Scene als Scene wordt doorgegeven aan een renderer
+
+	- multiple shader rendering is raar gedesigned
+
+
+TODO
+	- 3D Renderer moet efficientere vertex kopieren
+	- Shader input moet mutable worden
+
+Renderer setup:
+	- RenderComponent exists
+		- Has single mesh
+		- Single material
+		- Single shader
+		- Single VAO
