@@ -1,18 +1,18 @@
 #ifndef __SPRITESHEET_H__
 #define __SPRITESHEET_H__
 
-#include "Cheets/Core/Core.h"
-#include "Cheets/Core/Profiling.h"
-#include "Cheets/Core/Logger.h"
+#include "Steve/Core/Core.h"
+#include "Steve/Core/Profiling.h"
+#include "Steve/Core/Logger.h"
 
-#include "Cheets/Renderer/Texture.h"
+#include "Steve/Renderer/Texture.h"
 
 #include "glm/glm.hpp"
 
 #include <string>
 #include <vector>
 
-namespace Cheets {
+namespace Steve {
 	struct SpriteID
 	{
 		std::string name;

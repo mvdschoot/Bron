@@ -1,6 +1,6 @@
 #include "AppLayer.h"
 
-namespace Cheets
+namespace Steve
 {
 	using namespace render;
 
@@ -10,7 +10,6 @@ namespace Cheets
 		LineRenderer::Init();
 		TextRenderer::Init();
 		TextRenderer::LoadUnicodeFont("../../../Assets/bitter/BitterPro-Regular.ttf", 200);
-
 
 		m_Width = Application::getWindow()->getWindowWidth();
 		m_Height = Application::getWindow()->getWindowHeight();
@@ -31,9 +30,17 @@ namespace Cheets
 
 		m_Scene.AddComponent(m_RickEntity, SpriteComponent("../../../Assets/muscular_rick.png"));
 		m_Scene.AddComponent(m_BlockEntity, ColorComponent(0.9f, 0.1f, 0.5f, 1.0f));
-		m_Scene.AddComponent(m_ModelEntity, ModelComponent("../../../Assets/big_car/textures/911_scene.obj"));
 		m_Scene.AddComponent(m_CubeEntity, CubeComponent({ 2.0, 2.0, 2.0 }, { 0.2, 0.2, 0.2 }));
-		std::get<1>(m_Scene.AddComponent(m_CubeMidEntity, CubeComponent({ -0.5, -0.5, -0.5}, {1.0, 1.0, 1.0}))).SetColor({0.1, 0.9, 0.5});
+
+		// add cube & set color
+		std::get<1>(m_Scene.AddComponent(m_CubeMidEntity, CubeComponent({ -0.5, -0.5, -0.5 }, { 1.0, 1.0, 1.0 }))).SetColor({ 0.1, 0.9, 0.5 });
+
+		// add model & set uniform callback
+		std::vector<MeshComponent>& meshes = std::get<1>(m_Scene.AddComponent(m_ModelEntity, ModelComponent("../../../Assets/big_car/textures/911_scene.obj"))).GetMeshes();
+		for(MeshComponent& mesh : meshes)
+		{
+			mesh.SetUniformCallback(std::function<void(Ref<Shader>&)>(this->UniformSetter));
+		}
 
 		View<TransformComponent, SizeComponent>::Iterator it = View<TransformComponent, SizeComponent>::FilterBy([](Entity* ent)
 		{
@@ -50,7 +57,7 @@ namespace Cheets
 		spec.height = m_Height;
 		m_Framebuffer = Framebuffer::Create(spec);
 		
-		/*m_Camera = Cheets::createRef<Cheets::OrthographicCamera>(-1.0f, 1.0f, -1.0f, 1.0f,
+		/*m_Camera = Steve::createRef<Steve::OrthographicCamera>(-1.0f, 1.0f, -1.0f, 1.0f,
 				(float)m_Width / (float)m_Height, m_Pos, 0.0f);
 		m_Camera->SetZoom(m_Zoom);*/
 		m_Camera = createRef<FrustumCamera>(glm::radians(80.0F), (float)m_Width / (float)m_Height, 0.1f, 100.0f, m_Pos, glm::vec3{ 0.0f, 0.0f, 0.0f }, glm::vec3{ 0.0f, 1.0f, 0.0f });
@@ -63,14 +70,14 @@ namespace Cheets
 		Renderer3D::ShutDown();
 	}
 
-	void AppLayer::OnEvent(Cheets::Event &event)
+	void AppLayer::OnEvent(Steve::Event &event)
 	{
 		// APP_INFO("Event: {}", event.GetName());
-		Cheets::EventDispatcher e(event);
-		e.Dispatch<Cheets::MouseScrolledEvent>(BIND_EVENT_FN(AppLayer::OnMouseScrolled));
+		Steve::EventDispatcher e(event);
+		e.Dispatch<Steve::MouseScrolledEvent>(BIND_EVENT_FN(AppLayer::OnMouseScrolled));
 	}
 
-	bool AppLayer::OnMouseScrolled(Cheets::MouseScrolledEvent& e)
+	bool AppLayer::OnMouseScrolled(Steve::MouseScrolledEvent& e)
 	{
 		m_Radius -= e.getOffsetY() * 0.15f;
 		m_Radius = std::max(m_Radius, 0.15f);
@@ -83,30 +90,35 @@ namespace Cheets
 	void AppLayer::IsKeyPressed(const Timestep ts)
 	{
 		float dt = ts.getSeconds();
-		if (Cheets::Input::isKeyPressed(Cheets::Key::A))
+		if (Steve::Input::isKeyPressed(Steve::Key::A))
 		{
 			m_XZAngle += dt;
 			m_Pos.x = cos(m_XZAngle) * m_Radius;
 			m_Pos.z = sin(m_XZAngle) * m_Radius;
 		}
-		if (Cheets::Input::isKeyPressed(Cheets::Key::D))
+		if (Steve::Input::isKeyPressed(Steve::Key::D))
 		{
 			m_XZAngle -= dt;
 			m_Pos.x = cos(m_XZAngle) * m_Radius;
 			m_Pos.z = sin(m_XZAngle) * m_Radius;
 		}
 
-		if (Cheets::Input::isKeyPressed(Cheets::Key::W))
+		if (Steve::Input::isKeyPressed(Steve::Key::W))
 		{
 			m_YAngle += m_YAngle > 0.5*PI ? 0 : dt;
 			m_Pos.y = sin(m_YAngle) * m_Radius;
 		}
 
-		if (Cheets::Input::isKeyPressed(Cheets::Key::S))
+		if (Steve::Input::isKeyPressed(Steve::Key::S))
 		{
 			m_YAngle -= m_YAngle < -0.5*PI ? 0 : dt;
 			m_Pos.y = sin(m_YAngle) * m_Radius;
 		}
+	}
+
+	void AppLayer::UniformSetter(Ref<Shader>& shader)
+	{
+		shader->set
 	}
 
 	void AppLayer::OnUpdate(const Timestep ts) {
@@ -165,7 +177,6 @@ namespace Cheets
 		for(MeshComponent& mesh : meshes)
 		{
 			Ref<MaterialComponent>& material = mesh.GetMaterial();
-			material->Shininess = m_Specular;
 		}
 
 		ImGui::Text("FPS: %f\n", 1.0f / m_Ts.getSeconds());

@@ -1,9 +1,9 @@
 #ifndef __COMPONENTS_HEADER
 #define __COMPONENTS_HEADER
 
-#include "Cheets.h"
+#include "Steve.h"
 
-namespace Cheets
+namespace Steve
 {
 	struct TransformComponent : public Component
 	{
@@ -26,17 +26,17 @@ namespace Cheets
 
 	struct SpriteComponent : public Component
 	{
-		Ref<render::Texture> TextureRef;
+		Ref<Texture> TextureRef;
 
 		SpriteComponent() = default;
-		SpriteComponent(Ref<render::Texture> texture) : TextureRef(std::move(texture)) {}
+		SpriteComponent(Ref<Texture> texture) : TextureRef(std::move(texture)) {}
 		SpriteComponent(const char* loc)
 		{
-			TextureRef = render::Texture2D::Create(loc);
+			TextureRef = Texture2D::Create(loc);
 		}
 
 		operator const glm::uint32_t() const {return TextureRef->getID();}
-		operator const Ref<render::Texture>() const { return TextureRef; }
+		operator const Ref<Texture>() const { return TextureRef; }
 	};
 
 	struct ColorComponent : public Component

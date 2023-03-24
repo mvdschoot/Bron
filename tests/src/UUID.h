@@ -5,7 +5,7 @@
 #include <cstdlib>
 #include <ostream>
 
-namespace Cheets
+namespace Steve
 {
 	class UUID
 	{
@@ -67,9 +67,9 @@ namespace Cheets
 }
 
 template<>
-struct std::hash<Cheets::UUID>
+struct std::hash<Steve::UUID>
 {
-	std::size_t operator()(const Cheets::UUID& k) const noexcept
+	std::size_t operator()(const Steve::UUID& k) const noexcept
 	{
 		return std::hash<std::string>()(std::string(k.m_UUID));
 	}

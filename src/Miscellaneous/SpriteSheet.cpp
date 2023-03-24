@@ -1,6 +1,6 @@
 #include "SpriteSheet.h"
 
-namespace Cheets {
+namespace Steve {
 	SpriteSheet::SpriteSheet(SpriteSheetProps& props)
 		: _props(props)
 	{

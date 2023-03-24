@@ -1,9 +1,9 @@
 #ifndef _GRAPH_HEADER__
 #define _GRAPH_HEADER__
 
-#include "Cheets.h"
+#include "Steve.h"
 
-namespace Cheets
+namespace Steve
 {
 	class Graph
 	{

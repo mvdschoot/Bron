@@ -1,12 +1,12 @@
 #ifndef __APP_LAYER_HEADER__
 #define __APP_LAYER_HEADER__
 
-#include "Cheets.h"
+#include "Steve.h"
 #include "Miscellaneous/Components.h"
 
 #define PI 3.14159265358979323846
 
-namespace Cheets
+namespace Steve
 {
 	class AppLayer final : public Layer
 	{
@@ -21,12 +21,15 @@ namespace Cheets
 		void IsKeyPressed(Timestep ts);
 
 	private:
+		void UniformSetter(Ref<Shader>& shader);
+
+	private:
 		uint32_t m_Width = 0;
 		uint32_t m_Height = 0;
 
-		Ref<render::Framebuffer> m_Framebuffer;
+		Ref<Framebuffer> m_Framebuffer;
 
-		Ref<render::FrustumCamera> m_Camera;
+		Ref<FrustumCamera> m_Camera;
 		float m_XZAngle = PI * -0.5;
 		float m_YAngle = 0;
 		float m_Radius = 10.0f;
@@ -44,7 +47,7 @@ namespace Cheets
 		UUID m_CubeMidEntity;
 
 		// timestep
-		Cheets::Timestep m_Ts;
+		Steve::Timestep m_Ts;
 	};
 }
 

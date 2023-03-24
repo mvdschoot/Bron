@@ -6,7 +6,7 @@
 
 #include "UUID.h"
 
-namespace Cheets
+namespace Steve
 {
 
 	class DynamicContainer

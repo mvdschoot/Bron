@@ -1,4 +1,4 @@
-#include "Cheets.h"
+#include "Steve.h"
 
 #include <memory>
 #include <vector>
@@ -6,7 +6,7 @@
 namespace LuigiMaker
 {
 
-	class SomeLayer : public ::Cheets::Layer
+	class SomeLayer : public ::Steve::Layer
 	{
 	public:
 		SomeLayer(){};
@@ -15,35 +15,35 @@ namespace LuigiMaker
 		virtual void OnAttach()
 		{
 			CH_PROFILE_FUNCTION();
-			Cheets::Renderer::Init();
+			Steveer::Init();
 			_shaderlib.addShader(_shader_loc, _shader_name);
 
 			_pos = {0.0f, 0.0f, -0.7};
 			_rot = 0.0f;
 
-			uint wwidth = Cheets::Application::getWindow()->getWindowWidth();
-			uint wheight = Cheets::Application::getWindow()->getWindowHeight();
+			uint wwidth = Steve::Application::getWindow()->getWindowWidth();
+			uint wheight = Steve::Application::getWindow()->getWindowHeight();
 
-			_texture = Cheets::Texture2D::Create(_texture_loc);
-			_camera = Cheets::createRef<Cheets::OrthographicCamera>(-1.0f, 1.0f, -1.0f, 1.0f,
+			_texture = Steve::Texture2D::Create(_texture_loc);
+			_camera = Steve::createRef<Steve::OrthographicCamera>(-1.0f, 1.0f, -1.0f, 1.0f,
 				(float)wwidth / (float)wheight, _pos, 0.0f);
 
-			Cheets::FramebufferSpecification spec;
+			Steve::FramebufferSpecification spec;
 			spec.width = wwidth;
 			spec.height = wheight;
-			_framebuffer = Cheets::Framebuffer::Create(spec);
+			_framebuffer = Steve::Framebuffer::Create(spec);
 		}
 		virtual void OnDetach()
 		{
 		}
-		virtual void OnEvent(Cheets::Event &event)
+		virtual void OnEvent(Steve::Event &event)
 		{
 			// APP_INFO("Event: {}", event.GetName());
-			Cheets::EventDispatcher e(event);
-			e.Dispatch<Cheets::MouseScrolledEvent>(BIND_EVENT_FN(SomeLayer::onMouseScrolled));
+			Steve::EventDispatcher e(event);
+			e.Dispatch<Steve::MouseScrolledEvent>(BIND_EVENT_FN(SomeLayer::onMouseScrolled));
 		}
 
-		bool onMouseScrolled(Cheets::MouseScrolledEvent& e)
+		bool onMouseScrolled(Steve::MouseScrolledEvent& e)
 		{
 			_zoom -= e.getOffsetY() * 0.15f;
 			_zoom = std::max(_zoom, 0.15f);
@@ -52,52 +52,52 @@ namespace LuigiMaker
 			return true;
 		}
 
-		void isKeyPressed(Cheets::Timestep ts)
+		void isKeyPressed(Steve::Timestep ts)
 		{
 			float dt = ts.getSeconds();
-			if (Cheets::Input::isKeyPressed(Cheets::Key::A))
+			if (Steve::Input::isKeyPressed(Steve::Key::A))
 			{
 				_pos.x -= _speed * dt;
 			}
-			if (Cheets::Input::isKeyPressed(Cheets::Key::D))
+			if (Steve::Input::isKeyPressed(Steve::Key::D))
 			{
 				_pos.x += _speed * dt;
 			}
 
-			if (Cheets::Input::isKeyPressed(Cheets::Key::W))
+			if (Steve::Input::isKeyPressed(Steve::Key::W))
 			{
 				_pos.y += _speed * dt;
 			}
 
-			if (Cheets::Input::isKeyPressed(Cheets::Key::S))
+			if (Steve::Input::isKeyPressed(Steve::Key::S))
 			{
 				_pos.y -= _speed * dt;
 			}
 		}
 
-		virtual void OnUpdate(Cheets::Timestep ts)
+		virtual void OnUpdate(Steve::Timestep ts)
 		{
 			_framebuffer->bind();
 
 			CH_PROFILE_FUNCTION();
 			_frame_times.push_back(ts.getMilliseconds());
 
-			Cheets::RendererCommand::ClearColor({1.0f, 1.0f, 0.1f, 1.0f});
-			Cheets::RendererCommand::clear();
+			SteveerCommand::ClearColor({1.0f, 1.0f, 0.1f, 1.0f});
+			SteveerCommand::clear();
 
 			isKeyPressed(ts);
 			_camera->setPosition(_pos);
 			_camera->setRotation(_rot);
-			Cheets::Renderer2D::beginScene(*_camera);
+			Steveer2D::beginScene(*_camera);
 
 			float size = 0.05;
 			for(int x = 0; x < 100; x++){
 				for(int y = 0; y < 1; y++) {
-					Cheets::Renderer2D::drawQuad({-1.0 + x * size, -1.0 + y * size},{size, size}, _texture);
+					Steveer2D::drawQuad({-1.0 + x * size, -1.0 + y * size},{size, size}, _texture);
 				}
 			}
 
-			Cheets::Renderer2D::endScene();
+			Steveer2D::endScene();
 
 			_framebuffer->unbind();
 		}
@@ -122,9 +122,9 @@ namespace LuigiMaker
 	private:
 		const int _fps_num_frames = 10;
 
-		Cheets::ShaderLibrary _shaderlib;
-		Cheets::Ref<Cheets::VertexArray> _vertex_array;
-		Cheets::Ref<Cheets::Camera> _camera;
+		Steve::ShaderLibrary _shaderlib;
+		Steve::Ref<Steve::VertexArray> _vertex_array;
+		Steve::Ref<Steve::Camera> _camera;
 		glm::vec3 _pos;
 		float _rot;
 		std::vector<float> _frame_times;
@@ -132,21 +132,21 @@ namespace LuigiMaker
 		const float _speed = 1.0f;
 		float _zoom = 1.0f;
 
-		Cheets::Ref<Cheets::Framebuffer> _framebuffer;
+		Steve::Ref<Steve::Framebuffer> _framebuffer;
 
-		Cheets::Ref<Cheets::Texture> _texture;
+		Steve::Ref<Steve::Texture> _texture;
 
 		const std::string _texture_loc = "../../src/Assets/muscular_rick.png";
 		std::string _shader_loc = "../../src/Assets/shader.glsl";
 		std::string _shader_name = "main";
 	};
 
-	class Program : public Cheets::Application
+	class Program : public Steve::Application
 	{
 	public:
 		Program()
 		{
-			Cheets::Overlay *overlay = new Cheets::Overlay;
+			Steve::Overlay *overlay = new Steve::Overlay;
 			overlay->insertLayer(new SomeLayer);
 			addOverlay(overlay);
 		}
@@ -155,7 +155,7 @@ namespace LuigiMaker
 
 }
 
-Cheets::Application *Cheets::createApplication()
+Steve::Application *Steve::createApplication()
 {
 	return new LuigiMaker::Program;
 }

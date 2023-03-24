@@ -1,11 +1,10 @@
 #include "App.h"
 
-namespace Cheets
+namespace Steve
 {
 	App::App()
 	{
 		CH_PROFILE_FUNCTION();
-		render::Renderer::Init();
 		
 		m_overlay.insertLayer(&m_applayer);
 		addOverlay(&m_overlay);
@@ -18,7 +17,7 @@ namespace Cheets
 
 }
 
-Cheets::Application *Cheets::createApplication()
+Steve::Application *Steve::createApplication()
 {
-	return new Cheets::App();
+	return new Steve::App();
 }
