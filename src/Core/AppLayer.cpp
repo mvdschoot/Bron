@@ -5,7 +5,7 @@ namespace Steve
 	using namespace render;
 
 	void AppLayer::OnAttach() {
-		Renderer2D::Init();
+		R2D::Init();
 		Renderer3D::Init();
 		LineRenderer::Init();
 		TextRenderer::Init();
@@ -62,7 +62,7 @@ namespace Steve
 		m_Camera->SetZoom(m_Zoom);*/
 		m_Camera = createRef<FrustumCamera>(glm::radians(80.0F), (float)m_Width / (float)m_Height, 0.1f, 100.0f, m_Pos, glm::vec3{ 0.0f, 0.0f, 0.0f }, glm::vec3{ 0.0f, 1.0f, 0.0f });
 
-		RendererCommand::ClearColor({1.0, 0.0, 1.0, 0.5});
+		Command::ClearColor({1.0, 0.0, 1.0, 0.5});
 
 	}
 	
@@ -125,7 +125,7 @@ namespace Steve
 		m_Ts = ts;
 
 		//m_Framebuffer->bind();
-		RendererCommand::clear();
+		Command::clear();
 
 
 		IsKeyPressed(ts);
@@ -180,10 +180,10 @@ namespace Steve
 		}
 
 		ImGui::Text("FPS: %f\n", 1.0f / m_Ts.getSeconds());
-		ImGui::Text("QuadCount: %u", Renderer2D::GetTotQuadCount());
-		ImGui::Text("QuadIndexCount: %u\n\n", Renderer2D::GetTotQuadIndexCount());
+		ImGui::Text("QuadCount: %u", R2D::GetTotQuadCount());
+		ImGui::Text("QuadIndexCount: %u\n\n", R2D::GetTotQuadIndexCount());
 		ImGui::Text("3D index count: %u", Renderer3D::GetIndexCount());
-		ImGui::Text("QuadIndexCount: %u\n\n", Renderer2D::GetTotQuadIndexCount());
+		ImGui::Text("QuadIndexCount: %u\n\n", R2D::GetTotQuadIndexCount());
 		ImGui::Text("LineCount: %u", LineRenderer::GetLineCount());
 		ImGui::Text("LineIndexCount: %u\n", LineRenderer::GetLineIndexCount());
 		ImGui::Text("Strip: LineCount: %u", LineRenderer::GetLineStripCount());

@@ -4,3 +4,6 @@
 [submodule "vendor/spdlog"]
 	path = vendor/spdlog
 	url = https://github.com/gabime/spdlog.git
+[submodule "TheECS"]
+	path = TheECS
+	url = https://github.com/mvdschoot/TheECS.git
