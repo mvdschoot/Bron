@@ -1,8 +1,7 @@
 #ifndef __APP_HEADER__
 #define __APP_HEADER__
 
-#include "Steve/Core/EntryPoint.h"
-#include "Core.h"
+#include "Steve/src/Steve.h"
 
 #include "AppLayer.h"
 

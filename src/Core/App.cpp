@@ -1,4 +1,5 @@
 #include "App.h"
+#include "Steve/src/Steve/Core/EntryPoint.h"
 
 namespace Steve
 {
@@ -17,7 +18,7 @@ namespace Steve
 
 }
 
-Steve::Application *Steve::createApplication()
+Steve::Application* Steve::createApplication()
 {
 	return new Steve::App();
 }

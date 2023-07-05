@@ -1,8 +1,7 @@
 #ifndef __APP_LAYER_HEADER__
 #define __APP_LAYER_HEADER__
 
-#include "Steve.h"
-#include "Miscellaneous/Components.h"
+#include "Steve/src/Steve.h"
 
 #define PI 3.14159265358979323846
 
@@ -20,16 +19,14 @@ namespace Steve
 		bool OnMouseScrolled(MouseScrolledEvent& e);
 		void IsKeyPressed(Timestep ts);
 
-	private:
-		void UniformSetter(Ref<Shader>& shader);
 
 	private:
 		uint32_t m_Width = 0;
 		uint32_t m_Height = 0;
 
-		Ref<Framebuffer> m_Framebuffer;
+		Ref<graphics::Framebuffer> m_Framebuffer;
 
-		Ref<FrustumCamera> m_Camera;
+		graphics::FrustumCamera* m_Camera;
 		float m_XZAngle = PI * -0.5;
 		float m_YAngle = 0;
 		float m_Radius = 10.0f;
@@ -39,7 +36,7 @@ namespace Steve
 		float m_Specular = 0.0;
 
 		// Registry
-		Scene m_Scene;
+		graphics::Scene m_Scene;
 		UUID m_RickEntity;
 		UUID m_BlockEntity;
 		UUID m_ModelEntity;
