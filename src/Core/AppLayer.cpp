@@ -23,6 +23,9 @@ namespace Steve
 		m_Camera = new FrustumCamera(glm::radians(80.0F), (float)m_Width / (float)m_Height, 0.1f, 100.0f, m_Pos, glm::vec3{ 0.0f, 0.0f, 0.0f }, glm::vec3{ 0.0f, 1.0f, 0.0f });
 		m_Scene.Camera = m_Camera;
 		m_Scene.CreateStandardModel("C:/Users/mathi/Documents/LuigiMaker/Assets/mymodel/untitled.fbx");
+		// m_Scene.CreateStandardModel("C:/Users/mathi/Documents/LuigiMaker/Assets/big_car/textures/911_scene.obj");
+
+		m_Scene.AddPointLight({ 2.0, 2.0, 2.0 }, {1.0, 1.0, 0.0}); 
 
 		Command::ClearColor({1.0, 0.0, 1.0, 0.5});
 
@@ -120,6 +123,15 @@ namespace Steve
 
 		ImGui::Text("FPS: %f", 1000.0f / m_Ts.getMilliseconds());
 		
+		ImGui::DragFloat3("Light position", m_LightPos, 0.1);
+		ImGui::DragFloat3("Light color", m_LightColor, 0.1);
+		m_Scene.PointLights[0]->changePosition(*(glm::vec3*)m_LightPos);
+		m_Scene.PointLights[0]->changeColor(*(glm::vec3*)m_LightColor);
+
+		StandardMaterialBuffer* mat = (StandardMaterialBuffer*)m_Scene.AllModels[0]->Meshes[0].pContext->pMaterial->Data;
+		ImGui::DragFloat("Shininess first", (float*)&mat->Shininess);
+
+
 		ImGui::End();
 	}
 }

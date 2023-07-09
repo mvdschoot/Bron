@@ -1,0 +1,15 @@
+cmake_minimum_required(VERSION 3.19)
+
+include(CTest)
+
+include_directories(
+	.
+	../src
+)
+
+add_executable(CheetsTests
+	main.cpp
+)
+set_property(TARGET CheetsTests PROPERTY CXX_STANDARD 20)
+
+add_test(NAME CheetsTests COMMAND CheetsTests)

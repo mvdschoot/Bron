@@ -33,6 +33,9 @@ namespace Steve
 		float m_Zoom = 1.0f;
 		glm::vec3 m_Pos{0.0f, 0.0f, -1.0f};
 
+		float m_LightPos[3] = { 0 };
+		float m_LightColor[3] = { 1 };
+
 		float m_Specular = 0.0;
 
 		// Registry
