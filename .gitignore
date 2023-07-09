@@ -1,4 +1,10 @@
 build
+out
+Rust
+tests
+
+notes.txt
+
 .git
 .vs
 .vscode
