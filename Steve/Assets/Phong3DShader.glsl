@@ -14,7 +14,7 @@ uniform mat4 uVPmatrix;
 uniform mat4 uTransform;
 
 void main() {
-	f_Position = a_Position;
+	f_Position = (uTransform * vec4(a_Position, 1)).xyz;
     f_Normal = normalize(mat3(transpose(inverse(mat4(1.0)))) * a_Normal);
     f_TexCoords = a_TexCoords;
 	//f_MaterialIndex = a_MaterialIndex;
