@@ -23,83 +23,61 @@
 
 namespace Steve::graphics
 {
-
-
-	enum class TextureType
+	enum class TextureTypes
 	{
-		DIFFUSE,
-		SPECULAR,
-		NORMAL
+		Diffuse,
+		Specular,
+		Normal
 	};
 
-	enum class ColorType
+	enum class MaterialDataTypes
 	{
 		AmbientFactor,
 		Diffuse,
 		Specular,
 		Shininess,
-		ShininessStrength
+		ShininessStrength,
+
+		// The following are floats/integers to the texture slot
+		DiffuseTexture,
+		SpecularTexture,
+		NormalTexture
 	};
 
-	enum class LightData
+	enum class LightDataTypes
 	{
 		Position,
 		Color
 	};
 
-	inline usize ColorTypeSize(ColorType type) {
-		switch (type)
-		{
-		case ColorType::Shininess:
-		case ColorType::ShininessStrength:
-			return sizeof(float);
-		default:
-			return sizeof(glm::vec3);
-		}
+	inline static MaterialDataTypes TextureConverter(TextureTypes type)
+	{
+		if (type == TextureTypes::Diffuse) return MaterialDataTypes::DiffuseTexture;
+		if (type == TextureTypes::Specular) return MaterialDataTypes::SpecularTexture;
+		if (type == TextureTypes::Normal) return MaterialDataTypes::NormalTexture;
+		CORE_ASSERT(false, "Texture not here mate")
+	}
+	inline static TextureTypes TextureConverter(MaterialDataTypes type)
+	{
+		if (type == MaterialDataTypes::DiffuseTexture) return TextureTypes::Diffuse;
+		if (type == MaterialDataTypes::SpecularTexture) return TextureTypes::Specular;
+		if (type == MaterialDataTypes::NormalTexture) return TextureTypes::Normal;
+		CORE_ASSERT(false, "Texture not here mate")
 	}
 
 	struct TexturePack
 	{
-		std::map<TextureType, Ref<Texture>> Textures;
+		std::map<TextureTypes, Ref<Texture>> Textures;
 	};
 
-	/**
-	 * Keep in mind that the elements in the buffer are ColorElements + TextureElements.
-	 * Also in that order.
-	 */
-	struct MaterialLayout : public BufferLayout
+	template<typename T>
+	struct UniformLayout : public BufferLayout
 	{
-		MaterialLayout(std::initializer_list<std::pair<ColorType, BufferElement>> colors, 
-						std::initializer_list<std::pair<TextureType, BufferElement>> textures)
-			: Textures({}), Colors({})
-		{
-			std::vector<BufferElement> b;
-			for (std::pair<ColorType, BufferElement> el : colors) {
-				Colors.push_back(el.first);
-				b.push_back(el.second);
-			}
-			for (std::pair<TextureType, BufferElement> el : textures) {
-				Textures.push_back(el.first);
-				b.push_back(el.second);
-			}
-
-			SetElements(std::move(b));
-		}
-
-		[[nodiscard]] const BufferElement& GetElementData(ColorType colorType) const;
-		[[nodiscard]] const BufferElement& GetElementData(TextureType textureType) const;
-
-		std::vector<TextureType> Textures;
-		std::vector<ColorType> Colors;
-	};
-
-	struct LightLayout : public BufferLayout
-	{
-		LightLayout(std::initializer_list<std::pair<LightData, BufferElement>> data)
+		UniformLayout(std::initializer_list<std::pair<T, BufferElement>> data)
 			: Data({})
 		{
 			std::vector<BufferElement> b;
-			for (std::pair<LightData, BufferElement> el : data) {
+			for (std::pair<T, BufferElement> el : data) {
 				Data.push_back(el.first);
 				b.push_back(el.second);
 			}
@@ -107,28 +85,69 @@ namespace Steve::graphics
 			SetElements(std::move(b));
 		}
 
-		void SetName(LightData data_type, std::string new_name);
-		[[nodiscard]] const BufferElement& GetElementData(LightData light_data_type) const;
+		void SetName(T data_type, std::string new_name)
+		{
+			for (int x = 0; x < Data.size(); x++)
+			{
+				if (Data[x] == data_type)
+				{
+					_buffer_elements[x].name = new_name;
+				}
+			}
+		}
 
-		std::vector<LightData> Data;
+		[[nodiscard]] const BufferElement& GetElementData(T light_data_type) const
+		{
+			for (int x = 0; x < Data.size(); x++)
+			{
+				if (Data[x] == light_data_type)
+				{
+					return GetElements()[x];
+				}
+			}
+			CORE_ASSERT(false, "Cannot find the uniform data type type you are looking for.")
+		}
+
+		std::vector<T> Data;
 	};
 
-	struct Material
+	template<typename T>
+	struct UniformData
 	{
-		const MaterialLayout* Layout;
+		UniformData(const UniformLayout<T>* layout) : Layout(layout), Data(new u8[layout->GetStride()])
+		{}
+
+		void Set(T type, const uint8_t* value)
+		{
+			const BufferElement& el = Layout->GetElementData(type);
+			memcpy_s(Data + el.offset, el.size, value, el.size);
+		}
+		
+		template<typename S> void Set(T type, S value)
+		{
+			const BufferElement& el = Layout->GetElementData(type);
+			memcpy_s(Data + el.offset, el.size, &value, el.size);
+		}
+
+		u8* Get(T type) const
+		{
+			const BufferElement& el = Layout->GetElementData(type);
+			return Data + el.offset;
+		}
+
+		template<typename S> S* Get(T type) const
+		{
+			const BufferElement& el = Layout->GetElementData(type);
+			return (S*)(Data + el.offset);
+		}
+
+		const UniformLayout<T>* Layout;
 		u8* Data;
+	};
+
+	struct Material : public UniformData<MaterialDataTypes>
+	{
 		TexturePack* Textures;
-
-		void Set(ColorType type, const uint8_t* value);
-		void Set(TextureType type, int value);
-	};
-
-	struct LightContext
-	{
-		const LightLayout* Layout;
-		u8* Data;
-
-		void Set(LightData type, u8* value);
 	};
 
 	class MeshContext
@@ -192,17 +211,22 @@ namespace Steve::graphics
 		std::vector<Mesh> Meshes;
 	};
 
+#define LightData UniformData<LightDataTypes>
 	struct PointLight : Model
 	{
-		PointLight(RegistryData* reg, LightContext&& context)
+		PointLight(RegistryData* reg, LightData&& context)
 			: Model(reg)
 		{
-			AddComponent<LightContext>(std::move(context));
+			// LightData is so light is shining, TransformComponent is so light mesh is rendered
+			AddComponent<LightData>(std::move(context));
 			AddComponent<TransformComponent>(glm::mat4(1.0f));
 		}
 
-		void changePosition(glm::vec3 new_position);
-		void changeColor(glm::vec3 new_color);
+		void ChangePosition(glm::vec3 new_position);
+		void ChangeColor(glm::vec3 new_color);
+
+		glm::vec3 GetPosition();
+		glm::vec3 GetColor();
 	};
 
 	// Returns vertices, normals, indices

@@ -64,23 +64,21 @@ namespace Steve::graphics {
 				{"a_TexCoords", ShaderDataType::Float2}
 		});
 
-	inline const MaterialLayout& StandardMaterialLayout = *(new MaterialLayout({
+	inline const UniformLayout<MaterialDataTypes>& StandardMaterialLayout = *(new UniformLayout<MaterialDataTypes>({
 		{
-			{ColorType::AmbientFactor, {"uMaterial.AmbientFactor", ShaderDataType::Float}},
-			{ColorType::Diffuse, {"uMaterial.Diffuse", ShaderDataType::Float3}},
-			{ColorType::Specular, {"uMaterial.Specular", ShaderDataType::Float3}},
-			{ColorType::Shininess, {"uMaterial.Shininess", ShaderDataType::Float}},
-			{ColorType::ShininessStrength, {"uMaterial.ShininessStrength", ShaderDataType::Float}}
-		}, {
-			{TextureType::DIFFUSE, {"uMaterial.DiffuseTexture", ShaderDataType::Float}},
-			{TextureType::SPECULAR, {"uMaterial.SpecularTexture", ShaderDataType::Float}},
-			{TextureType::NORMAL, {"uMaterial.NormalTexture", ShaderDataType::Float}}
-		}
-		}));
+			{MaterialDataTypes::AmbientFactor, {"uMaterial.AmbientFactor", ShaderDataType::Float}},
+			{MaterialDataTypes::Diffuse, {"uMaterial.Diffuse", ShaderDataType::Float3}},
+			{MaterialDataTypes::Specular, {"uMaterial.Specular", ShaderDataType::Float3}},
+			{MaterialDataTypes::Shininess, {"uMaterial.Shininess", ShaderDataType::Float}},
+			{MaterialDataTypes::ShininessStrength, {"uMaterial.ShininessStrength", ShaderDataType::Float}},
+			{MaterialDataTypes::DiffuseTexture, {"uMaterial.DiffuseTexture", ShaderDataType::Float}},
+			{MaterialDataTypes::SpecularTexture, {"uMaterial.SpecularTexture", ShaderDataType::Float}},
+			{MaterialDataTypes::NormalTexture, {"uMaterial.NormalTexture", ShaderDataType::Float}}
+		} }));
 
-	inline const LightLayout& StandardPointLightLayout = *(new LightLayout({
-			{LightData::Position, {"uLight[].Position", ShaderDataType::Float3}},
-			{LightData::Color, {"uLight[].Color", ShaderDataType::Float3}}
+	inline const UniformLayout<LightDataTypes>& StandardPointLightLayout = *(new UniformLayout<LightDataTypes>({
+			{LightDataTypes::Position, {"uLight[].Position", ShaderDataType::Float3}},
+			{LightDataTypes::Color, {"uLight[].Color", ShaderDataType::Float3}}
 		}));
 
 

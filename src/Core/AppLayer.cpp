@@ -22,10 +22,11 @@ namespace Steve
 		
 		m_Camera = new FrustumCamera(glm::radians(80.0F), (float)m_Width / (float)m_Height, 0.1f, 100.0f, m_Pos, glm::vec3{ 0.0f, 0.0f, 0.0f }, glm::vec3{ 0.0f, 1.0f, 0.0f });
 		m_Scene.Camera = m_Camera;
-		m_Scene.CreateStandardModel("C:/Users/mathi/Documents/LuigiMaker/Assets/mymodel/untitled.fbx");
-		// m_Scene.CreateStandardModel("C:/Users/mathi/Documents/LuigiMaker/Assets/big_car/textures/911_scene.obj");
+		m_Scene.CreateStandardModel("C:/Users/mathi/Documents/Steve/Assets/mymodel/untitled.fbx");
+		// m_Scene.CreateStandardModel("C:/Users/mathi/Documents/Steve/Assets/big_car/textures/911_scene.obj");
 
-		m_Scene.AddPointLight({ 2.0, 2.0, 2.0 }, {1.0, 1.0, 0.0}); 
+		m_Scene.AddPointLight({ 4.0, 2.0, 4.0 }, { 1.0, 1.0, 1.0 });
+		m_Scene.AddPointLight({ -2.0, 2.0, -2.0 }, { 1.0, 1.0, 1.0 });
 
 		Command::ClearColor({1.0, 0.0, 1.0, 0.5});
 
@@ -92,28 +93,6 @@ namespace Steve
 		IsKeyPressed(ts);
 		m_Camera->SetPosition(m_Pos);
 
-		// R2D::BeginScene(m_Camera.get());
-		// R2D::DrawQuad(m_Scene.GetComponentE<TransformComponent>(m_RickEntity), m_Scene.GetComponentE<SizeComponent>(m_RickEntity), m_Scene.GetComponentE<SpriteComponent>(m_RickEntity));
-		// R2D::DrawQuad(m_Scene.GetComponentE<TransformComponent>(m_BlockEntity), m_Scene.GetComponentE<SizeComponent>(m_BlockEntity), m_Scene.GetComponentE<ColorComponent>(m_BlockEntity));
-		// for (int x = 0; x < 16000; x++) {
-		// 	R2D::DrawQuad(glm::vec2(1.0f), glm::vec2(1.0f), glm::vec4(1.0f));
-		// }
-		// R2D::EndScene();
-
-		// Ref<OrthographicCamera> c = createRef<OrthographicCamera>(-1.0f, 1.0f, -1.0f, 1.0f,
-		// 	(float)m_Width / (float)m_Height, glm::vec3{ 0.0f, 0.0f, -1.0f }, 0.0f);
-		// R2D::BeginScene(c.get());
-		// TextRenderer::RenderText("gefopt kanker sukkel", 0, 0, 1e-3, { 0.0,0.0,0.0,0.0 });
-		// R2D::EndScene();
-
-		// PointLight light;
-		// light.Position = { 2.0, 2.0, 2.0 };
-		// light.Ambient = glm::vec3(1.0f);
-		// light.Diffuse = glm::vec3(1.0f);
-		// light.Specular = glm::vec3(1.0f);
-		// light.show = true;
-
-
 		graphics::SceneRenderer::Draw(m_Scene);
 
 	}
@@ -122,11 +101,23 @@ namespace Steve
 		ImGui::Begin("test");
 
 		ImGui::Text("FPS: %f", 1000.0f / m_Ts.getMilliseconds());
+
+		for(int x = 0; x < m_Scene.PointLights.size(); x++)
+		{
+			std::string str = "Pointlight " + std::to_string(x);
+			if (ImGui::TreeNode(str.c_str()))
+			{
+				glm::vec3 position = m_Scene.PointLights[x]->GetPosition();
+				glm::vec3 color = m_Scene.PointLights[x]->GetColor();
+				ImGui::DragFloat3("Position", (float*)&position, 0.1);
+				ImGui::DragFloat3("Color", (float*)&color, 0.1);
+				m_Scene.PointLights[x]->ChangePosition(position);
+				m_Scene.PointLights[x]->ChangeColor(color);
+
+				ImGui::TreePop();
+			}
+		}
 		
-		ImGui::DragFloat3("Light position", m_LightPos, 0.1);
-		ImGui::DragFloat3("Light color", m_LightColor, 0.1);
-		m_Scene.PointLights[0]->changePosition(*(glm::vec3*)m_LightPos);
-		m_Scene.PointLights[0]->changeColor(*(glm::vec3*)m_LightColor);
 
 		StandardMaterialBuffer* mat = (StandardMaterialBuffer*)m_Scene.AllModels[0]->Meshes[0].pContext->pMaterial->Data;
 		ImGui::DragFloat("Shininess first", (float*)&mat->Shininess);

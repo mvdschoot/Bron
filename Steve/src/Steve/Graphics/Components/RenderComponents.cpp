@@ -3,74 +3,6 @@
 
 namespace Steve::graphics
 {
-	const BufferElement& MaterialLayout::GetElementData(ColorType colorType) const
-	{
-		for (int x = 0; x < Colors.size(); x++)
-		{
-			if (Colors[x] == colorType)
-			{
-				return GetElements()[x];
-			}
-		}
-		CORE_ASSERT(false, "Cannot find the color type you are looking for.")
-	}
-
-	const BufferElement& MaterialLayout::GetElementData(TextureType textureType) const
-	{
-		for (int x = 0; x < Textures.size(); x++)
-		{
-			if (Textures[x] == textureType)
-			{
-				return GetElements()[x + Colors.size()];
-			}
-		}
-		CORE_ASSERT(false, "Cannot find the texture type you are looking for.")
-	}
-
-	void LightLayout::SetName(LightData data_type, std::string new_name)
-	{
-		for(int x = 0; x < Data.size(); x++)
-		{
-			if (Data[x] == data_type)
-			{
-				_buffer_elements[x].name = new_name;
-			}
-		}
-	}
-
-	const BufferElement& LightLayout::GetElementData(LightData light_data_type) const
-	{
-		for (int x = 0; x < Data.size(); x++)
-		{
-			if (Data[x] == light_data_type)
-			{
-				return GetElements()[x];
-			}
-		}
-		CORE_ASSERT(false, "Cannot find the light data type type you are looking for.")
-	}
-
-	void Material::Set(ColorType type, const uint8_t* value)
-	{
-		const BufferElement& el = Layout->GetElementData(type);
-		memcpy_s(Data + el.offset, el.size, value, el.size);
-	}
-
-	void Material::Set(TextureType type, int value)
-	{
-		const BufferElement& el = Layout->GetElementData(type);
-
-		auto num = (float)value;
-		memcpy_s(Data + el.offset, sizeof(float), &num, sizeof(float));
-	}
-
-	void LightContext::Set(LightData type, uint8_t* value)
-	{
-		const BufferElement& el = Layout->GetElementData(type);
-		memcpy_s(Data + el.offset, el.size, value, el.size);
-	}
-
-
 	void Mesh::setVertexData(void* vertex_data, uint64_t vertex_data_size)
 	{
 		const Ref<VertexBuffer> b = VertexBuffer::Create((float*)vertex_data, vertex_data_size);
@@ -84,9 +16,9 @@ namespace Steve::graphics
 		pVao->setIndexBuffer(b);
 	}
 
-	void PointLight::changePosition(glm::vec3 new_position)
+	void PointLight::ChangePosition(glm::vec3 new_position)
 	{
-		GetComponent<LightContext>()->Set(LightData::Position, (u8*)&new_position);
+		GetComponent<LightData>()->Set(LightDataTypes::Position, new_position);
 
 		glm::mat4& trans = **GetComponent<TransformComponent>();
 		trans[3][0] = new_position[0];
@@ -94,11 +26,21 @@ namespace Steve::graphics
 		trans[3][2] = new_position[2];
 	}
 
-	void PointLight::changeColor(glm::vec3 new_color)
+	void PointLight::ChangeColor(glm::vec3 new_color)
 	{
-		GetComponent<LightContext>()->Set(LightData::Color, (u8*)&new_color);
-		Meshes[0].pContext->pMaterial->Set(ColorType::Diffuse, (u8*)&new_color);
-		Meshes[0].pContext->pMaterial->Set(ColorType::Specular, (u8*)&new_color);
+		GetComponent<LightData>()->Set(LightDataTypes::Color, new_color);
+		Meshes[0].pContext->pMaterial->Set(MaterialDataTypes::Diffuse, new_color);
+		Meshes[0].pContext->pMaterial->Set(MaterialDataTypes::Specular,new_color);
+	}
+
+	glm::vec3 PointLight::GetPosition()
+	{
+		return *(glm::vec3*)GetComponent<LightData>()->Get(LightDataTypes::Position);
+	}
+
+	glm::vec3 PointLight::GetColor()
+	{
+		return *(glm::vec3*)GetComponent<LightData>()->Get(LightDataTypes::Color);
 	}
 
 	std::tuple<glm::vec3*, glm::vec3*, u32*> GenCubeSmoothVertices(glm::vec3 position, glm::vec3 dimensions)

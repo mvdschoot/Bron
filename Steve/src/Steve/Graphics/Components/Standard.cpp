@@ -16,18 +16,13 @@ namespace Steve::graphics
 	{
 		mPosition = pos;
 		mDimensions = dim;
-
-		StandardMaterialBuffer* materialBuffer = new StandardMaterialBuffer({
-			0.2,
-			glm::vec3(1.0),
-			glm::vec3(1.0),
-			1.0,
-			1.0
-		});
-
-		auto* material = new Material();
-		material->Data = (u8*)materialBuffer;
-		material->Layout = &StandardMaterialLayout;
+		
+		auto* material = new Material(&StandardMaterialLayout);
+		material->Set(MaterialDataTypes::AmbientFactor, 0.2);
+		material->Set(MaterialDataTypes::Diffuse, glm::vec3(1.0));
+		material->Set(MaterialDataTypes::Specular, glm::vec3(1.0));
+		material->Set(MaterialDataTypes::Shininess, 1.0);
+		material->Set(MaterialDataTypes::ShininessStrength, 1.0);
 		material->Textures = nullptr;
 
 		auto* context = new MeshContext(StandardInstances::instance().StandardShader.get(), material);
@@ -58,8 +53,8 @@ namespace Steve::graphics
 
 	void StandardCubeComponent::SetColor(glm::vec3 color)
 	{
-		Meshes[0].pContext->pMaterial->Set(ColorType::Diffuse, (u8*)&color);
-		Meshes[0].pContext->pMaterial->Set(ColorType::Specular, (u8*)&color);
+		Meshes[0].pContext->pMaterial->Set(MaterialDataTypes::Diffuse, color);
+		Meshes[0].pContext->pMaterial->Set(MaterialDataTypes::Specular, color);
 	}
 
 	/*
@@ -72,9 +67,7 @@ namespace Steve::graphics
 
 		auto* textures = new TexturePack;
 
-		auto* material = new Material;
-		material->Layout = &StandardMaterialLayout;
-		material->Data = (u8*)new StandardMaterialBuffer;
+		auto* material = new Material(&StandardMaterialLayout);
 		material->Textures = textures;
 
 		aiString dif, spec, norm;
@@ -84,13 +77,13 @@ namespace Steve::graphics
 
 		if (dif.length != 0)
 		{
-			textures->Textures[TextureType::DIFFUSE] = Texture2D::Create((Directory + "/" + dif.C_Str()).c_str());
+			textures->Textures[TextureTypes::Diffuse] = Texture2D::Create((Directory + "/" + dif.C_Str()).c_str());
 		}
 		if (spec.length != 0) {
-			textures->Textures[TextureType::SPECULAR] = Texture2D::Create((Directory + "/" + spec.C_Str()).c_str());
+			textures->Textures[TextureTypes::Specular] = Texture2D::Create((Directory + "/" + spec.C_Str()).c_str());
 		}
 		if (norm.length != 0) {
-			textures->Textures[TextureType::NORMAL] = Texture2D::Create((Directory + "/" + norm.C_Str()).c_str());
+			textures->Textures[TextureTypes::Normal] = Texture2D::Create((Directory + "/" + norm.C_Str()).c_str());
 		}
 
 		float defaultAmbient = 0.2;
@@ -106,30 +99,30 @@ namespace Steve::graphics
 
 		// Retrieve shininess
 		if (mat->Get(AI_MATKEY_SHININESS, Shininess) == aiReturn_SUCCESS)
-			material->Set(ColorType::Shininess, (u8*)&Shininess);
+			material->Set(MaterialDataTypes::Shininess, Shininess);
 		else
-			material->Set(ColorType::Shininess, (u8*)&defaultShininess);
+			material->Set(MaterialDataTypes::Shininess, defaultShininess);
 
 		// Retrieve shininess strength
 		if (mat->Get(AI_MATKEY_SHININESS_STRENGTH, ShininessStrength) == aiReturn_SUCCESS)
-			material->Set(ColorType::ShininessStrength, (u8*)&ShininessStrength);
+			material->Set(MaterialDataTypes::ShininessStrength, ShininessStrength);
 		else
-			material->Set(ColorType::ShininessStrength, (u8*)&defaultShininessStrength);
+			material->Set(MaterialDataTypes::ShininessStrength, defaultShininessStrength);
 
 		// Todo: Ambient factor
-		material->Set(ColorType::AmbientFactor, (u8*)&defaultAmbient);
+		material->Set(MaterialDataTypes::AmbientFactor, defaultAmbient);
 
 		// Retrieve diffuse
 		if (mat->Get(AI_MATKEY_COLOR_DIFFUSE, Diffuse) == aiReturn_SUCCESS)
-			material->Set(ColorType::Diffuse, (u8*)&Diffuse);
+			material->Set(MaterialDataTypes::Diffuse, Diffuse);
 		else
-			material->Set(ColorType::Diffuse, (u8*)&defaultDiffuse);
+			material->Set(MaterialDataTypes::Diffuse, defaultDiffuse);
 
 		// Retrieve specular
 		if (mat->Get(AI_MATKEY_COLOR_SPECULAR, Specular) == aiReturn_SUCCESS)
-			material->Set(ColorType::Specular, (u8*)&Specular);
+			material->Set(MaterialDataTypes::Specular, Specular);
 		else
-			material->Set(ColorType::Specular, (u8*)&defaultSpecular);
+			material->Set(MaterialDataTypes::Specular, defaultSpecular);
 		
 
 		return { StandardInstances::instance().StandardShader.get(), material };

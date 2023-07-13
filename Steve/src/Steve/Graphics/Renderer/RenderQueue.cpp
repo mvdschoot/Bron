@@ -6,11 +6,7 @@ namespace Steve::graphics
 	{
 	}
 
-	/*
-	 * Automatically groups it.
-	 * Sorta assumes that 1 model is rendered with 1 shader.
-	 * Makes sense, but badly programmed, need refactoring.
-	 */
+
 	void RenderQueue::addModel(Model* model)
 	{
 		for(Mesh& m : model->Meshes)

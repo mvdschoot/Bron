@@ -42,7 +42,7 @@ namespace Steve::graphics
 			
 			for(int x = 0; x < scene.PointLights.size(); x++)
 			{
-				LightContext& l = scene.PointLights[x]->GetComponent<LightContext>();
+				LightData& l = scene.PointLights[x]->GetComponent<LightData>();
 				shader->setUniforms(*l.Layout, l.Data);
 			}
 
@@ -58,9 +58,9 @@ namespace Steve::graphics
 
 				for (auto& [material, meshes] : materials.pSet)
 				{
-					material->Set(TextureType::DIFFUSE, 0);
-					material->Set(TextureType::SPECULAR, 0);
-					material->Set(TextureType::NORMAL, 0);
+					material->Set(MaterialDataTypes::DiffuseTexture, 0);
+					material->Set(MaterialDataTypes::SpecularTexture, 0);
+					material->Set(MaterialDataTypes::NormalTexture, 0);
 					Data.whiteTexture->bind(0);
 
 					if (material->Textures != nullptr) {
@@ -68,7 +68,7 @@ namespace Steve::graphics
 						for (auto& [type, texture] : material->Textures->Textures)
 						{
 							texture->bind(count);
-							material->Set(type, count);
+							material->Set(TextureConverter(type), (float)count);
 							count++;
 						}
 					}
