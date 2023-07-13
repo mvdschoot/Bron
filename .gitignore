@@ -1,4 +1,18 @@
 build
+out
+Rust
+tests
+
+notes.txt
+
+.git
+.vs
+.vscode
+.idea
+cmake-build-debug-visual-studio
+
+compile_commands.json
+Folder.DotSettings.user
 
 # Prerequisites
 *.d
@@ -32,3 +46,4 @@ build
 *.exe
 *.out
 *.app
+/NOTES
