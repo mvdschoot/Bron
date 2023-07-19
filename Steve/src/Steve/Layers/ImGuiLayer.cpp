@@ -25,6 +25,10 @@ namespace Steve
 		// Setup Platform/Renderer bindings
 		ImGui_ImplGlfw_InitForOpenGL(_window->getWindowPointer(), true);
 		ImGui_ImplOpenGL3_Init("#version 130");
+
+		ImGui::GetIO().ConfigFlags |= ImGuiConfigFlags_DockingEnable;
+
+
 	}
 
 	void ImGuiLayer::OnDetach()

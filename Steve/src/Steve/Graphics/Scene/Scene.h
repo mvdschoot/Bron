@@ -13,13 +13,6 @@
 
 #include "Steve/Graphics/Camera.h"
 #include "Steve/Graphics/Renderer/2D.h"
-#include "Steve/Graphics/Renderer/2D.h"
-#include "Steve/Graphics/Renderer/2D.h"
-#include "Steve/Graphics/Renderer/2D.h"
-#include "Steve/Graphics/Renderer/2D.h"
-#include "Steve/Graphics/Renderer/2D.h"
-#include "Steve/Graphics/Renderer/2D.h"
-#include "Steve/Graphics/Renderer/2D.h"
 
 namespace Steve::graphics
 {
@@ -41,8 +34,6 @@ namespace Steve::graphics
 
 		std::vector<PointLight*> PointLights;
 		Camera* Camera;
-
-		Entity* SelectedEntity;
 	private:
 	};
 }

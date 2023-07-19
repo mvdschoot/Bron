@@ -28,7 +28,8 @@ namespace Steve::graphics
 	{
 		auto* model = new StandardCubeComponent(&pData);
 		TransformComponent& t = *model->GetComponent<TransformComponent>();
-		t.Set(SET_TRANSLATE | SET_SCALING, { position, dimensions });
+		t.Position = position;
+		t.Scaling = dimensions;
 		model->Name = name;
 
 		Queue.addModel(model);
@@ -51,7 +52,8 @@ namespace Steve::graphics
 
 		Queue.addModel(&model);
 
-		model.GetComponent<TransformComponent>()->Set(SET_TRANSLATE, { pos });
+		model.GetComponent<TransformComponent>()->Position = pos;
+		LightData& d = *model.GetComponent<LightData>();
 		model.SetUniformPosition(pos);
 		model.SetColor(color);
 	}

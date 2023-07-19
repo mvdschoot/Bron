@@ -5,54 +5,53 @@
 #include <glm/gtc/matrix_transform.hpp>
 #include "gtc/type_ptr.hpp"
 
-#include <ImGuizmo.h>
+#include "Steve/Util/Util.h"
+#include <gtx/quaternion.hpp>
 
 
 namespace Steve::graphics
 {
 	struct TransformComponent
 	{
-#define SET_TRANSLATE 1 << 0
-#define SET_ROTATION 1 << 1
-#define SET_SCALING 1 << 2
-#define SET_ALL3 SET_TRANSLATE | SET_ROTATION | SET_SCALING
-
-		glm::mat4 Matrix;
-
-		TransformComponent() : Matrix(1.0f) {}
-		operator glm::mat4&() { return Matrix; }
-		glm::mat4& operator*() { return Matrix; }
-
-		void Set(u8 to_set, std::initializer_list<glm::vec3> data)
+		glm::mat4& GetMatrix()
 		{
-			float t[3], r[3], s[3];
-			ImGuizmo::DecomposeMatrixToComponents(glm::value_ptr(Matrix), t, r, s);
+			if (IsDirty())
+			{
+				OPosition = Position;
+				ORotation = Rotation;
+				OScaling = Scaling;
 
-			u8 count = 0;
-			if (to_set & SET_TRANSLATE)
-			{
-				memcpy_s(t, sizeof(glm::vec3), (void*)data.begin(), sizeof(glm::vec3));
-				count++;
-			}
-			if (to_set & SET_ROTATION)
-			{
-				memcpy_s(r, sizeof(glm::vec3), (void*)(data.begin() + count), sizeof(glm::vec3));
-				count++;
-			}
-			if (to_set & SET_SCALING)
-			{
-				memcpy_s(s, sizeof(glm::vec3), (void*)(data.begin() + count), sizeof(glm::vec3));
-			}
+				glm::mat4 rotation = glm::toMat4(glm::quat(Rotation));
 
-			ImGuizmo::RecomposeMatrixFromComponents(t, r, s, glm::value_ptr(Matrix));
+				Matrix = glm::translate(glm::mat4(1.0f), Position)
+					* rotation
+					* glm::scale(glm::mat4(1.0f), Scaling);
+			}
+			return Matrix;
 		}
 
-		// Translate, Rotate, Scale
-		std::tuple<glm::vec3, glm::vec3, glm::vec3> Get() const
+		TransformComponent() : Position(0.0),
+			Rotation(1.0), Scaling(1.0), Matrix(1.0f),
+			OPosition(0.0), ORotation(1.0), OScaling(1.0) {}
+		operator glm::mat4&() { return GetMatrix(); }
+		glm::mat4& operator*() { return GetMatrix(); }
+
+		glm::vec3 Position;
+		glm::vec3 Rotation;
+		glm::vec3 Scaling;
+
+	private:
+		glm::mat4 Matrix;
+
+		glm::vec3 OPosition;
+		glm::vec3 ORotation;
+		glm::vec3 OScaling;
+
+		bool IsDirty()
 		{
-			float t[3], r[3], s[3];
-			ImGuizmo::DecomposeMatrixToComponents(glm::value_ptr(Matrix), t, r, s);
-			return { { t[0], t[1], t[2] }, { r[0],r[1],r[2] }, { s[0],s[1],s[2] } };
+			return compare_floats_bits(Position, OPosition)
+				&& compare_floats_bits(Rotation, ORotation)
+				&& compare_floats_bits(Scaling, OScaling);
 		}
 	};
 

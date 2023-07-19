@@ -13,7 +13,7 @@ namespace Steve::graphics
 	class OpenGLFramebuffer : public Framebuffer
 	{
 	public:
-		OpenGLFramebuffer(const FramebufferSpecification& spec);
+		OpenGLFramebuffer(FramebufferSpecification& spec);
 		~OpenGLFramebuffer() override;
 
 		void bind() override;
@@ -26,7 +26,7 @@ namespace Steve::graphics
 		u32 _renderer_id;
 		u32 _color_attachment;
 		u32 _depth_stencil_attachment;
-		const FramebufferSpecification& _spec;
+		FramebufferSpecification& _spec;
 	};
 }
 

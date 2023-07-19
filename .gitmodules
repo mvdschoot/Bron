@@ -4,3 +4,6 @@
 [submodule "Steve/vendor/imguizmo"]
 	path = Steve/vendor/imguizmo
 	url = https://github.com/CedricGuillemet/ImGuizmo.git
+[submodule "Steve\\vendor\\imgui"]
+	path = Steve\\vendor\\imgui
+	url = https://github.com/mvdschoot/imgui.git

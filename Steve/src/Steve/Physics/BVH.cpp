@@ -22,14 +22,12 @@ namespace Steve
 		if(entity->Contains<SphereCollisionBody>())
 		{
 			SphereCollisionBody& col = entity->GetComponent<SphereCollisionBody>();
-			glm::vec3 pos = std::get<0>(col.Transform->Get());
-			return std::make_tuple(&col, AABB(pos - col.Radius, pos + col.Radius));
+			return std::make_tuple(&col, AABB(col.Transform->Position - col.Radius, col.Transform->Position + col.Radius));
 		}
 		if (entity->Contains<CubeCollisionBody>())
 		{
 			CubeCollisionBody& s = entity->GetComponent<CubeCollisionBody>();
-			glm::vec3 pos = std::get<0>(s.Transform->Get());
-			return std::make_tuple(&s, AABB{ pos - (s.Dimensions * 0.5f), pos + (s.Dimensions * 0.5f)});
+			return std::make_tuple(&s, AABB{ s.Transform->Position - (s.Dimensions * 0.5f), s.Transform->Position + (s.Dimensions * 0.5f)});
 		}
 
 		CORE_ASSERT(false, "No collision body detected")

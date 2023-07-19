@@ -11,11 +11,23 @@
 
 namespace Steve::graphics
 {
+	struct RenderStatistics
+	{
+		u32 DrawCalls;
+		u32 Models;
+		u32 Shaders;
+		u32 Materials;
+		u32 Meshes;
+		u32 UniformCalls;
+	};
+
 	class SceneRenderer
 	{
 	public:
 		static void Init();
 		static void Draw(Scene& scene);
+
+		static RenderStatistics Statistics;
 	};
 }
 

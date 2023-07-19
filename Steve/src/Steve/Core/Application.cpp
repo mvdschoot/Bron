@@ -90,7 +90,7 @@ namespace Steve
 		} else
 		{
 			_minimized = false;
-			CORE_INFO("Window is not minimized anymore");
+			CORE_INFO("Window size: {}, {}", event.getWidth(), event.getHeight());
 		}
 		return true;
 	}

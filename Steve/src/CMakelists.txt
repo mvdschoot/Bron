@@ -45,6 +45,8 @@ add_library(Steve STATIC
 	Steve/Physics/BVH.cpp
 	Steve/Physics/PhysicsComponents.cpp
 	Steve/Physics/Splitting.cpp
+
+	Steve/Util/Util.cpp
 	 
 	Platform/OpenGL/OpenGLContext.cpp
 	Platform/OpenGL/OpenGLBuffer.cpp
@@ -57,7 +59,7 @@ add_library(Steve STATIC
 
 	Platform/Linux/LinuxWindow.cpp
 	Platform/Linux/LinuxInput.cpp
-   "Steve/Util/Util.h")
+ )
 
 target_compile_definitions(Steve
 	PRIVATE CH_COMPILE

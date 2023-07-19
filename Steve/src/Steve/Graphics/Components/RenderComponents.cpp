@@ -22,7 +22,7 @@ namespace Steve::graphics
 
 	glm::vec3 Model::GetPosition()
 	{
-		return std::get<0>(GetComponent<TransformComponent>()->Get());
+		return GetComponent<TransformComponent>()->Position;
 	}
 
 	glm::vec3 Cube::GetColor() const
@@ -50,9 +50,9 @@ namespace Steve::graphics
 	PointLight::PointLight(RegistryData* reg, UniformData<LightDataTypes>&& context): Cube(StandardCubeComponent(reg))
 	{
 		// LightData is so light is shining, TransformComponent is so light mesh is rendered
-		AddComponent<LightData>(std::move(context));
+		Handle<LightData>& l = AddComponent<LightData>(std::move(context));
 		
-		GetComponent<TransformComponent>()->Set(SET_SCALING, { {0.05,0.05,0.05} });
+		GetComponent<TransformComponent>()->Scaling = { 0.05,0.05,0.05 };
 	}
 
 	std::tuple<glm::vec3*, glm::vec3*, u32*> GenCubeSmoothVertices(glm::vec3 dimensions)

@@ -179,9 +179,8 @@ namespace Steve::graphics
 
 
 		Mesh(const Mesh& mesh)
-			: Entity(mesh.pRegData), pContext(mesh.pContext), pVao(mesh.pVao), mBufferLayout(mesh.mBufferLayout)
+			: Entity(mesh), pContext(mesh.pContext), pVao(mesh.pVao), mBufferLayout(mesh.mBufferLayout)
 		{
-			AddComponent<TransformComponent>();
 		}
 
 		Mesh(RegistryData* reg, const BufferLayout& layout)

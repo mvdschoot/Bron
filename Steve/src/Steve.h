@@ -27,6 +27,8 @@
 #include "Steve/Graphics/LineRenderer.h"
 #include "Steve/Graphics/TextRenderer.h"
 
+#include "Steve/Graphics/Scene/Scene.h"
+
 #include "Steve/ECS/Handle.h"
 #include "Steve/ECS/Group.h"
 #include "Steve/ECS/Registry.h"
@@ -34,7 +36,8 @@
 
 #include "Steve/Physics/BVH.h"
 
-#include "Steve/Graphics/Scene/Scene.h"
+#include "Steve/Util/Util.h"
+
 
 #include "Steve/Core/Window.h"
 

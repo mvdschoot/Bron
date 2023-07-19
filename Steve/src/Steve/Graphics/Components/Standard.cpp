@@ -47,6 +47,8 @@ namespace Steve::graphics
 			context
 		);
 
+		Meshes[0].Name = "Cube mesh";
+
 		delete[] new_verts;
 		delete[] vertices;
 	}
@@ -194,6 +196,8 @@ namespace Steve::graphics
 			indices, num_indices,
 			context
 		);
+
+		Meshes.back().Name = "Mesh " + std::to_string(Meshes.size() - 1);
 
 		delete[] indices;
 		delete[] vertices;

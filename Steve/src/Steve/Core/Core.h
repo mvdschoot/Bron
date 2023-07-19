@@ -4,6 +4,9 @@
 #include <cstdint>
 #include <memory>
 
+#define PI 3.14159265358979323846
+#define BIT(x) (1 << x)
+
 #define u8 uint8_t
 #define u16 uint16_t
 #define u32 uint32_t
@@ -46,13 +49,13 @@
 
 #if defined(CH_DEBUG)
 	#ifdef CH_PLATFORM_WINDOWS
-	#define CH_DEBUGBREAK __debugbreak();
-#elif defined(CH_PLATFORM_LINUX)
+		#define CH_DEBUGBREAK __debugbreak();
+	#elif defined(CH_PLATFORM_LINUX)
 		#include <signal.h>
 		#define CH_DEBUGBREAK raise(SIGTRAP);
-#else
+	#else
 		#define CH_DEBUGBREAK
-#endif
+	#endif
 #endif
 
 #if CH_COMPILE

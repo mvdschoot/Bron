@@ -5,7 +5,7 @@
 
 namespace Steve::graphics
 {
-	Ref<Framebuffer> Framebuffer::Create(const FramebufferSpecification& spec)
+	Ref<Framebuffer> Framebuffer::Create(FramebufferSpecification& spec)
 	{
 		switch (Platform::getAPI())
 		{
