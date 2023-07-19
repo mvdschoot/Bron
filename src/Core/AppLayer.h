@@ -33,6 +33,10 @@ namespace Steve
 		float m_Zoom = 1.0f;
 		glm::vec3 m_Pos{0.0f, 0.0f, -1.0f};
 
+		graphics::StandardCubeComponent* m_Cube;
+
+		BVH m_BVH;
+
 		// Registry
 		graphics::Scene m_Scene;
 		UUID m_RickEntity;

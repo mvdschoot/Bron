@@ -16,6 +16,10 @@
 #include "Steve/Graphics/Renderer/2D.h"
 #include "Steve/Graphics/Renderer/2D.h"
 #include "Steve/Graphics/Renderer/2D.h"
+#include "Steve/Graphics/Renderer/2D.h"
+#include "Steve/Graphics/Renderer/2D.h"
+#include "Steve/Graphics/Renderer/2D.h"
+#include "Steve/Graphics/Renderer/2D.h"
 
 namespace Steve::graphics
 {
@@ -24,8 +28,9 @@ namespace Steve::graphics
 	public:
 		Scene();
 
-		void CreateStandardModel(const char* location);
+		void CreateStandardModel(const char* name, const char* location);
 		void AddModel(Model* model);
+		StandardCubeComponent* AddCube(const char* name, glm::vec3 position, glm::vec3 dimensions);
 
 		void AddPointLight(glm::vec3 pos, glm::vec3 color);
 		
@@ -37,9 +42,8 @@ namespace Steve::graphics
 		std::vector<PointLight*> PointLights;
 		Camera* Camera;
 
-
+		Entity* SelectedEntity;
 	private:
-		Mesh* mPhongPointLightMesh;
 	};
 }
 

@@ -5,56 +5,50 @@
 
 namespace Steve::graphics
 {
-	StandardCubeComponent::StandardCubeComponent(RegistryData* reg, const glm::vec3 pos, const glm::vec3 dim)
-		: Model(reg)
+	StandardCubeComponent::StandardCubeComponent(RegistryData* reg)
+		: Cube(reg)
 	{
-		Set(pos, dim);
+		Generate();
 		SetColor(glm::vec3(1.0));
 	}
 
-	void StandardCubeComponent::Set(const glm::vec3 pos, const glm::vec3 dim)
+	void StandardCubeComponent::Generate()
 	{
-		mPosition = pos;
-		mDimensions = dim;
-		
+		float size = 1.0f;
+		auto [vertices, normals, indices] =
+			GenCubeSmoothVertices(glm::vec3(size));
+
+		// Create material with standard values.
 		auto* material = new Material(&StandardMaterialLayout);
-		material->Set(MaterialDataTypes::AmbientFactor, 0.2);
+		material->Set(MaterialDataTypes::AmbientFactor, 1.0);
 		material->Set(MaterialDataTypes::Diffuse, glm::vec3(1.0));
 		material->Set(MaterialDataTypes::Specular, glm::vec3(1.0));
-		material->Set(MaterialDataTypes::Shininess, 1.0);
-		material->Set(MaterialDataTypes::ShininessStrength, 1.0);
-		material->Textures = nullptr;
+		material->Set(MaterialDataTypes::Shininess, 200.0f);
+		material->Set(MaterialDataTypes::ShininessStrength, 100.0f);
 
 		auto* context = new MeshContext(StandardInstances::instance().StandardShader.get(), material);
 
-		auto [vertices, normals, indices] = GenCubeSmoothVertices(pos, dim);
-
 		// Fill vbo with not just vertices, but also normals & texture coords
-		usize size = material->Layout->GetStride();
-		auto* new_verts = new u8[size];
+		usize stride = StandardVertexLayout->GetStride();
+		auto* new_verts = new u8[24 * stride];
 		usize vec_size = sizeof(glm::vec3);
-		for (int x = 0; x < 24 * size; x += size)
+		for (int x = 0; x < 24 * stride; x += stride)
 		{
-			memcpy_s(new_verts + x, vec_size, vertices + (x / size), vec_size);
-			memcpy_s(new_verts + x + vec_size, vec_size, normals + (x / size), vec_size);
+			memcpy_s(new_verts + x, vec_size, vertices + (x / stride), vec_size);
+			memcpy_s(new_verts + x + vec_size, vec_size, normals + (x / stride), vec_size);
 			memset(new_verts + x + (2 * vec_size), 0, sizeof(glm::vec2));
 		}
 
 		Meshes.emplace_back(
+			pRegData,
 			*StandardVertexLayout,
-			new_verts, 24 * sizeof(glm::vec3),
+			new_verts, 24 * stride,
 			indices, 36,
 			context
 		);
 
 		delete[] new_verts;
 		delete[] vertices;
-	}
-
-	void StandardCubeComponent::SetColor(glm::vec3 color)
-	{
-		Meshes[0].pContext->pMaterial->Set(MaterialDataTypes::Diffuse, color);
-		Meshes[0].pContext->pMaterial->Set(MaterialDataTypes::Specular, color);
 	}
 
 	/*
@@ -194,6 +188,7 @@ namespace Steve::graphics
 		}
 
 		Meshes.emplace_back(
+			pRegData,
 			*StandardVertexLayout,
 			vertices, mesh->mNumVertices * sizeof(StandardVertexBuffer),
 			indices, num_indices,

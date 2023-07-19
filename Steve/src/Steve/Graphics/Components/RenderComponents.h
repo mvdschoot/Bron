@@ -19,10 +19,20 @@
 #include "Steve/Graphics/Renderer/2D.h"
 #include "Steve/Graphics/Renderer/2D.h"
 #include "Steve/Graphics/Renderer/2D.h"
+#include "Steve/Graphics/Renderer/2D.h"
+#include "Steve/Graphics/Renderer/2D.h"
+#include "Steve/Graphics/Renderer/2D.h"
+#include "Steve/Graphics/Renderer/2D.h"
 
 
 namespace Steve::graphics
 {
+	enum class ShadingTech
+	{
+		PHONG,
+		PBR
+	};
+
 	enum class TextureTypes
 	{
 		Diffuse,
@@ -162,31 +172,37 @@ namespace Steve::graphics
 		Shader* pShader;
 	};
 
-	/*
-	 * One context per render component.
-	 * The attributes of the context can be shared across all components..
-	 */
-	class Mesh
+
+	class Mesh : public Entity
 	{
 	public:
+
+
 		Mesh(const Mesh& mesh)
-			: pContext(mesh.pContext), pVao(mesh.pVao), mBufferLayout(mesh.mBufferLayout)
+			: Entity(mesh.pRegData), pContext(mesh.pContext), pVao(mesh.pVao), mBufferLayout(mesh.mBufferLayout)
 		{
+			AddComponent<TransformComponent>();
 		}
 
-		Mesh(const BufferLayout& layout)
-			: mBufferLayout(layout) {}
+		Mesh(RegistryData* reg, const BufferLayout& layout)
+			: Entity(reg), mBufferLayout(layout)
+		{
+			AddComponent<TransformComponent>();
+		}
 
-		Mesh(const BufferLayout& layout,
+		Mesh(RegistryData* reg, 
+			const BufferLayout& layout,
 			void* vertex_data, usize vertex_size,
 			u32* index_data, usize index_count,
 			MeshContext* context) :
+					Entity(reg),
 					pContext(context),
 					pVao(VertexArray::Create()),
 					mBufferLayout(layout)
 		{
 			setVertexData(vertex_data, vertex_size);
 			setIndexData(index_data, index_count);
+			AddComponent<TransformComponent>();
 		}
 
 		Mesh& operator=(Mesh&& comp) noexcept
@@ -203,35 +219,46 @@ namespace Steve::graphics
 		const BufferLayout& mBufferLayout;
 	};
 
-	struct Model : Entity
+	struct Model : public Entity
 	{
 		Model(RegistryData* reg)
-			: Entity(reg) {}
+			: Entity(reg)
+		{
+			AddComponent<TransformComponent>();
+		}
 
 		std::vector<Mesh> Meshes;
+		
+		virtual glm::vec3 GetPosition();
+	};
+
+	struct Cube : public Model
+	{
+		virtual glm::vec3 GetColor() const;
+		virtual void SetColor(glm::vec3 color);
+
+	protected:
+		Cube(RegistryData* reg)
+			: Model(reg) {}
 	};
 
 #define LightData UniformData<LightDataTypes>
-	struct PointLight : Model
+	struct PointLight : public Cube
 	{
-		PointLight(RegistryData* reg, LightData&& context)
-			: Model(reg)
-		{
-			// LightData is so light is shining, TransformComponent is so light mesh is rendered
-			AddComponent<LightData>(std::move(context));
-			AddComponent<TransformComponent>(glm::mat4(1.0f));
-		}
+		// Override because the lightdata component also has to be changed.
+		void SetColor(glm::vec3 color) override;
+		void SetUniformPosition(glm::vec3 pos);
 
-		void ChangePosition(glm::vec3 new_position);
-		void ChangeColor(glm::vec3 new_color);
-
-		glm::vec3 GetPosition();
-		glm::vec3 GetColor();
+		PointLight(RegistryData* reg, LightData&& context);
 	};
 
 	// Returns vertices, normals, indices
 	// Delete only vertices after usage.
-	std::tuple<glm::vec3*, glm::vec3*, u32*> GenCubeSmoothVertices(glm::vec3 position, glm::vec3 dimensions);
+	std::tuple<glm::vec3*, glm::vec3*, u32*> GenCubeSmoothVertices(glm::vec3 dimensions);
+
+	// Returns vertices, normals, indices, #vertices/normals, #indices
+	// Delete only vertices after usage.
+	std::tuple<glm::vec3*, glm::vec3*, u32*, u32, u32> GenSphereSmoothVertices(glm::vec3 position, float radius, uint32_t accuracy);
 }
 
 

@@ -1,5 +1,7 @@
 #include "ImGuiLayer.h"
 
+#include "ImGuizmo.h"
+
 namespace Steve
 {
 	ImGuiLayer::ImGuiLayer(Ref<Window> window) :
@@ -43,6 +45,9 @@ namespace Steve
 		ImGui_ImplOpenGL3_NewFrame();
 		ImGui_ImplGlfw_NewFrame();
 		ImGui::NewFrame();
+
+		ImGuizmo::BeginFrame();
+		ImGuizmo::SetImGuiContext(ImGui::GetCurrentContext());
 	}
 
 	void ImGuiLayer::end()

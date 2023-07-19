@@ -47,13 +47,10 @@ namespace Steve::graphics
 			}
 
 			for (auto& [model, materials] : set.pSet) {
-
+				glm::mat4 modelTransform(1.0f);
 				if (model->Contains<TransformComponent>())
 				{
-					shader->setUniformMat4("uTransform", *model->GetComponent<TransformComponent>());
-				} else
-				{
-					shader->setUniformMat4("uTransform", glm::mat4(1.0f));
+					modelTransform = **model->GetComponent<TransformComponent>();
 				}
 
 				for (auto& [material, meshes] : materials.pSet)
@@ -76,6 +73,13 @@ namespace Steve::graphics
 					shader->setUniforms(*material->Layout, material->Data);
 					for (Mesh* mesh : meshes)
 					{
+						glm::mat4 meshTransform = modelTransform;
+						if (mesh->Contains<TransformComponent>())
+						{
+							meshTransform *= **mesh->GetComponent<TransformComponent>();
+						}
+
+						shader->setUniformMat4("uTransform", meshTransform);
 						Command::DrawIndexed(mesh->pVao, mesh->pVao->getIndexBuffer()->getCount());
 					}
 				}

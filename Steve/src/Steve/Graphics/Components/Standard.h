@@ -12,17 +12,13 @@
 
 namespace Steve::graphics {
 
-	class StandardCubeComponent : public Model
+	class StandardCubeComponent : public Cube
 	{
 	public:
-		StandardCubeComponent(RegistryData* reg, const glm::vec3 pos, const glm::vec3 dim);
-
-		void Set(const glm::vec3 pos, const glm::vec3 dim);
-		void SetColor(glm::vec3 color);
+		StandardCubeComponent(RegistryData* reg);
 
 	private:
-		glm::vec3 mPosition = {};
-		glm::vec3 mDimensions = {};
+		void Generate();
 	};
 
 	struct StandardModelComponent : public Model

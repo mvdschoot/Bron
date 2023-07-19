@@ -41,8 +41,10 @@ add_library(Steve STATIC
 	Steve/Layers/Overlay.cpp
 	Steve/Layers/OverlayStack.cpp
 	Steve/Layers/ImGuiLayer.cpp
-	Steve/Layers/ProfileLayer.cpp
-
+	
+	Steve/Physics/BVH.cpp
+	Steve/Physics/PhysicsComponents.cpp
+	Steve/Physics/Splitting.cpp
 	 
 	Platform/OpenGL/OpenGLContext.cpp
 	Platform/OpenGL/OpenGLBuffer.cpp
@@ -55,7 +57,7 @@ add_library(Steve STATIC
 
 	Platform/Linux/LinuxWindow.cpp
 	Platform/Linux/LinuxInput.cpp
-)
+   "Steve/Util/Util.h")
 
 target_compile_definitions(Steve
 	PRIVATE CH_COMPILE
