@@ -2,26 +2,20 @@
 
 namespace Steve
 {
-	struct SceneHierarchyPanelData
-	{
-		graphics::Scene* scene;
-		Entity* selected;
-	};
-
-	static SceneHierarchyPanelData scData;
+	SceneHierarchyPanelData SceneHierarchyPanel::Data;
 
 	void SceneHierarchyPanel::OnAttach(graphics::Scene* scene)
 	{
-		scData.scene = scene;
-		scData.selected = nullptr;
+		Data.scene = scene;
+		Data.selected = nullptr;
 	}
 
 
 	void SceneHierarchyPanel::RenameFunction()
 	{
-		if (scData.selected == nullptr)
+		if (Data.selected == nullptr)
 			return;
-		std::string name = "Rename '" + scData.selected->Name + "'";
+		std::string name = "Rename '" + Data.selected->Name + "'";
 		if (ImGui::IsKeyPressed(ImGuiKey_F2, false))
 		{
 			ImGui::OpenPopup(name.c_str());
@@ -40,7 +34,7 @@ namespace Steve
 
 			if (text || ImGui::Button("OK", ImVec2(120, 0)))
 			{
-				scData.selected->Name = std::string(buf);
+				Data.selected->Name = std::string(buf);
 				ImGui::CloseCurrentPopup();
 			}
 			ImGui::SetItemDefaultFocus();
@@ -53,6 +47,7 @@ namespace Steve
 
 	void SceneHierarchyPanel::OnImguiRender()
 	{
+		// return;
 		using namespace graphics;
 
 		ImGui::Begin("Scene Hierarchy");
@@ -61,52 +56,57 @@ namespace Steve
 		ImGui::SetNextItemOpen(true);
 		if (ImGui::TreeNode("Models"))
 		{
-			for (int x = 0; x < scData.scene->AllModels.size(); x++)
+			for (int x = 0; x < Data.scene->AllModels.size(); x++)
 			{
 				ImGuiTreeNodeFlags node_flags = entity_base_flags;
-				if (scData.selected == scData.scene->AllModels[x])
+				if (Data.selected == Data.scene->AllModels[x])
 				{
 					node_flags |= ImGuiTreeNodeFlags_Selected;
 				}
 
-				bool open = ImGui::TreeNodeEx((void*)(intptr_t)x, node_flags, scData.scene->AllModels[x]->Name.c_str());
+				bool open = ImGui::TreeNodeEx((void*)(intptr_t)x, node_flags | ImGuiTreeNodeFlags_Framed, Data.scene->AllModels[x]->Name.c_str());
 				if (ImGui::IsItemClicked() && !ImGui::IsItemToggledOpen())
-					scData.selected = scData.scene->AllModels[x];
+					Data.selected = Data.scene->AllModels[x];
+
+				// if (ImGui::IsItemHovered() && ImGui::IsMouseClicked(1))
+				// {
+				// 	ImGui::OpenPopup("Item options");
+				// 	Data.selected = Data.scene->AllModels[x];
+				// }
+
+				ImGui::PushID(x);
+				if (ImGui::BeginPopupContextWindow())
+				{
+					if (ImGui::MenuItem("Add rigid body"))
+					{
+
+					}
+					if (ImGui::MenuItem("Weg"))
+					{
+						// if (ImGui::IsItemHovered())
+						// {
+						// 	ImGui::OpenPopup("Add to item");
+						// }
+					}
+					ImGui::EndPopup();
+				}
+				ImGui::PopID();
 
 				if (open)
 				{
-					if (ImGui::CollapsingHeader("Properties"))
+					for (int y = 0; y < Data.scene->AllModels[x]->Meshes.size(); y++)
 					{
-						TransformComponent& t = *scData.scene->AllModels[x]->GetComponent<TransformComponent>();
-						
-						ImGui::DragFloat3("Position", glm::value_ptr(t.Position));
-						ImGui::DragFloat3("Rotation", glm::value_ptr(t.Rotation), 1, -180, 180);
-						ImGui::DragFloat3("Scaling", glm::value_ptr(t.Scaling));
-						
-					}
-
-					for (int y = 0; y < scData.scene->AllModels[x]->Meshes.size(); y++)
-					{
-						ImGuiTreeNodeFlags node_flags = entity_base_flags;
-						if (scData.selected == &scData.scene->AllModels[x]->Meshes[y])
+						ImGuiTreeNodeFlags node_flags = entity_base_flags | ImGuiTreeNodeFlags_Leaf;
+						if (Data.selected == Data.scene->AllModels[x]->Meshes[y])
 						{
 							node_flags |= ImGuiTreeNodeFlags_Selected;
 						}
 
-						bool open = ImGui::TreeNodeEx((void*)(intptr_t)y, node_flags, scData.scene->AllModels[x]->Meshes[y].Name.c_str());
+						ImGui::TreeNodeEx((void*)(intptr_t)y, node_flags, Data.scene->AllModels[x]->Meshes[y]->Name.c_str());
 						if (ImGui::IsItemClicked() && !ImGui::IsItemToggledOpen())
-							scData.selected = &scData.scene->AllModels[x]->Meshes[y];
+							Data.selected = Data.scene->AllModels[x]->Meshes[y];
 
-
-						if (open) {
-							TransformComponent& t = *scData.scene->AllModels[x]->Meshes[y].GetComponent<TransformComponent>();
-
-							ImGui::DragFloat3("Position", glm::value_ptr(t.Position));
-							ImGui::DragFloat3("Rotation", glm::value_ptr(t.Rotation), 1, 0, 360);
-							ImGui::DragFloat3("Scaling", glm::value_ptr(t.Scaling));
-
-							ImGui::TreePop();
-						}
+						ImGui::TreePop();
 					}
 
 					ImGui::TreePop();
@@ -123,40 +123,78 @@ namespace Steve
 		if (ImGui::TreeNode("Point lights"))
 		{
 			if (ImGui::Button("Add pointlight")) {
-				scData.scene->AddPointLight(glm::vec3(0.0), glm::vec3(1.0));
+				Data.scene->AddPointLight(glm::vec3(0.0), glm::vec3(1.0));
 			}
 
-			for (int x = 0; x < scData.scene->PointLights.size(); x++)
+			for (int x = 0; x < Data.scene->PointLights.size(); x++)
 			{
-				ImGuiTreeNodeFlags node_flags = entity_base_flags;
-				if (scData.selected == scData.scene->PointLights[x])
+				ImGuiTreeNodeFlags node_flags = entity_base_flags | ImGuiTreeNodeFlags_Leaf;
+				if (Data.selected == Data.scene->PointLights[x])
 				{
 					node_flags |= ImGuiTreeNodeFlags_Selected;
 				}
 
-				bool open = ImGui::TreeNodeEx((void*)(intptr_t)x, node_flags, scData.scene->PointLights[x]->Name.c_str());
+				ImGui::TreeNodeEx((void*)(intptr_t)x, node_flags, Data.scene->PointLights[x]->Name.c_str());
 				if (ImGui::IsItemClicked() && !ImGui::IsItemToggledOpen())
-					scData.selected = scData.scene->PointLights[x];
-
-				if (open)
-				{
-					TransformComponent& t = *scData.scene->PointLights[x]->GetComponent<TransformComponent>();
-
-					ImGui::DragFloat3("Position", glm::value_ptr(t.Position));
-					ImGui::DragFloat3("Rotation", glm::value_ptr(t.Rotation));
-					ImGui::DragFloat3("Scaling", glm::value_ptr(t.Scaling));
-
-					scData.scene->PointLights[x]->SetUniformPosition(t.Position);
-					// scData.scene->PointLights[x]->SetColor(color);
-
-					ImGui::TreePop();
-				}
+					Data.selected = Data.scene->PointLights[x];
+				ImGui::TreePop();
 			}
 
 			ImGui::TreePop();
 		}
 
 		RenameFunction();
+
+		PropertiesPanel();
+
+		ImGui::End();
+	}
+
+	void SceneHierarchyPanel::PropertiesPanel()
+	{
+		using namespace graphics;
+
+		ImGui::Begin("Properties");
+
+		Entity* ent = Data.selected;
+		if (ent == nullptr)
+		{
+			ImGui::End();
+			return;
+		}
+
+		std::string header = "";
+		std::vector<std::string> types = ent->TypeToString();
+		for(int x = 0; x < types.size(); x++)
+		{
+			if (x > 0)
+				header += " & ";
+			header += types[x];
+		}
+
+		ImGui::TextColored(ImColor(128,128,128,255), "%s: '%s'", header.c_str(), ent->Name.c_str());
+		ImGui::Separator();
+
+		if (ent->Contains<TransformComponent>() && ImGui::CollapsingHeader("Transform", ImGuiTreeNodeFlags_DefaultOpen))
+		{
+			TransformComponent& t = *ent->GetComponent<TransformComponent>();
+
+			ImGui::DragFloat3("Position", value_ptr(t.Position));
+			ImGui::DragFloat3("Rotation", value_ptr(t.Rotation));
+			ImGui::DragFloat3("Scaling", value_ptr(t.Scaling));
+			
+			if (ent->Type & POINTLIGHT_ENTITY)
+			{
+				((PointLight*)ent)->SetUniformPosition(t.Position);
+			}
+		}
+
+		if (ent->Type & POINTLIGHT_ENTITY && ImGui::CollapsingHeader("Light settings", ImGuiTreeNodeFlags_DefaultOpen))
+		{
+			glm::vec3 color = ((PointLight*)ent)->GetColor();
+			ImGui::ColorEdit3("Color", value_ptr(color));
+			((PointLight*)ent)->SetColor(color);
+		}
 
 		ImGui::End();
 	}

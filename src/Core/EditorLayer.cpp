@@ -1,5 +1,7 @@
 #include "EditorLayer.h"
 
+#include <ImGuizmo.h>
+
 namespace Steve
 {
 	void EditorLayer::OnAttach()
@@ -14,7 +16,7 @@ namespace Steve
 
 	void EditorLayer::OnEvent(Event& event)
 	{
-		CORE_INFO(event.GetName())
+		// CORE_INFO(event.GetName());
 	}
 
 	void EditorLayer::OnUpdate(Timestep ts)
@@ -48,7 +50,7 @@ namespace Steve
 
 	void EditorLayer::OnImGuiRender()
 	{
-		return;
+
 		using namespace graphics;
 		// Note: Switch this to true to enable dockspace
 		static bool dockspaceOpen = true;
@@ -121,6 +123,29 @@ namespace Steve
 
 		uint64_t textureID = App->Framebuffer->getColorAttachID();
 		ImGui::Image(reinterpret_cast<void*>(textureID), viewportPanelSize, ImVec2{ 0, 1 }, ImVec2{ 1, 0 });
+
+		// Guizmo
+		if (SceneHierarchyPanel::Data.selected)
+		{
+			ImGuizmo::SetOrthographic(false);
+			ImGuizmo::SetDrawlist();
+
+			auto viewportMinRegion = ImGui::GetWindowContentRegionMin();
+			auto viewportOffset = ImGui::GetWindowPos();
+			ImGuizmo::SetRect(viewportMinRegion.x + viewportOffset.x, viewportMinRegion.y + viewportOffset.y, ViewportWindowSize.x, ViewportWindowSize.y);
+
+			glm::mat4 proj = App->Sc.Camera->GetProjectionMatrix();
+			glm::mat4 view = App->Sc.Camera->GetViewMatrix();
+
+			TransformComponent& transform = SceneHierarchyPanel::Data.selected->GetComponent<TransformComponent>();
+			glm::mat4 matrix = transform.GetMatrix();
+
+			ImGuizmo::Manipulate(value_ptr(view), value_ptr(proj), ImGuizmo::OPERATION::TRANSLATE, ImGuizmo::LOCAL, value_ptr(matrix));
+
+			// ImGuizmo::DrawCubes(glm::value_ptr(proj), glm::value_ptr(view), glm::value_ptr(glm::mat4(1.0f)), 1);
+
+			ImGuizmo::DecomposeMatrixToComponents(value_ptr(matrix), (float*) & transform.Position, (float*)&transform.Rotation, (float*)&transform.Scaling);
+		}
 
 		ImGui::End();
 

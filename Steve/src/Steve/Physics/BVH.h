@@ -28,9 +28,9 @@ namespace Steve
 		std::tuple<CollisionBody*, AABB> GenerateAABB(Entity* entity);
 
 	private:
-		void InsertPrimitive(Node* current, Node* n);
+		void InsertPrimitive(CollisionNod* current, CollisionNod* n);
 
-		std::vector<Node> Nodes;
+		std::vector<CollisionNod> Nodes;
 
 	};
 }

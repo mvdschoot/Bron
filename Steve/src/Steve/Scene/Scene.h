@@ -14,6 +14,8 @@
 #include "Steve/Graphics/Camera.h"
 #include "Steve/Graphics/Renderer/2D.h"
 
+#include "Node.h"
+
 namespace Steve::graphics
 {
 	class Scene : public Registry

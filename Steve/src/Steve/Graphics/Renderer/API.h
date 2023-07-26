@@ -28,6 +28,9 @@ namespace Steve::graphics
 		virtual void clear() = 0;
 		virtual void onResize(float x, float y, float width, float height) = 0;
 
+		virtual void EnableBlend() = 0;
+		virtual void EnableDepth() = 0;
+
 		virtual void drawIndexed(const Ref<VertexArray>& v_array, u32 count) = 0;
 		virtual void drawIndexedLines(const Ref<VertexArray>& v_array, u32 count) = 0;
 		virtual void drawIndexedStripLines(const Ref<VertexArray>& v_array, u32 count) = 0;

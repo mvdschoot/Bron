@@ -39,11 +39,16 @@ namespace Steve::graphics
 		void clear() override;
 		void onResize(float x, float y, float width, float height) override;
 
+		void EnableBlend() override;
+		void EnableDepth() override;
+
 		void drawIndexed(const std::shared_ptr<VertexArray>& v_array, u32 count) override;
 		void drawIndexedLines(const std::shared_ptr<VertexArray>& v_array, u32 count) override;
 		void drawIndexedStripLines(const std::shared_ptr<VertexArray>& v_array, u32 count) override;
 
 	private:
+
+		bool _blend_enabled;
 	};
 } // namespace Steve
 

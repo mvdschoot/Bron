@@ -45,13 +45,13 @@ namespace Steve::graphics
 			shader->setUniformMat4("uViewMatrix", scene.Camera->GetViewMatrix());
 			Statistics.UniformCalls += 3;
 			
-			// for(int x = 0; x < scene.PointLights.size(); x++)
-			// {
-			// 	TransformComponent& t = scene.PointLights[x]->GetComponent<TransformComponent>();
-			// 	LightData& l = scene.PointLights[x]->GetComponent<LightData>();
-			// 	shader->setUniforms(*l.Layout, l.Data);
-			// 	Statistics.UniformCalls += l.Layout->Data.size();
-			// }
+			for(int x = 0; x < scene.PointLights.size(); x++)
+			{
+				TransformComponent& t = scene.PointLights[x]->GetComponent<TransformComponent>();
+				LightData& l = scene.PointLights[x]->GetComponent<LightData>();
+				shader->setUniforms(*l.Layout, l.Data);
+				Statistics.UniformCalls += l.Layout->Data.size();
+			}
 
 			for (auto& [model, materials] : set.pSet) {
 				Statistics.Models++;

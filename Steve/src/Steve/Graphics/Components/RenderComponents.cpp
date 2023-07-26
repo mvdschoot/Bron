@@ -10,7 +10,7 @@ namespace Steve::graphics
 	void Mesh::setVertexData(void* vertex_data, uint64_t vertex_data_size)
 	{
 		const Ref<VertexBuffer> b = VertexBuffer::Create((float*)vertex_data, vertex_data_size);
-		b->setBufferLayout(mBufferLayout);
+		b->setBufferLayout(*mBufferLayout);
 		pVao->addVertexBuffer(b);
 	}
 
@@ -27,13 +27,13 @@ namespace Steve::graphics
 
 	glm::vec3 Cube::GetColor() const
 	{
-		return *Meshes[0].pContext->pMaterial->Get<glm::vec3>(MaterialDataTypes::Diffuse);
+		return *Meshes[0]->pContext->pMaterial->Get<glm::vec3>(MaterialDataTypes::Diffuse);
 	}
 
 	void Cube::SetColor(glm::vec3 color)
 	{
-		Meshes[0].pContext->pMaterial->Set(MaterialDataTypes::Diffuse, color);
-		Meshes[0].pContext->pMaterial->Set(MaterialDataTypes::Specular, color);
+		Meshes[0]->pContext->pMaterial->Set(MaterialDataTypes::Diffuse, color);
+		Meshes[0]->pContext->pMaterial->Set(MaterialDataTypes::Specular, color);
 	}
 
 	void PointLight::SetColor(glm::vec3 color)
@@ -49,6 +49,9 @@ namespace Steve::graphics
 
 	PointLight::PointLight(RegistryData* reg, UniformData<LightDataTypes>&& context): Cube(StandardCubeComponent(reg))
 	{
+		Type |= POINTLIGHT_ENTITY;
+		Meshes[0]->Type |= POINTLIGHT_ENTITY;
+
 		// LightData is so light is shining, TransformComponent is so light mesh is rendered
 		Handle<LightData>& l = AddComponent<LightData>(std::move(context));
 		

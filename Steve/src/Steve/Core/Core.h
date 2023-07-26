@@ -4,6 +4,8 @@
 #include <cstdint>
 #include <memory>
 
+#include "Config.h"
+
 #define PI 3.14159265358979323846
 #define BIT(x) (1 << x)
 
@@ -26,6 +28,23 @@
 #define CH_STRINGIFY_MACRO(x) #x
 
 #define FOLD_LAMBDA_WITH_REFERENCE(expr) ([&, this]() expr, ...);
+
+#define BIT_FLAG_ENUM(name, ...) \
+    enum name { __VA_ARGS__ }; \
+    inline std::string GET_ENUM_STRING(name value) \
+    { \
+        struct Entry { name value; const char* nameStr; }; \
+        const Entry entries[] = { __VA_ARGS__, {name(0), "None"} }; \
+        for (const auto& entry : entries) \
+        { \
+            if (entry.value == value) \
+            { \
+                os << entry.nameStr; \
+                return os; \
+            } \
+        } \
+        return os << static_cast<int>(value); \
+    }
 
 #if defined(_MSC_VER)
 	#define CH_PLATFORM_WINDOWS
@@ -58,7 +77,7 @@
 	#endif
 #endif
 
-#if CH_COMPILE
+#if defined(CH_COMPILE)
 	#define STEVE_API DLL_EXPORT
 #else
 	#define STEVE_API DLL_IMPORT

@@ -22,6 +22,16 @@ namespace Steve::graphics
 		_renderer_api->clear();
 	}
 
+	void Command::EnableBlend()
+	{
+		_renderer_api->EnableBlend();
+	}
+
+	void Command::EnableDepth()
+	{
+		_renderer_api->EnableDepth();
+	}
+
 	void Command::DrawIndexed(const Ref<VertexArray>& v_array, u32 count)
 	{
 		_renderer_api->drawIndexed(v_array, count);

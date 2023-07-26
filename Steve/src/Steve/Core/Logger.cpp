@@ -8,7 +8,7 @@ namespace Steve
 	void Logger::Init()
 	{
 		spdlog::set_pattern("%^[%T] %n: %v%$");
-		_core_logger = spdlog::stdout_color_mt("CHEETS");
+		_core_logger = spdlog::stdout_color_mt("STEVE");
 		_app_logger = spdlog::stdout_color_mt("APP");
 
 		_core_logger->set_level(spdlog::level::trace);

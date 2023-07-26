@@ -8,8 +8,8 @@ namespace Steve
 
 	void AppLayer::OnAttach() {
 		// R2D::Init();
+		Command::Init();
 		SceneRenderer::Init();
-		// LineRenderer::Init();
 		// TextRenderer::Init();
 		// TextRenderer::LoadUnicodeFont("../../../Assets/bitter/BitterPro-Regular.ttf", 200);
 
@@ -29,16 +29,20 @@ namespace Steve
 
 		Sc.AddPointLight({ 4.0, 2.0, 4.0 }, { 1.0, 1.0, 1.0 });
 
-		LightData& l = *Sc.PointLights[0]->GetComponent<LightData>();
+		Handle<LightData>& l = Sc.PointLights[0]->GetComponent<LightData>();
 		Sc.AddPointLight({ -2.0, 2.0, -2.0 }, { 1.0, 1.0, 1.0 });
 
-		Command::ClearColor({1.0, 0.0, 1.0, 0.5});
+		Command::ClearColor({0.0, 0.0, 0.0, 0.5});
+		APP_INFO("Pointlight 1 ID: {}", Sc.PointLights[0]->Id.p_UUID);
 
 		Cube = Sc.AddCube("The cube", {0,3,0}, {1,1,1});
 		Cube->AddComponent<CubeCollisionBody>({{true, Cube->GetComponent<TransformComponent>()}, {1,1,1} });
 
 		Bvh.AddNode(Cube);
 		// Bvh.AddNode(Sc.AllModels[0]);
+
+
+		GridRenderer::Init(Camera);
 	}
 	
 	void AppLayer::OnDetach() {
@@ -95,15 +99,17 @@ namespace Steve
 	void AppLayer::OnUpdate(const Timestep ts) {
 		Ts = ts;
 
-		// Framebuffer->bind();
+		Framebuffer->bind();
 		Command::clear();
 
 
 		IsKeyPressed(ts);
 		Camera->SetPosition(Pos);
 
-		TransformComponent& t = Sc.PointLights[0]->GetComponent<TransformComponent>();
+		Command::EnableBlend();
+		GridRenderer::Draw();
 
+		Command::EnableDepth();
 		graphics::SceneRenderer::Draw(Sc);
 
 		Framebuffer->unbind();

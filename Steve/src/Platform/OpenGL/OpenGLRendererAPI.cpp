@@ -15,7 +15,6 @@ namespace Steve::graphics
 	void OpenGLRendererAPI::clear()
 	{
 		CH_PROFILE_FUNCTION();
-		glEnable(GL_DEPTH_TEST);
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 	}
 
@@ -25,13 +24,34 @@ namespace Steve::graphics
 		glViewport(x, y, width, height);
 	}
 
+	void OpenGLRendererAPI::EnableBlend()
+	{
+		if (_blend_enabled)
+		{
+			return;
+		}
+		_blend_enabled = true;
+		glDisable(GL_DEPTH_TEST);
+		glEnable(GL_BLEND);
+		glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+	}
+
+	void OpenGLRendererAPI::EnableDepth()
+	{
+		if (!_blend_enabled)
+			return;
+		_blend_enabled = false;
+		glDisable(GL_BLEND);
+		glEnable(GL_DEPTH_TEST);
+		glDepthFunc(GL_LEQUAL);
+	}
+
 	void OpenGLRendererAPI::drawIndexed(const std::shared_ptr<VertexArray>& v_array, u32 count)
 	{
 		CH_PROFILE_FUNCTION();
-
-		u32 c = count ? count : v_array->getIndexBuffer()->getCount();
+		
 		v_array->bind();
-		glDrawElements(GL_TRIANGLES, c, GL_UNSIGNED_INT, nullptr);
+		glDrawElements(GL_TRIANGLES, count, GL_UNSIGNED_INT, nullptr);
 		glBindTexture(GL_TEXTURE_2D, 0);
 	}
 
@@ -58,7 +78,6 @@ namespace Steve::graphics
 	void OpenGLRendererAPI::Init()
 	{
 		CH_PROFILE_FUNCTION();
-		glEnable(GL_BLEND);
-		glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+
 	}
 }

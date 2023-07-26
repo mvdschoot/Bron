@@ -69,7 +69,7 @@ void main()
 
 	// Diffuse lighting
 	// Lot of duplicate code, because now only 1 if-statement
-	vec4 diffuse = vec4(0.0);
+	vec4 diffuse = vec4(0,0,0,1);
 	vec4 initDiffuseColor;
 	if (uMaterial.DiffuseTexture == 0.0) {
 		initDiffuseColor = vec4(uMaterial.Diffuse, 1.0);
@@ -92,7 +92,7 @@ void main()
 		initSpecularColor = texture(uTextures[int(uMaterial.SpecularTexture)], f_TexCoords);
 	}
 	
-	vec4 specular = vec4(0.0);
+	vec4 specular = vec4(0,0,0,1);
 	for(int i = 0; i < 32; i++) {
 		vec3 lightDir = normalize(uLight[i].Position - f_Position);
 		vec3 reflectDir = reflect(-lightDir, norm);

@@ -166,7 +166,7 @@ namespace Steve::graphics
 		MeshContext(Shader* shader, Material* material)
 			: pMaterial(material), pShader(shader) {}
 
-		~MeshContext() = default;
+		~MeshContext() = default; 
 
 		Material* pMaterial;
 		Shader* pShader;
@@ -176,25 +176,18 @@ namespace Steve::graphics
 	class Mesh : public Entity
 	{
 	public:
-
-
-		Mesh(const Mesh& mesh)
-			: Entity(mesh), pContext(mesh.pContext), pVao(mesh.pVao), mBufferLayout(mesh.mBufferLayout)
-		{
-		}
-
-		Mesh(RegistryData* reg, const BufferLayout& layout)
-			: Entity(reg), mBufferLayout(layout)
+		Mesh(RegistryData* reg, const BufferLayout* layout)
+			: Entity(reg, MESH_ENTITY), mBufferLayout(layout)
 		{
 			AddComponent<TransformComponent>();
 		}
 
 		Mesh(RegistryData* reg, 
-			const BufferLayout& layout,
+			const BufferLayout* layout,
 			void* vertex_data, usize vertex_size,
 			u32* index_data, usize index_count,
 			MeshContext* context) :
-					Entity(reg),
+					Entity(reg, MESH_ENTITY),
 					pContext(context),
 					pVao(VertexArray::Create()),
 					mBufferLayout(layout)
@@ -215,21 +208,30 @@ namespace Steve::graphics
 		MeshContext* pContext;
 		Ref<VertexArray> pVao;
 	private:
-		const BufferLayout& mBufferLayout;
+		const BufferLayout* mBufferLayout;
 	};
 
 	struct Model : public Entity
 	{
 		Model(RegistryData* reg)
-			: Entity(reg)
+			: Entity(reg, MODEL_ENTITY)
 		{
 			AddComponent<TransformComponent>();
 		}
 
-		std::vector<Mesh> Meshes;
+		std::vector<Mesh*> Meshes;
+
 		
 		virtual glm::vec3 GetPosition();
+
+		template <typename ... Ts>
+		Mesh* AddMesh(Ts&&... args)
+		{
+			Meshes.push_back(&CreateChildEntity<Mesh>(args...));
+			return Meshes.back();
+		}
 	};
+
 
 	struct Cube : public Model
 	{

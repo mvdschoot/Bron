@@ -16,6 +16,10 @@ namespace Steve::graphics
 		static void Init();
 		static void ClearColor(const glm::vec4& color);
 		static void clear();
+
+		static void EnableBlend();
+		static void EnableDepth();
+
 		static void DrawIndexed(const Ref<VertexArray>& v_array, u32 count);
 		static void DrawIndexedLines(const Ref<VertexArray>& v_array, u32 count);
 		static void DrawIndexedStripLines(const Ref<VertexArray>& v_array, u32 count);

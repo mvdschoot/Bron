@@ -38,16 +38,16 @@ namespace Steve
 		void ResizeTo(AABB& other);
 	};
 	
-	struct Node
+	struct CollisionNod
 	{
 		AABB Box;
 
 		// Has body if it is a leaf
 		CollisionBody* Body;
 
-		Node* Left, * Right;
+		CollisionNod* Left, * Right;
 
-		std::vector<Node*> Primitives;
+		std::vector<CollisionNod*> Primitives;
 	};
 
 

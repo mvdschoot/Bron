@@ -42,6 +42,9 @@ namespace Steve
 	// Assertions
 	#define APP_ASSERT(x, msg) {if(!(x)) { APP_ERROR(msg); CH_DEBUGBREAK} }
 	#define CORE_ASSERT(x, msg) {if(!(x)) { CORE_ERROR(msg); CH_DEBUGBREAK} }
+
+	#define APP__STATIC_ASSERT(x) (static_assert(x))
+	#define CORE_STATIC_ASSERT(x) (static_assert(x))
 #else
 	#define CORE_ERROR(...)
 	#define CORE_WARN(...) 

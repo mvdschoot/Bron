@@ -33,9 +33,9 @@ namespace Steve
 		CORE_ASSERT(false, "No collision body detected")
 	}
 
-	void BVH::InsertPrimitive(Node* current, Node* n)
+	void BVH::InsertPrimitive(CollisionNod* current, CollisionNod* n)
 	{
-		Node& c = *current;
+		CollisionNod& c = *current;
 		if (c.Left != nullptr) {
 			if (c.Left->Box.Contains(c.Box))
 			{

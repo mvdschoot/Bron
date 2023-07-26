@@ -39,15 +39,15 @@ namespace Steve::graphics
 			memset(new_verts + x + (2 * vec_size), 0, sizeof(glm::vec2));
 		}
 
-		Meshes.emplace_back(
+		AddMesh(
 			pRegData,
-			*StandardVertexLayout,
+			StandardVertexLayout,
 			new_verts, 24 * stride,
 			indices, 36,
 			context
 		);
 
-		Meshes[0].Name = "Cube mesh";
+		Meshes[0]->Name = "Cube mesh";
 
 		delete[] new_verts;
 		delete[] vertices;
@@ -189,15 +189,15 @@ namespace Steve::graphics
 			context = c;
 		}
 
-		Meshes.emplace_back(
+		AddMesh(
 			pRegData,
-			*StandardVertexLayout,
+			StandardVertexLayout,
 			vertices, mesh->mNumVertices * sizeof(StandardVertexBuffer),
 			indices, num_indices,
 			context
 		);
 
-		Meshes.back().Name = "Mesh " + std::to_string(Meshes.size() - 1);
+		Meshes.back()->Name = "Mesh " + std::to_string(Meshes.size() - 1);
 
 		delete[] indices;
 		delete[] vertices;

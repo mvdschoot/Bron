@@ -7,7 +7,7 @@
 
 #include "Steve/Graphics/Texture.h"
 
-#include "Steve/Graphics/Scene/Scene.h"
+#include "Steve/Scene/Scene.h"
 
 namespace Steve::graphics
 {
