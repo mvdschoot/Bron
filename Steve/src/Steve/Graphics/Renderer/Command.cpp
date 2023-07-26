@@ -2,7 +2,7 @@
 
 #include "Platform/OpenGL/OpenGLRendererAPI.h"
 
-namespace Steve::graphics
+namespace Steve
 {
 	void Command::Init()
 	{

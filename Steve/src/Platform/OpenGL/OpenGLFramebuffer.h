@@ -8,7 +8,7 @@
 
 #include "glad/glad.h"
 
-namespace Steve::graphics
+namespace Steve
 {
 	class OpenGLFramebuffer : public Framebuffer
 	{

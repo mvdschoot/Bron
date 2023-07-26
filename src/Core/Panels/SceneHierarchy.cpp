@@ -4,7 +4,7 @@ namespace Steve
 {
 	SceneHierarchyPanelData SceneHierarchyPanel::Data;
 
-	void SceneHierarchyPanel::OnAttach(graphics::Scene* scene)
+	void SceneHierarchyPanel::OnAttach(Scene* scene)
 	{
 		Data.scene = scene;
 		Data.selected = nullptr;
@@ -47,9 +47,6 @@ namespace Steve
 
 	void SceneHierarchyPanel::OnImguiRender()
 	{
-		// return;
-		using namespace graphics;
-
 		ImGui::Begin("Scene Hierarchy");
 		ImGuiTreeNodeFlags entity_base_flags = ImGuiTreeNodeFlags_OpenOnArrow | ImGuiTreeNodeFlags_OpenOnDoubleClick | ImGuiTreeNodeFlags_SpanAvailWidth;
 
@@ -152,7 +149,6 @@ namespace Steve
 
 	void SceneHierarchyPanel::PropertiesPanel()
 	{
-		using namespace graphics;
 
 		ImGui::Begin("Properties");
 

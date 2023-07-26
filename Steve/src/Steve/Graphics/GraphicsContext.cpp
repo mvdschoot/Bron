@@ -3,7 +3,7 @@
 #include "Platform/OpenGL/OpenGLContext.h"
 #include "Steve/Core/Platform.h"
 
-namespace Steve::graphics
+namespace Steve
 {
 	Ref<GraphicsContext> GraphicsContext::Create(GLFWwindow* window)
 	{

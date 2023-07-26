@@ -7,14 +7,14 @@ namespace Steve
 {
 	struct SceneHierarchyPanelData
 	{
-		graphics::Scene* scene;
+		Scene* scene;
 		Entity* selected;
 	};
 
 	class SceneHierarchyPanel
 	{
 	public:
-		static void OnAttach(graphics::Scene* scene);
+		static void OnAttach(Scene* scene);
 		static void RenameFunction();
 		static void OnImguiRender();
 		static void PropertiesPanel();

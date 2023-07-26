@@ -9,7 +9,7 @@
 
 #include "Steve/Scene/Scene.h"
 
-namespace Steve::graphics
+namespace Steve
 {
 	struct RenderStatistics
 	{

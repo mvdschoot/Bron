@@ -4,8 +4,6 @@
 
 namespace Steve
 {
-	using namespace graphics;
-
 	void AppLayer::OnAttach() {
 		// R2D::Init();
 		Command::Init();
@@ -110,7 +108,7 @@ namespace Steve
 		GridRenderer::Draw();
 
 		Command::EnableDepth();
-		graphics::SceneRenderer::Draw(Sc);
+		SceneRenderer::Draw(Sc);
 
 		Framebuffer->unbind();
 	}

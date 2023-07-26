@@ -8,7 +8,7 @@
 #include "glm/glm.hpp"
 #include "glm/gtc/matrix_transform.hpp"
 
-namespace Steve::graphics
+namespace Steve
 {
 	class STEVE_API OrthographicCamera : public Camera
 	{

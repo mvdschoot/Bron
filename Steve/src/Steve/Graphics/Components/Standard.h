@@ -10,7 +10,7 @@
 
 #include "RenderComponents.h"
 
-namespace Steve::graphics {
+namespace Steve {
 
 	class StandardCubeComponent : public Cube
 	{

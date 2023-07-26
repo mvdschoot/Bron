@@ -16,7 +16,7 @@
 
 #include "Node.h"
 
-namespace Steve::graphics
+namespace Steve
 {
 	class Scene : public Registry
 	{

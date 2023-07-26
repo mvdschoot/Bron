@@ -13,7 +13,7 @@
 
 #include <string>
 
-namespace Steve::graphics
+namespace Steve
 {
 	class OpenGLContext : public GraphicsContext
 	{

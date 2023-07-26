@@ -14,7 +14,7 @@
 
 #include "glm/glm.hpp"
 
-namespace Steve::graphics
+namespace Steve
 {
 
 	/*

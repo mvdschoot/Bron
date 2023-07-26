@@ -35,12 +35,12 @@ namespace Steve
 			if (ImGui::CollapsingHeader("3D scene renderer", ImGuiTreeNodeFlags_DefaultOpen))
 			{
 				ImGui::Indent();
-				ImGui::Text("Shaders: %d", graphics::SceneRenderer::Statistics.Shaders);
-				ImGui::Text("Models: %d", graphics::SceneRenderer::Statistics.Models);
-				ImGui::Text("Materials: %d", graphics::SceneRenderer::Statistics.Materials);
-				ImGui::Text("Meshes: %d", graphics::SceneRenderer::Statistics.Meshes);
-				ImGui::Text("Draw calls: %d", graphics::SceneRenderer::Statistics.DrawCalls);
-				ImGui::Text("Uniform calls: %d", graphics::SceneRenderer::Statistics.UniformCalls);
+				ImGui::Text("Shaders: %d", SceneRenderer::Statistics.Shaders);
+				ImGui::Text("Models: %d", SceneRenderer::Statistics.Models);
+				ImGui::Text("Materials: %d", SceneRenderer::Statistics.Materials);
+				ImGui::Text("Meshes: %d", SceneRenderer::Statistics.Meshes);
+				ImGui::Text("Draw calls: %d", SceneRenderer::Statistics.DrawCalls);
+				ImGui::Text("Uniform calls: %d", SceneRenderer::Statistics.UniformCalls);
 			}
 
 			ImGui::End();
@@ -50,8 +50,7 @@ namespace Steve
 
 	void EditorLayer::OnImGuiRender()
 	{
-
-		using namespace graphics;
+		
 		// Note: Switch this to true to enable dockspace
 		static bool dockspaceOpen = true;
 		static bool opt_fullscreen_persistant = true;

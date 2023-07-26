@@ -11,7 +11,7 @@
 #include <gtx/quaternion.hpp>
 
 
-namespace Steve::graphics
+namespace Steve
 {
 	struct TransformComponent
 	{

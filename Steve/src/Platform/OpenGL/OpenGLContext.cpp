@@ -1,7 +1,7 @@
 #include "OpenGLContext.h"
 
 
-namespace Steve::graphics
+namespace Steve
 {
 	OpenGLContext::OpenGLContext(GLFWwindow* window)
 		: _graphics_window(window)

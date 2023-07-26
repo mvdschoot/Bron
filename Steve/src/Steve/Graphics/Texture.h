@@ -6,7 +6,7 @@
 
 #include <string>
 
-namespace Steve::graphics
+namespace Steve
 {
 
 	class STEVE_API Texture

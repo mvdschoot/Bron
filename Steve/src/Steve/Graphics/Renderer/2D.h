@@ -14,7 +14,7 @@
 #include <array>
 
 
-namespace Steve::graphics
+namespace Steve
 {
 	class STEVE_API R2D
 	{

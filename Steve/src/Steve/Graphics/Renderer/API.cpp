@@ -1,5 +1,5 @@
 #include "API.h"
 
-namespace Steve::graphics
+namespace Steve
 {
 }

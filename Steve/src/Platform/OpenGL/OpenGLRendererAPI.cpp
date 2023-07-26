@@ -1,6 +1,6 @@
 #include "OpenGLRendererAPI.h"
 
-namespace Steve::graphics
+namespace Steve
 {
 	OpenGLRendererAPI::OpenGLRendererAPI()
 	{

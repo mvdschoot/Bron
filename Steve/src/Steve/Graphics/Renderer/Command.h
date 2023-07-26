@@ -8,7 +8,7 @@
 
 #include "glm/glm.hpp"
 
-namespace Steve::graphics
+namespace Steve
 {
 	class STEVE_API Command
 	{

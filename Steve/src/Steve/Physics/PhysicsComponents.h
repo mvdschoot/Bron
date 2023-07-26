@@ -21,7 +21,7 @@ namespace Steve
 		bool Active = true;
 
 		// We assume Transform.Position = centroid.
-		Handle<graphics::TransformComponent>& Transform;
+		Handle<TransformComponent>& Transform;
 	};
 
 

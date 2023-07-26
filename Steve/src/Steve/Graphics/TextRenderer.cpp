@@ -2,7 +2,7 @@
 
 #include <iostream>
 
-namespace Steve::graphics
+namespace Steve
 {
 	struct TextRenderData
 	{

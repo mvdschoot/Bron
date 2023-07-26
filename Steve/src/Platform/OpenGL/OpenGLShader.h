@@ -13,7 +13,7 @@
 #include <regex>
 #include <fstream>
 
-namespace Steve::graphics
+namespace Steve
 {
 	class OpenGLShader : public Shader
 	{

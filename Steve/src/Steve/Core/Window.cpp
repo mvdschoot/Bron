@@ -10,8 +10,8 @@ namespace Steve
 		switch (Platform::getOS())
 		{
 		case Platform::OS::None: CORE_ASSERT(false, "No OS selected!");
-		case Platform::OS::Windows: return createRef<graphics::LinuxWindow>(w_props);
-		case Platform::OS::Linux: return createRef<graphics::LinuxWindow>(w_props);
+		case Platform::OS::Windows: return createRef<LinuxWindow>(w_props);
+		case Platform::OS::Linux: return createRef<LinuxWindow>(w_props);
 		}
 		return nullptr;
 	}

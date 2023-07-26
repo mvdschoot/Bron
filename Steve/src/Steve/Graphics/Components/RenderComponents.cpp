@@ -5,7 +5,7 @@
 
 #include "ImGuizmo.h"
 
-namespace Steve::graphics
+namespace Steve
 {
 	void Mesh::setVertexData(void* vertex_data, uint64_t vertex_data_size)
 	{

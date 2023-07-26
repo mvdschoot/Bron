@@ -2,7 +2,7 @@
 
 #include "Command.h"
 
-namespace Steve::graphics
+namespace Steve
 {
 	struct GridData
 	{

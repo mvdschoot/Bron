@@ -4,7 +4,7 @@
 #include "Steve/Core/Core.h"
 #include "Steve/Core/Logger.h"
 
-namespace Steve::graphics
+namespace Steve
 {
 	struct FramebufferSpecification
 	{

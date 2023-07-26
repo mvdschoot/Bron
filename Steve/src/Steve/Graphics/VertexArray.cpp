@@ -3,13 +3,13 @@
 #include "Steve/Core/Platform.h"
 #include "Platform/OpenGL/OpenGLVertexArray.h"
 
-namespace Steve::graphics
+namespace Steve
 {
 	Ref<VertexArray> VertexArray::Create()
 	{
 		switch (Platform::getAPI())
 		{
-		case Platform::API::OpenGL: return createRef<graphics::OpenGLVertexArray>();
+		case Platform::API::OpenGL: return createRef<OpenGLVertexArray>();
 		case Platform::API::None: CORE_ERROR("No rendering engine selected");
 		}
 

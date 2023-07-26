@@ -12,7 +12,7 @@
 #include <memory>
 #include <vector>
 
-namespace Steve::graphics
+namespace Steve
 {
 	class OpenGLVertexArray : public VertexArray
 	{

@@ -18,7 +18,7 @@
 #include "glm/glm.hpp"
 #include "glm/gtc/type_ptr.hpp"
 
-namespace Steve::graphics
+namespace Steve
 {
 	class Shader
 	{

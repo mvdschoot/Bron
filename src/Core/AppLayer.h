@@ -24,22 +24,22 @@ namespace Steve
 		uint32_t Width = 0;
 		uint32_t Height = 0;
 
-		Ref<graphics::Framebuffer> Framebuffer;
-		graphics::FramebufferSpecification FrSpec;
+		Ref<Framebuffer> Framebuffer;
+		FramebufferSpecification FrSpec;
 
-		graphics::FrustumCamera* Camera;
+		FrustumCamera* Camera;
 		float XZAngle = PI * -0.5;
 		float YAngle = 0;
 		float Radius = 10.0f;
 		float Zoom = 1.0f;
 		glm::vec3 Pos{0.0f, 0.0f, -1.0f};
 
-		graphics::StandardCubeComponent* Cube;
+		StandardCubeComponent* Cube;
 
 		BVH Bvh;
 
 		// Registry
-		graphics::Scene Sc;
+		Scene Sc;
 
 		// timestep
 		Steve::Timestep Ts;

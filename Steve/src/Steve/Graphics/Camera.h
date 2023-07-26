@@ -9,7 +9,7 @@
 
 #include "Steve/Core/Profiling.h"
 
-namespace Steve::graphics
+namespace Steve
 {
 	class STEVE_API Camera
 	{

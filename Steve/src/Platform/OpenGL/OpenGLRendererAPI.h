@@ -13,7 +13,7 @@
 
 #include <memory>
 
-namespace Steve::graphics
+namespace Steve
 {
 	class OpenGLRendererAPI : public API
 	{

@@ -14,7 +14,7 @@
 
 #include <string>
 
-namespace Steve::graphics
+namespace Steve
 {
 	class OpenGLTexture2D : public Texture2D
 	{

@@ -7,7 +7,7 @@
 
 #include "Steve/Graphics/Components/RenderComponents.h"
 
-namespace Steve::graphics
+namespace Steve
 {
 
 	template<typename T, typename C>

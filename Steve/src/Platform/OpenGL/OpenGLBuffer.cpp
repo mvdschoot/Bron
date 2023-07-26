@@ -2,7 +2,7 @@
 #include "Steve/Core/Profiling.h"
 #include "GLFW/glfw3.h"
 
-namespace Steve::graphics
+namespace Steve
 {
 	OpenGLVertexBuffer::OpenGLVertexBuffer(usize size)
 	{

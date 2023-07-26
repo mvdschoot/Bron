@@ -5,7 +5,7 @@
 #include "Steve/Graphics/Renderer/2D.h"
 #include "Steve/Graphics/Renderer/2D.h"
 
-namespace Steve::graphics
+namespace Steve
 {
 	Scene::Scene()
 		: Registry(), Root(new Entity(&pData))

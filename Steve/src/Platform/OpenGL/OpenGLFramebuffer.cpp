@@ -1,6 +1,6 @@
 #include "OpenGLFramebuffer.h"
 
-namespace Steve::graphics
+namespace Steve
 {
 	OpenGLFramebuffer::OpenGLFramebuffer(FramebufferSpecification& spec)
 		: _spec(spec)

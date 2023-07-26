@@ -1,7 +1,7 @@
 #include "2D.h"
 
 
-namespace Steve::graphics
+namespace Steve
 {
 	struct QuadVertex
 	{

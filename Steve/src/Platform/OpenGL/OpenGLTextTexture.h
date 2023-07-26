@@ -17,7 +17,7 @@
 #include <string>
 
 
-namespace Steve::graphics
+namespace Steve
 {
 	class OpenGLTextTexture : public TextTexture
 	{

@@ -1,6 +1,6 @@
 #include "RenderQueue.h"
 
-namespace Steve::graphics
+namespace Steve
 {
 	RenderQueue::RenderQueue()
 	{

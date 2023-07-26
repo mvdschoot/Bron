@@ -46,7 +46,7 @@ namespace Steve
 
 	private:
 		static Ref<Window> _window;
-		graphics::GraphicsContext* _graphics_context;
+		GraphicsContext* _graphics_context;
 
 		OverlayStack _overlay_stack;
 		ImGuiLayer* _imgui_layer;

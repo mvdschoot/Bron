@@ -20,7 +20,7 @@
 #include "Steve/Graphics/Renderer/2D.h"
 
 
-namespace Steve::graphics
+namespace Steve
 {
 	struct Character
 	{

@@ -3,7 +3,7 @@
 #include "assimp/Importer.hpp"
 #include "assimp/postprocess.h"
 
-namespace Steve::graphics
+namespace Steve
 {
 	StandardCubeComponent::StandardCubeComponent(RegistryData* reg)
 		: Cube(reg)

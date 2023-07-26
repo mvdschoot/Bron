@@ -3,7 +3,7 @@
 #include "Command.h"
 
 
-namespace Steve::graphics
+namespace Steve
 {
 	RenderStatistics SceneRenderer::Statistics = {};
 
