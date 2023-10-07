@@ -1,6 +1,6 @@
 #include "OpenGLShader.h"
 
-namespace Steve::graphics
+namespace Steve
 {
 	void OpenGLShader::bind()
 	{

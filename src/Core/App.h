@@ -4,18 +4,20 @@
 #include "Steve/src/Steve.h"
 
 #include "AppLayer.h"
+#include "EditorLayer.h"
 
 namespace Steve
 {
 	class App : public Application
 	{
-		public:
-			App();
-			~App();
+	public:
+		App();
+		~App();
 
-		private:
-			Overlay m_overlay;
-			AppLayer m_applayer;
+	private:
+		Overlay overlay;
+		AppLayer appLayer;
+		EditorLayer editorLayer;
 	};
 }
 

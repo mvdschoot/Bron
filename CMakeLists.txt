@@ -13,7 +13,12 @@ add_compile_definitions(CH_PROFILE)
 add_executable(LuigiMaker
 	src/Core/App.cpp
 	src/Core/AppLayer.cpp
+	src/Core/EditorLayer.cpp
+	src/Core/IconManagement.cpp
+ 
+	src/Core/Panels/SceneHierarchy.cpp
 )
+
 target_include_directories(LuigiMaker 
 	PUBLIC .
 	PUBLIC src

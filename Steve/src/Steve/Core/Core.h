@@ -4,6 +4,11 @@
 #include <cstdint>
 #include <memory>
 
+#include "Config.h"
+
+#define PI 3.14159265358979323846
+#define BIT(x) (1 << x)
+
 #define u8 uint8_t
 #define u16 uint16_t
 #define u32 uint32_t
@@ -23,6 +28,7 @@
 #define CH_STRINGIFY_MACRO(x) #x
 
 #define FOLD_LAMBDA_WITH_REFERENCE(expr) ([&, this]() expr, ...);
+
 
 #if defined(_MSC_VER)
 	#define CH_PLATFORM_WINDOWS
@@ -46,16 +52,16 @@
 
 #if defined(CH_DEBUG)
 	#ifdef CH_PLATFORM_WINDOWS
-	#define CH_DEBUGBREAK __debugbreak();
-#elif defined(CH_PLATFORM_LINUX)
+		#define CH_DEBUGBREAK __debugbreak();
+	#elif defined(CH_PLATFORM_LINUX)
 		#include <signal.h>
 		#define CH_DEBUGBREAK raise(SIGTRAP);
-#else
+	#else
 		#define CH_DEBUGBREAK
-#endif
+	#endif
 #endif
 
-#if CH_COMPILE
+#if defined(CH_COMPILE)
 	#define STEVE_API DLL_EXPORT
 #else
 	#define STEVE_API DLL_IMPORT

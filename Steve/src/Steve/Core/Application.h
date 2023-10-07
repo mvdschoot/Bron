@@ -11,7 +11,6 @@
 #include "Steve/Layers/Overlay.h"
 #include "Steve/Layers/Layer.h"
 #include "Steve/Layers/ImGuiLayer.h"
-#include "Steve/Layers/ProfileLayer.h"
 
 #include "Platform/Linux/LinuxWindow.h"
 #include "Steve/Graphics/GraphicsContext.h"
@@ -47,11 +46,10 @@ namespace Steve
 
 	private:
 		static Ref<Window> _window;
-		graphics::GraphicsContext* _graphics_context;
+		GraphicsContext* _graphics_context;
 
 		OverlayStack _overlay_stack;
 		ImGuiLayer* _imgui_layer;
-		ProfileLayer* _profile_layer;
 
 		bool _running, _minimized;
 		float _last_frame_time;

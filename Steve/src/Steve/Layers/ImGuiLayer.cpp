@@ -1,5 +1,7 @@
 #include "ImGuiLayer.h"
 
+#include "ImGuizmo.h"
+
 namespace Steve
 {
 	ImGuiLayer::ImGuiLayer(Ref<Window> window) :
@@ -23,6 +25,10 @@ namespace Steve
 		// Setup Platform/Renderer bindings
 		ImGui_ImplGlfw_InitForOpenGL(_window->getWindowPointer(), true);
 		ImGui_ImplOpenGL3_Init("#version 130");
+
+		ImGui::GetIO().ConfigFlags |= ImGuiConfigFlags_DockingEnable;
+
+
 	}
 
 	void ImGuiLayer::OnDetach()
@@ -43,6 +49,9 @@ namespace Steve
 		ImGui_ImplOpenGL3_NewFrame();
 		ImGui_ImplGlfw_NewFrame();
 		ImGui::NewFrame();
+
+		ImGuizmo::BeginFrame();
+		ImGuizmo::SetImGuiContext(ImGui::GetCurrentContext());
 	}
 
 	void ImGuiLayer::end()

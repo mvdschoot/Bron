@@ -1,6 +1,6 @@
 #include "OpenGLTexture.h"
 
-namespace Steve::graphics
+namespace Steve
 {
 	OpenGLTexture2D::OpenGLTexture2D(u32 width, u32 height)
 		: Texture2D(width, height), _channels(4), _internalFormat(GL_RGBA8), _dataFormat(GL_RGBA)

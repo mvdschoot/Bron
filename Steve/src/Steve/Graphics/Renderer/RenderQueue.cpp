@@ -1,6 +1,6 @@
 #include "RenderQueue.h"
 
-namespace Steve::graphics
+namespace Steve
 {
 	RenderQueue::RenderQueue()
 	{
@@ -9,12 +9,12 @@ namespace Steve::graphics
 
 	void RenderQueue::addModel(Model* model)
 	{
-		for(Mesh& m : model->Meshes)
+		for(Mesh* m : model->Meshes)
 		{
-			pQueue.pSet[m.pContext->pShader]
+			pQueue.pSet[m->pContext->pShader]
 				.pSet[model]
-				.pSet[m.pContext->pMaterial]
-				.push_back(&m);
+				.pSet[m->pContext->pMaterial]
+				.push_back(m);
 		}
 	}
 

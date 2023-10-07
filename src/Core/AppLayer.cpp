@@ -1,35 +1,42 @@
 #include "AppLayer.h"
 
+#include "ImGuizmo.h"
+
 namespace Steve
 {
-	using namespace graphics;
-
 	void AppLayer::OnAttach() {
 		// R2D::Init();
+		Command::Init();
 		SceneRenderer::Init();
-		// LineRenderer::Init();
 		// TextRenderer::Init();
 		// TextRenderer::LoadUnicodeFont("../../../Assets/bitter/BitterPro-Regular.ttf", 200);
 
-		m_Width = Application::getWindow()->getWindowWidth();
-		m_Height = Application::getWindow()->getWindowHeight();
-
-		FramebufferSpecification spec;
-		spec.width = m_Width;
-		spec.height = m_Height;
-		m_Framebuffer = Framebuffer::Create(spec);
-		m_Framebuffer->unbind();
+		Width = Application::getWindow()->getWindowWidth();
+		Height = Application::getWindow()->getWindowHeight();
 		
-		m_Camera = new FrustumCamera(glm::radians(80.0F), (float)m_Width / (float)m_Height, 0.1f, 100.0f, m_Pos, glm::vec3{ 0.0f, 0.0f, 0.0f }, glm::vec3{ 0.0f, 1.0f, 0.0f });
-		m_Scene.Camera = m_Camera;
-		m_Scene.CreateStandardModel("C:/Users/mathi/Documents/Steve/Assets/mymodel/untitled.fbx");
-		// m_Scene.CreateStandardModel("C:/Users/mathi/Documents/Steve/Assets/big_car/textures/911_scene.obj");
+		FrSpec.width = Width;
+		FrSpec.height = Height;
+		Framebuffer = Framebuffer::Create(FrSpec);
+		Framebuffer->unbind(); 
+		
+		Camera = new FrustumCamera(glm::radians(80.0F), (float)Width / (float)Height, 0.1f, 100.0f, Pos, glm::vec3{ 0.0f, 0.0f, 0.0f }, glm::vec3{ 0.0f, 1.0f, 0.0f });
+		Sc.Camera = Camera;
+		Sc.CreateStandardModel("The model", "C:/Users/mathi/Documents/Steve/Assets/mymodel/untitled.obj");
 
-		m_Scene.AddPointLight({ 4.0, 2.0, 4.0 }, { 1.0, 1.0, 1.0 });
-		m_Scene.AddPointLight({ -2.0, 2.0, -2.0 }, { 1.0, 1.0, 1.0 });
+		// Sc.CreateStandardModel("C:/Users/mathi/Documents/Steve/Assets/big_car/textures/911_scene.obj");
 
-		Command::ClearColor({1.0, 0.0, 1.0, 0.5});
+		Sc.AddPointLight({ 4.0, 2.0, 4.0 }, { 1.0, 1.0, 1.0 });
 
+		Handle<LightData>& l = Sc.PointLights[0]->GetComponent<LightData>();
+		Sc.AddPointLight({ -2.0, 2.0, -2.0 }, { 1.0, 1.0, 1.0 });
+
+		Command::ClearColor({0.0, 0.0, 0.0, 0.5});
+		APP_INFO("Pointlight 1 ID: {}", Sc.PointLights[0]->Id.p_UUID);
+
+		Cube = Sc.AddCube("The cube", {0,3,0}, {1,1,1});
+		//Cube->AddComponent<CubeCollisionBody>({{true, Cube->GetComponent<TransformComponent>()}, {1,1,1} });
+
+		GridRenderer::Init(Camera);
 	}
 	
 	void AppLayer::OnDetach() {
@@ -45,10 +52,10 @@ namespace Steve
 
 	bool AppLayer::OnMouseScrolled(Steve::MouseScrolledEvent& e)
 	{
-		m_Radius -= e.getOffsetY() * 0.15f;
-		m_Radius = std::max(m_Radius, 0.15f);
-		m_Pos.x = cos(m_XZAngle) * m_Radius;
-		m_Pos.z = sin(m_XZAngle) * m_Radius;
+		Radius -= e.getOffsetY() * 0.15f;
+		Radius = std::max(Radius, 0.15f);
+		Pos.x = cos(XZAngle) * Radius;
+		Pos.z = sin(XZAngle) * Radius;
 
 		return true;
 	}
@@ -58,71 +65,51 @@ namespace Steve
 		float dt = ts.getSeconds();
 		if (Steve::Input::isKeyPressed(Steve::Key::A))
 		{
-			m_XZAngle += dt;
-			m_Pos.x = cos(m_XZAngle) * m_Radius;
-			m_Pos.z = sin(m_XZAngle) * m_Radius;
+			XZAngle += dt;
+			Pos.x = cos(XZAngle) * Radius;
+			Pos.z = sin(XZAngle) * Radius;
 		}
 		if (Steve::Input::isKeyPressed(Steve::Key::D))
 		{
-			m_XZAngle -= dt;
-			m_Pos.x = cos(m_XZAngle) * m_Radius;
-			m_Pos.z = sin(m_XZAngle) * m_Radius;
+			XZAngle -= dt;
+			Pos.x = cos(XZAngle) * Radius;
+			Pos.z = sin(XZAngle) * Radius;
 		}
 
 		if (Steve::Input::isKeyPressed(Steve::Key::W))
 		{
-			m_YAngle += m_YAngle > 0.5*PI ? 0 : dt;
-			m_Pos.y = sin(m_YAngle) * m_Radius;
+			YAngle += YAngle > 0.5*PI ? 0 : dt;
+			Pos.y = sin(YAngle) * Radius;
 		}
 
 		if (Steve::Input::isKeyPressed(Steve::Key::S))
 		{
-			m_YAngle -= m_YAngle < -0.5*PI ? 0 : dt;
-			m_Pos.y = sin(m_YAngle) * m_Radius;
+			YAngle -= YAngle < -0.5*PI ? 0 : dt;
+			Pos.y = sin(YAngle) * Radius;
 		}
 	}
 
 
 	void AppLayer::OnUpdate(const Timestep ts) {
-		m_Ts = ts;
+		Ts = ts;
 
-		//m_Framebuffer->bind();
+		Framebuffer->bind();
 		Command::clear();
 
 
 		IsKeyPressed(ts);
-		m_Camera->SetPosition(m_Pos);
+		Camera->SetPosition(Pos);
 
-		graphics::SceneRenderer::Draw(m_Scene);
+		Command::EnableBlend();
+		GridRenderer::Draw();
 
+		Command::EnableDepth();
+		SceneRenderer::Draw(Sc);
+
+		Framebuffer->unbind();
 	}
 	 
 	void AppLayer::OnImGuiRender() {
-		ImGui::Begin("test");
-
-		ImGui::Text("FPS: %f", 1000.0f / m_Ts.getMilliseconds());
-
-		for(int x = 0; x < m_Scene.PointLights.size(); x++)
-		{
-			std::string str = "Pointlight " + std::to_string(x);
-			if (ImGui::TreeNode(str.c_str()))
-			{
-				glm::vec3 position = m_Scene.PointLights[x]->GetPosition();
-				glm::vec3 color = m_Scene.PointLights[x]->GetColor();
-				ImGui::DragFloat3("Position", (float*)&position, 0.1);
-				ImGui::DragFloat3("Color", (float*)&color, 0.1);
-				m_Scene.PointLights[x]->ChangePosition(position);
-				m_Scene.PointLights[x]->ChangeColor(color);
-
-				ImGui::TreePop();
-			}
-		}
 		
-
-		StandardMaterialBuffer* mat = (StandardMaterialBuffer*)m_Scene.AllModels[0]->Meshes[0].pContext->pMaterial->Data;
-		ImGui::DragFloat("Shininess first", (float*)&mat->Shininess);
-
-
-		ImGui::End();
 	}
 }

@@ -1,8 +1,8 @@
 #include "OpenGLFramebuffer.h"
 
-namespace Steve::graphics
+namespace Steve
 {
-	OpenGLFramebuffer::OpenGLFramebuffer(const FramebufferSpecification& spec)
+	OpenGLFramebuffer::OpenGLFramebuffer(FramebufferSpecification& spec)
 		: _spec(spec)
 	{
 		invalidate();
@@ -16,7 +16,8 @@ namespace Steve::graphics
 	void OpenGLFramebuffer::bind()
 	{
 		glBindFramebuffer(GL_FRAMEBUFFER, _renderer_id);
-		glViewport(0, 0, 1280, 720);
+		glViewport(0, 0, _spec.width, _spec.height);
+		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 	}
 
 	void OpenGLFramebuffer::unbind()

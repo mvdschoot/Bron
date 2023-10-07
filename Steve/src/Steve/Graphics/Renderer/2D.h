@@ -7,14 +7,14 @@
 #include "Command.h"
 #include "../Camera.h"
 #include "../Texture.h"
-#include "../LineRenderer.h"
+#include "../Shader.h"
 
 #include "glm/glm.hpp"
 
 #include <array>
 
 
-namespace Steve::graphics
+namespace Steve
 {
 	class STEVE_API R2D
 	{
@@ -42,11 +42,6 @@ namespace Steve::graphics
 		static void ActiveShader(uint8_t shader_number);
 		static u32 GetActiveShader();
 
-		static void DrawQuad(glm::vec2 pos, glm::vec2 dimension, glm::vec4 color);
-		static void DrawQuad(glm::vec2 pos, glm::vec2 dimension, const Ref<Texture> texture);
-		static void DrawQuad(glm::vec2 pos, glm::vec2 dimension, const Ref<Texture> texture, glm::vec4 texCoordsAndDims);
-
-		// These only support 2D!!!
 		static void DrawQuad(glm::vec3 pos, glm::vec3 dimension, glm::vec4 color);
 		static void DrawQuad(glm::vec3 pos, glm::vec3 dimension, const Ref<Texture> texture);
 		static void DrawQuad(glm::vec3 pos, glm::vec3 dimension, const Ref<Texture> texture, glm::vec4 texCoordsAndDims);
@@ -54,6 +49,7 @@ namespace Steve::graphics
 		static u32 GetTotQuadCount();
 		static u32 GetTotQuadIndexCount();
 		static u32 GetTotVertexCount();
+
 	private:
 		static void AddVAO(Ref<Shader> shader, BufferLayout buffer_layout);
 		static void Flush();

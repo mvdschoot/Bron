@@ -7,7 +7,7 @@
 #include <vector>
 #include <memory>
 
-namespace Steve::graphics
+namespace Steve
 {
 	class STEVE_API VertexArray
 	{

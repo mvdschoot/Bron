@@ -4,11 +4,13 @@
 namespace Steve
 {
 	App::App()
+		: editorLayer(&appLayer)
 	{
 		CH_PROFILE_FUNCTION();
 		
-		m_overlay.insertLayer(&m_applayer);
-		addOverlay(&m_overlay);
+		overlay.insertLayer(&appLayer);
+		overlay.insertLayer(&editorLayer);
+		addOverlay(&overlay);
 	}
 
 	App::~App()

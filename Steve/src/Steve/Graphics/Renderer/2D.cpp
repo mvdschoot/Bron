@@ -1,7 +1,7 @@
 #include "2D.h"
 
 
-namespace Steve::graphics
+namespace Steve
 {
 	struct QuadVertex
 	{
@@ -41,7 +41,7 @@ namespace Steve::graphics
 		Camera* camera;
 
 		// Everything to graphics
-		// toRender[0] == standard 2d rendering
+		// toRender[0] == standard rendering
 		std::vector<VAO> toRender;
 		unsigned int renderState = 0;
 	};
@@ -120,22 +120,6 @@ namespace Steve::graphics
 	u32 R2D::GetActiveShader()
 	{
 		return sData2D.renderState;
-	}
-
-	void R2D::DrawQuad(const glm::vec2 pos, const glm::vec2 dimension, const glm::vec4 color)
-	{
-		DrawQuad(glm::vec3{ pos, 0.0f }, glm::vec3{ dimension, 0.0f }, color);
-	}
-
-	void R2D::DrawQuad(const glm::vec2 pos, const glm::vec2 dimension, const Ref<Texture> texture)
-	{
-		DrawQuad(glm::vec3{ pos, 0.0f }, glm::vec3{ dimension, 0.0f }, texture);
-	}
-
-	void R2D::DrawQuad(glm::vec2 pos, glm::vec2 dimension, const Ref<Texture> texture,
-		glm::vec4 texCoordsAndDims)
-	{
-		DrawQuad(glm::vec3{ pos, 0.0f }, glm::vec3{ dimension, 0.0f }, texture, texCoordsAndDims);
 	}
 
 	void R2D::DrawQuad(const glm::vec3 pos, const glm::vec3 dimension, const glm::vec4 color)
@@ -245,6 +229,7 @@ namespace Steve::graphics
 				break;
 			}
 		}
+
 		if (tex_index == 0)
 		{
 			sData2D.textureSlots[sData2D.currentTexSlot] = texture;

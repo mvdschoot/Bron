@@ -3,14 +3,14 @@
 #include "Platform/OpenGL/OpenGLFramebuffer.h"
 #include "Steve/Core/Platform.h"
 
-namespace Steve::graphics
+namespace Steve
 {
-	Ref<Framebuffer> Framebuffer::Create(const FramebufferSpecification& spec)
+	Ref<Framebuffer> Framebuffer::Create(FramebufferSpecification& spec)
 	{
 		switch (Platform::getAPI())
 		{
 		case Platform::API::None: CORE_ASSERT(false, "No Rendering API selected!");
-		case Platform::API::OpenGL: return createRef<graphics::OpenGLFramebuffer>(spec);
+		case Platform::API::OpenGL: return createRef<OpenGLFramebuffer>(spec);
 		}
 		return nullptr;
 	}

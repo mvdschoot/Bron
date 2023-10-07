@@ -1,7 +1,7 @@
 #include "LinuxWindow.h"
 #include "GLFW/glfw3.h"
 
-namespace Steve::graphics
+namespace Steve
 {
 	LinuxWindow::LinuxWindow(const WindowProps& w_props) : _is_glfw_initialised(false)
 	{
@@ -30,7 +30,7 @@ namespace Steve::graphics
 
 		glfwSetWindowUserPointer(_window, &_window_data);
 
-		_graphics_context = graphics::GraphicsContext::Create(_window);
+		_graphics_context = GraphicsContext::Create(_window);
 
 		setVSync(true);
 

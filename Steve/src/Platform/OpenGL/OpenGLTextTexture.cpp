@@ -1,6 +1,6 @@
 #include "OpenGLTextTexture.h"
 
-namespace Steve::graphics
+namespace Steve
 {
 	OpenGLTextTexture::OpenGLTextTexture(u32 width, u32 height) :
 		TextTexture(width, height), _internalFormat(GL_RED), _dataFormat(GL_RED)

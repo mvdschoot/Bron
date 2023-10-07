@@ -8,21 +8,18 @@
 #include <assimp/material.h>
 #include <assimp/scene.h>
 
-#include "RenderComponents.h"
+#include "Context.h"
+#include "Models.h"
 
-namespace Steve::graphics {
+namespace Steve {
 
-	class StandardCubeComponent : public Model
+	class StandardCubeComponent : public Cube
 	{
 	public:
-		StandardCubeComponent(RegistryData* reg, const glm::vec3 pos, const glm::vec3 dim);
-
-		void Set(const glm::vec3 pos, const glm::vec3 dim);
-		void SetColor(glm::vec3 color);
+		StandardCubeComponent(RegistryData* reg);
 
 	private:
-		glm::vec3 mPosition = {};
-		glm::vec3 mDimensions = {};
+		void Generate();
 	};
 
 	struct StandardModelComponent : public Model
@@ -30,6 +27,7 @@ namespace Steve::graphics {
 	private:
 		std::map<u32, MeshContext*> RenderContexts;
 		std::string Directory;
+		u32 MeshCount = 0;
 
 		MeshContext LoadNewContext(aiMaterial* mat) const;
 		void ProcessMesh(aiMesh* mesh, const aiScene* scene);

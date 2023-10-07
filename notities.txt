@@ -1,0 +1,5 @@
+Nog te doen:
+- Depth testing
+
+Alle material & texture informatie zijn components
+SceneRenderer weet door de shader hoe die geSet moeten worden

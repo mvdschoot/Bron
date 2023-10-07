@@ -4,7 +4,7 @@
 #include "Steve/Core/Core.h"
 #include "Steve/Core/Logger.h"
 
-namespace Steve::graphics
+namespace Steve
 {
 	struct FramebufferSpecification
 	{
@@ -31,7 +31,7 @@ namespace Steve::graphics
 		virtual u32 getColorAttachID() = 0;
 		virtual u32 getDepthStencilAttachID() = 0;
 
-		static Ref<Framebuffer> Create(const FramebufferSpecification& spec);
+		static Ref<Framebuffer> Create(FramebufferSpecification& spec);
 	};
 }
 

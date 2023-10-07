@@ -6,6 +6,7 @@ set (GLFW_DIR "glfw")
 set (IMGUI_DIR "imgui")
 set (GLM_DIR "glm")
 set (STB_DIR "stb")
+set (IMGUIZMO_DIR "imguizmo")
 
 add_subdirectory(${SPDLOG_DIR})
 add_subdirectory(${GLAD_DIR})
@@ -13,6 +14,7 @@ add_subdirectory(${GLFW_DIR})
 add_subdirectory(${IMGUI_DIR})
 add_subdirectory(${GLM_DIR})
 add_subdirectory(${STB_DIR})
+add_subdirectory(${IMGUIZMO_DIR})
 
 
 # INTERFACE linking because nothing is used by Vendorlibrary itself
@@ -26,6 +28,7 @@ target_include_directories(VendorLibrary INTERFACE
 	imgui
 	stb
 	assimp/include
+	imguizmo
 )
 target_link_libraries(VendorLibrary INTERFACE 
 	spdlog
@@ -34,6 +37,7 @@ target_link_libraries(VendorLibrary INTERFACE
 	glm
 	imgui
 	stb
+	imguizmo
 )
 
 # Freetype is with vcpkg installed  

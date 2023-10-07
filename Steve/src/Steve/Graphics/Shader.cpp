@@ -3,7 +3,7 @@
 #include "Platform/OpenGL/OpenGLShader.h"
 #include "Steve/Core/Platform.h"
 
-namespace Steve::graphics
+namespace Steve
 {
 	Ref<Shader> Shader::CreateShaderFromLocation(const std::string& shader_loc)
 	{
@@ -21,7 +21,7 @@ namespace Steve::graphics
 		switch (Platform::getAPI())
 		{
 		case Platform::API::None: CORE_ASSERT(false, "No Rendering API selected!");
-		case Platform::API::OpenGL: return createRef<graphics::OpenGLShader>(shader);
+		case Platform::API::OpenGL: return createRef<OpenGLShader>(shader);
 		}
 		CORE_ASSERT(false, "No Rendering API detected!")
 			return nullptr;

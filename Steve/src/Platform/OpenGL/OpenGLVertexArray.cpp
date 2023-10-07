@@ -1,6 +1,6 @@
 #include "OpenGLVertexArray.h"
 
-namespace Steve::graphics
+namespace Steve
 {
 	OpenGLVertexArray::OpenGLVertexArray()
 	{

@@ -2,7 +2,7 @@
 
 #include "Platform/OpenGL/OpenGLRendererAPI.h"
 
-namespace Steve::graphics
+namespace Steve
 {
 	void Command::Init()
 	{
@@ -20,6 +20,16 @@ namespace Steve::graphics
 	void Command::clear()
 	{
 		_renderer_api->clear();
+	}
+
+	void Command::EnableBlend()
+	{
+		_renderer_api->EnableBlend();
+	}
+
+	void Command::EnableDepth()
+	{
+		_renderer_api->EnableDepth();
 	}
 
 	void Command::DrawIndexed(const Ref<VertexArray>& v_array, u32 count)

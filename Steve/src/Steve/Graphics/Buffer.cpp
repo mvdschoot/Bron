@@ -3,7 +3,7 @@
 #include "Steve/Core/Platform.h"
 #include "Platform/OpenGL/OpenGLBuffer.h"
 
-namespace Steve::graphics
+namespace Steve
 {
 	Ref<VertexBuffer> VertexBuffer::Create(usize size)
 	{

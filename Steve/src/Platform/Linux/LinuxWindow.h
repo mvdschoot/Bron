@@ -17,7 +17,7 @@
 #include <functional>
 #include <string>
 
-namespace Steve::graphics
+namespace Steve
 {
 	class LinuxWindow : public Window
 	{

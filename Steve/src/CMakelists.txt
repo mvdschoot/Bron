@@ -4,22 +4,24 @@ add_library(Steve STATIC
 	Steve/Core/Application.cpp 
 	Steve/Core/Logger.cpp
 	Steve/Core/Window.cpp
-	
-	
-	
 
 	Steve/Graphics/Renderer/API.cpp
 	"Steve/Graphics/Renderer/Command.cpp"
 	Steve/Graphics/Renderer/2D.cpp
-		
 	Steve/Graphics/Renderer/RenderQueue.cpp
 	Steve/Graphics/Renderer/SceneRenderer.cpp
 	
-	Steve/Graphics/Components/RenderComponents.cpp
+	Steve/Graphics/Renderer/Grid.cpp
+	
+	
+	Steve/Graphics/Components/Mesh.cpp
+	Steve/Graphics/Components/Models.cpp
 	Steve/Graphics/Components/MiscellaneousComponents.cpp
 	Steve/Graphics/Components/Standard.cpp
+	Steve/Graphics/Components/Model.cpp
 	
-	Steve/Graphics/Scene/Scene.cpp
+	Steve/Scene/Scene.cpp
+	Steve/Scene/Node.cpp
 
 	Steve/Graphics/GraphicsContext.cpp
 	Steve/Graphics/Shader.cpp
@@ -29,8 +31,7 @@ add_library(Steve STATIC
 	Steve/Graphics/Buffer.cpp
 	Steve/Graphics/Texture.cpp
 	Steve/Graphics/Framebuffer.cpp
-	Steve/Graphics/LineRenderer.cpp
-	Steve/Graphics/TextRenderer.cpp
+	# Steve/Graphics/TextRenderer.cpp
 	Steve/Graphics/FrustumCamera.cpp
 	
 	Steve/ECS/Entity.cpp
@@ -41,8 +42,13 @@ add_library(Steve STATIC
 	Steve/Layers/Overlay.cpp
 	Steve/Layers/OverlayStack.cpp
 	Steve/Layers/ImGuiLayer.cpp
-	Steve/Layers/ProfileLayer.cpp
+	
+	Steve/Physics/BVH.cpp
+	Steve/Physics/PhysicsComponents.cpp
+	Steve/Physics/Splitting.cpp
+	Steve/Physics/PhysicsEngine.cpp
 
+	Steve/Util/Util.cpp
 	 
 	Platform/OpenGL/OpenGLContext.cpp
 	Platform/OpenGL/OpenGLBuffer.cpp
@@ -54,13 +60,7 @@ add_library(Steve STATIC
 	Platform/OpenGL/OpenGLTextTexture.cpp
 
 	Platform/Linux/LinuxWindow.cpp
-	Platform/Linux/LinuxInput.cpp
-)
-
-target_compile_definitions(Steve
-	PRIVATE CH_COMPILE
-	PRIVATE CH_DEBUG
-	PRIVATE CH_API_OPENGL
+	Platform/Linux/LinuxInput.cpp 
 )
 
 set_property(TARGET Steve PROPERTY CXX_STANDARD 20)

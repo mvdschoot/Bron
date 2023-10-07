@@ -12,7 +12,7 @@
 
 #include "glad/glad.h"
 
-namespace Steve::graphics
+namespace Steve
 {
 
 	struct STEVE_API BufferElement

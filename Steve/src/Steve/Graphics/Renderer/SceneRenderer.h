@@ -7,15 +7,29 @@
 
 #include "Steve/Graphics/Texture.h"
 
-#include "Steve/Graphics/Scene/Scene.h"
+#include "Steve/Scene/Scene.h"
 
-namespace Steve::graphics
+#include "Steve/Graphics/Components/Models.h"
+
+namespace Steve
 {
+	struct RenderStatistics
+	{
+		u32 DrawCalls;
+		u32 Models;
+		u32 Shaders;
+		u32 Materials;
+		u32 Meshes;
+		u32 UniformCalls;
+	};
+
 	class SceneRenderer
 	{
 	public:
 		static void Init();
 		static void Draw(Scene& scene);
+
+		static RenderStatistics Statistics;
 	};
 }
 

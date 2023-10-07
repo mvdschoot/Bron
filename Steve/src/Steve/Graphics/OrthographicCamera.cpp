@@ -1,6 +1,6 @@
 #include "OrthographicCamera.h"
 
-namespace Steve::graphics
+namespace Steve
 {
 	OrthographicCamera::OrthographicCamera(float left, float right, float bottom, float top, float aspectRatio)
 		: AspectRatio(aspectRatio), mViewMat(glm::mat4(1.0f)), mProjectionMat(glm::ortho(left, right, bottom, top, -1.0f, 1.0f)), mZoomLevel(1.0f)

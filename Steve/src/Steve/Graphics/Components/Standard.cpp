@@ -3,58 +3,53 @@
 #include "assimp/Importer.hpp"
 #include "assimp/postprocess.h"
 
-namespace Steve::graphics
+namespace Steve
 {
-	StandardCubeComponent::StandardCubeComponent(RegistryData* reg, const glm::vec3 pos, const glm::vec3 dim)
-		: Model(reg)
+	StandardCubeComponent::StandardCubeComponent(RegistryData* reg)
+		: Cube(reg)
 	{
-		Set(pos, dim);
+		Generate();
 		SetColor(glm::vec3(1.0));
 	}
 
-	void StandardCubeComponent::Set(const glm::vec3 pos, const glm::vec3 dim)
+	void StandardCubeComponent::Generate()
 	{
-		mPosition = pos;
-		mDimensions = dim;
-		
+		float size = 1.0f;
+		auto [vertices, normals, indices] =
+			GenCubeSmoothVertices(glm::vec3(size));
+
+		// Create material with standard values.
 		auto* material = new Material(&StandardMaterialLayout);
-		material->Set(MaterialDataTypes::AmbientFactor, 0.2);
+		material->Set(MaterialDataTypes::AmbientFactor, 1.0);
 		material->Set(MaterialDataTypes::Diffuse, glm::vec3(1.0));
 		material->Set(MaterialDataTypes::Specular, glm::vec3(1.0));
-		material->Set(MaterialDataTypes::Shininess, 1.0);
-		material->Set(MaterialDataTypes::ShininessStrength, 1.0);
-		material->Textures = nullptr;
+		material->Set(MaterialDataTypes::Shininess, 200.0f);
+		material->Set(MaterialDataTypes::ShininessStrength, 100.0f);
 
 		auto* context = new MeshContext(StandardInstances::instance().StandardShader.get(), material);
 
-		auto [vertices, normals, indices] = GenCubeSmoothVertices(pos, dim);
-
 		// Fill vbo with not just vertices, but also normals & texture coords
-		usize size = material->Layout->GetStride();
-		auto* new_verts = new u8[size];
+		usize stride = StandardVertexLayout->GetStride();
+		auto* new_verts = new u8[24 * stride];
 		usize vec_size = sizeof(glm::vec3);
-		for (int x = 0; x < 24 * size; x += size)
+		for (int x = 0; x < 24 * stride; x += stride)
 		{
-			memcpy_s(new_verts + x, vec_size, vertices + (x / size), vec_size);
-			memcpy_s(new_verts + x + vec_size, vec_size, normals + (x / size), vec_size);
+			memcpy_s(new_verts + x, vec_size, vertices + (x / stride), vec_size);
+			memcpy_s(new_verts + x + vec_size, vec_size, normals + (x / stride), vec_size);
 			memset(new_verts + x + (2 * vec_size), 0, sizeof(glm::vec2));
 		}
 
-		Meshes.emplace_back(
-			*StandardVertexLayout,
-			new_verts, 24 * sizeof(glm::vec3),
+		AddMesh(
+			pRegData,
+			StandardVertexLayout,
+			new_verts, 24 * stride,
 			indices, 36,
 			context
-		);
+		)->name = "Mesh 0";
+		
 
 		delete[] new_verts;
 		delete[] vertices;
-	}
-
-	void StandardCubeComponent::SetColor(glm::vec3 color)
-	{
-		Meshes[0].pContext->pMaterial->Set(MaterialDataTypes::Diffuse, color);
-		Meshes[0].pContext->pMaterial->Set(MaterialDataTypes::Specular, color);
 	}
 
 	/*
@@ -129,7 +124,6 @@ namespace Steve::graphics
 	}
 
 	void StandardModelComponent::ProcessMesh(aiMesh* mesh, const aiScene* scene)
-
 	{
 		CH_PROFILE_FUNCTION();
 
@@ -139,16 +133,20 @@ namespace Steve::graphics
 			num_indices += mesh->mFaces[x].mNumIndices;
 		}
 
-		auto* vertices = new StandardVertexBuffer[mesh->mNumVertices];
+		auto* buffer = new StandardVertexBuffer[mesh->mNumVertices];
+
+		glm::vec3 centroid = Mesh::FindCentroid((glm::vec3*)mesh->mVertices, mesh->mNumVertices);
+		
 		for (u32 i = 0; i < mesh->mNumVertices; i++)
 		{
-			StandardVertexBuffer& vertex = vertices[i];
-			glm::vec3 vector;
+			StandardVertexBuffer& vertex = buffer[i];
 
 			// Position
 			vertex.Position.x = mesh->mVertices[i].x;
 			vertex.Position.y = mesh->mVertices[i].y;
 			vertex.Position.z = mesh->mVertices[i].z;
+
+			vertex.Position -= centroid;
 
 			// Normals
 			if (mesh->mNormals == nullptr) {
@@ -193,15 +191,19 @@ namespace Steve::graphics
 			context = c;
 		}
 
-		Meshes.emplace_back(
-			*StandardVertexLayout,
-			vertices, mesh->mNumVertices * sizeof(StandardVertexBuffer),
+		Mesh* m = AddMesh(
+			pRegData,
+			StandardVertexLayout,
+			buffer, mesh->mNumVertices * sizeof(StandardVertexBuffer),
 			indices, num_indices,
 			context
 		);
+		m->name = "Mesh " + std::to_string(MeshCount++);
+		m->GetComponent<TransformComponent>()->Position = centroid;
+		
 
 		delete[] indices;
-		delete[] vertices;
+		delete[] buffer;
 	}
 
 	void StandardModelComponent::ProcessNode(aiNode* node, const aiScene* scene)
@@ -235,6 +237,14 @@ namespace Steve::graphics
 		Directory = loc.substr(0, loc.find_last_of('/'));
 
 		ProcessNode(scene->mRootNode, scene);
+
+		// Set model centroid & adapt Mesh centroids
+		glm::vec3 model_centroid = GetCentroid();
+		for(Mesh* mesh : Meshes)
+		{
+			mesh->GetComponent<TransformComponent>()->Position -= model_centroid;
+		}
+		GetComponent<TransformComponent>()->Position = model_centroid;
 	}
 
 	StandardInstances::StandardInstances()

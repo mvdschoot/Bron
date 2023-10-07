@@ -4,7 +4,7 @@
 #include <glm/glm.hpp>
 #include <glad/glad.h>
 
-namespace Steve::graphics
+namespace Steve
 {
 	enum class STEVE_API ShaderDataType : u32
 	{

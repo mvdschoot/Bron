@@ -67,10 +67,7 @@ namespace Steve
 		auto profiling_overlay = new Overlay;
 
 		_imgui_layer = new ImGuiLayer(_window);
-		_profile_layer = new ProfileLayer();
-
 		imgui_overlay->insertLayer(_imgui_layer);
-		profiling_overlay->insertLayer(_profile_layer);
 
 		_overlay_stack.instertOverlay(imgui_overlay);
 		_overlay_stack.instertOverlay(profiling_overlay);
@@ -93,7 +90,7 @@ namespace Steve
 		} else
 		{
 			_minimized = false;
-			CORE_INFO("Window is not minimized anymore");
+			CORE_INFO("Window size: {}, {}", event.getWidth(), event.getHeight());
 		}
 		return true;
 	}
