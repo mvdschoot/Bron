@@ -45,9 +45,8 @@ namespace Steve
 			new_verts, 24 * stride,
 			indices, 36,
 			context
-		);
-
-		Meshes[0]->Name = "Cube mesh";
+		)->name = "Mesh 0";
+		
 
 		delete[] new_verts;
 		delete[] vertices;
@@ -125,7 +124,6 @@ namespace Steve
 	}
 
 	void StandardModelComponent::ProcessMesh(aiMesh* mesh, const aiScene* scene)
-
 	{
 		CH_PROFILE_FUNCTION();
 
@@ -135,16 +133,20 @@ namespace Steve
 			num_indices += mesh->mFaces[x].mNumIndices;
 		}
 
-		auto* vertices = new StandardVertexBuffer[mesh->mNumVertices];
+		auto* buffer = new StandardVertexBuffer[mesh->mNumVertices];
+
+		glm::vec3 centroid = Mesh::FindCentroid((glm::vec3*)mesh->mVertices, mesh->mNumVertices);
+		
 		for (u32 i = 0; i < mesh->mNumVertices; i++)
 		{
-			StandardVertexBuffer& vertex = vertices[i];
-			glm::vec3 vector;
+			StandardVertexBuffer& vertex = buffer[i];
 
 			// Position
 			vertex.Position.x = mesh->mVertices[i].x;
 			vertex.Position.y = mesh->mVertices[i].y;
 			vertex.Position.z = mesh->mVertices[i].z;
+
+			vertex.Position -= centroid;
 
 			// Normals
 			if (mesh->mNormals == nullptr) {
@@ -189,18 +191,19 @@ namespace Steve
 			context = c;
 		}
 
-		AddMesh(
+		Mesh* m = AddMesh(
 			pRegData,
 			StandardVertexLayout,
-			vertices, mesh->mNumVertices * sizeof(StandardVertexBuffer),
+			buffer, mesh->mNumVertices * sizeof(StandardVertexBuffer),
 			indices, num_indices,
 			context
 		);
-
-		Meshes.back()->Name = "Mesh " + std::to_string(Meshes.size() - 1);
+		m->name = "Mesh " + std::to_string(MeshCount++);
+		m->GetComponent<TransformComponent>()->Position = centroid;
+		
 
 		delete[] indices;
-		delete[] vertices;
+		delete[] buffer;
 	}
 
 	void StandardModelComponent::ProcessNode(aiNode* node, const aiScene* scene)
@@ -234,6 +237,14 @@ namespace Steve
 		Directory = loc.substr(0, loc.find_last_of('/'));
 
 		ProcessNode(scene->mRootNode, scene);
+
+		// Set model centroid & adapt Mesh centroids
+		glm::vec3 model_centroid = GetCentroid();
+		for(Mesh* mesh : Meshes)
+		{
+			mesh->GetComponent<TransformComponent>()->Position -= model_centroid;
+		}
+		GetComponent<TransformComponent>()->Position = model_centroid;
 	}
 
 	StandardInstances::StandardInstances()

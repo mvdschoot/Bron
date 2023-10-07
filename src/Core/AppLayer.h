@@ -36,8 +36,6 @@ namespace Steve
 
 		StandardCubeComponent* Cube;
 
-		BVH Bvh;
-
 		// Registry
 		Scene Sc;
 

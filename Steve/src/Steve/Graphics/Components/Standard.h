@@ -8,7 +8,8 @@
 #include <assimp/material.h>
 #include <assimp/scene.h>
 
-#include "RenderComponents.h"
+#include "Context.h"
+#include "Models.h"
 
 namespace Steve {
 
@@ -26,6 +27,7 @@ namespace Steve {
 	private:
 		std::map<u32, MeshContext*> RenderContexts;
 		std::string Directory;
+		u32 MeshCount = 0;
 
 		MeshContext LoadNewContext(aiMaterial* mat) const;
 		void ProcessMesh(aiMesh* mesh, const aiScene* scene);

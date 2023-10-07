@@ -8,14 +8,19 @@
 namespace Steve
 {
 	Scene::Scene()
-		: Registry(), Root(new Entity(&pData))
-	{}
+		: Registry(), Root(new Node(&pData))
+	{
+
+		Root->type |= NodeType_Object;
+		Root->name = "Root node";
+	}
 
 	void Scene::CreateStandardModel(const char* name, const char* location)
 	{
-		StandardModelComponent& model = Root->CreateChildEntity(StandardModelComponent(&pData, location));
-		model.Name = name;
-		AddModel(&model);
+		StandardModelComponent* model = new StandardModelComponent(&pData, location);
+		Root->AddChildNode(model, true);
+		model->name = name;
+		AddModel(model);
 	}
 
 	void Scene::AddModel(Model* model)
@@ -30,7 +35,8 @@ namespace Steve
 		TransformComponent& t = *model->GetComponent<TransformComponent>();
 		t.Position = position;
 		t.Scaling = dimensions;
-		model->Name = name;
+		model->name = name;
+		Root->AddChildNode(model, true);
 
 		Queue.addModel(model);
 		AllModels.push_back(model);
@@ -46,15 +52,16 @@ namespace Steve
 
 		LightData data(layout);
 
-		PointLight& model = Root->CreateChildEntity(PointLight(&pData, std::move(data)));
-		model.Name = "Pointlight " + std::to_string(PointLights.size());
-		PointLights.push_back(&model);
+		PointLight* model = new PointLight(&pData, std::move(data));
+		model->name = "Pointlight " + std::to_string(PointLights.size());
+		Root->AddChildNode(model);
+		PointLights.push_back(model);
 
-		Queue.addModel(&model);
+		Queue.addModel(model);
 
-		model.GetComponent<TransformComponent>()->Position = pos;
-		LightData& d = *model.GetComponent<LightData>();
-		model.SetUniformPosition(pos);
-		model.SetColor(color);
+		model->GetComponent<TransformComponent>()->Position = pos;
+		LightData& d = *model->GetComponent<LightData>();
+		model->SetUniformPosition(pos);
+		model->SetColor(color);
 	}
 }

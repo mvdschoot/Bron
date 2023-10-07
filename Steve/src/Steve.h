@@ -27,6 +27,7 @@
 // #include "Steve/Graphics/TextRenderer.h"
 
 #include "Steve/Scene/Scene.h"
+#include "Steve/Scene/Node.h"
 
 #include "Steve/ECS/Handle.h"
 #include "Steve/ECS/Group.h"

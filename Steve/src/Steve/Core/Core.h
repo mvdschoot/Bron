@@ -29,22 +29,6 @@
 
 #define FOLD_LAMBDA_WITH_REFERENCE(expr) ([&, this]() expr, ...);
 
-#define BIT_FLAG_ENUM(name, ...) \
-    enum name { __VA_ARGS__ }; \
-    inline std::string GET_ENUM_STRING(name value) \
-    { \
-        struct Entry { name value; const char* nameStr; }; \
-        const Entry entries[] = { __VA_ARGS__, {name(0), "None"} }; \
-        for (const auto& entry : entries) \
-        { \
-            if (entry.value == value) \
-            { \
-                os << entry.nameStr; \
-                return os; \
-            } \
-        } \
-        return os << static_cast<int>(value); \
-    }
 
 #if defined(_MSC_VER)
 	#define CH_PLATFORM_WINDOWS

@@ -4,7 +4,7 @@
 
 namespace Steve
 {
-	void SAH::Split(std::vector<CollisionNod>& nodes, CollisionNod& node)
+	void SAH::Split(std::vector<CollisionNode>& nodes, CollisionNode& node)
 	{
 		const float splitStepX = (node.Box.Max.x - node.Box.Min.x) / (float)(SplitPerAxis + 1);
 		const float splitStepY = (node.Box.Max.y - node.Box.Min.y) / (float)(SplitPerAxis + 1);
@@ -68,7 +68,7 @@ namespace Steve
 	}
 
 
-	float SAH::Cost(CollisionNod& node, AABB a, AABB b)
+	float SAH::Cost(CollisionNode& node, AABB a, AABB b)
 	{
 		glm::vec3 box = node.Box.Max - node.Box.Min;
 		float volume = box.x * box.y * box.z;
@@ -80,7 +80,7 @@ namespace Steve
 		float Bsa = volume / (box.x * box.y * box.z);
 
 		int l = 0, r = 0;
-		for(CollisionNod* n : node.Primitives)
+		for(CollisionNode* n : node.Primitives)
 		{
 			if (a.Contains(n->Box))
 			{

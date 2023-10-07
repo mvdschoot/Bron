@@ -8,7 +8,7 @@ namespace Steve
 	struct SceneHierarchyPanelData
 	{
 		Scene* scene;
-		Entity* selected;
+		Node* selected;
 	};
 
 	class SceneHierarchyPanel
@@ -20,6 +20,11 @@ namespace Steve
 		static void PropertiesPanel();
 
 		static SceneHierarchyPanelData Data;
+
+	private:
+		static void TreeNode(Node* node);
+		static bool SkipNode(Node* entity);
+
 	};
 }
 

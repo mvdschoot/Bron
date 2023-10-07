@@ -9,6 +9,8 @@
 
 #include "Steve/Scene/Scene.h"
 
+#include "Steve/Graphics/Components/Models.h"
+
 namespace Steve
 {
 	struct RenderStatistics

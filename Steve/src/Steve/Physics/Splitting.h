@@ -8,10 +8,10 @@ namespace Steve
 	class SAH
 	{
 	public:
-		static void Split(std::vector<CollisionNod>& nodes, CollisionNod& node);
+		static void Split(std::vector<CollisionNode>& nodes, CollisionNode& node);
 
 	private:
-		static float Cost(CollisionNod& node, AABB a, AABB b);
+		static float Cost(CollisionNode& node, AABB a, AABB b);
 
 		static constexpr u8 SplitPerAxis = 3;
 		static constexpr u8 CostTraverse = 1;

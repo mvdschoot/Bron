@@ -12,9 +12,12 @@
 #include <vector>
 
 #include "glm/glm.hpp"
+#include "Steve/Scene/Node.h"
 
 namespace Steve
 {
+	struct PhysicsData;
+
 	class BVH
 	{
 	private:
@@ -22,15 +25,14 @@ namespace Steve
 
 	public:
 
-		BVH();
+		BVH(PhysicsData* data_);
 
-		void AddNode(Entity* entity);
-		std::tuple<CollisionBody*, AABB> GenerateAABB(Entity* entity);
+		void AddNode(Node* node);
+		std::tuple<CollisionBody*, AABB> GenerateAABB(Node* node);
 
 	private:
-		void InsertPrimitive(CollisionNod* current, CollisionNod* n);
-
-		std::vector<CollisionNod> Nodes;
+		void InsertPrimitive(CollisionNode* current, CollisionNode* n);
+		PhysicsData* data;
 
 	};
 }

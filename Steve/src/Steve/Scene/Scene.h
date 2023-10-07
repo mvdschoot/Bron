@@ -14,8 +14,6 @@
 #include "Steve/Graphics/Camera.h"
 #include "Steve/Graphics/Renderer/2D.h"
 
-#include "Node.h"
-
 namespace Steve
 {
 	class Scene : public Registry
@@ -26,10 +24,9 @@ namespace Steve
 		void CreateStandardModel(const char* name, const char* location);
 		void AddModel(Model* model);
 		StandardCubeComponent* AddCube(const char* name, glm::vec3 position, glm::vec3 dimensions);
-
 		void AddPointLight(glm::vec3 pos, glm::vec3 color);
 		
-		Entity* Root;
+		Node* Root;
 
 		RenderQueue Queue;
 		std::vector<Model*> AllModels;

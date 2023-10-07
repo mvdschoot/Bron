@@ -5,7 +5,11 @@
 #include "Steve/Core/Logger.h"
 #include "Steve/Core/Profiling.h"
 
-#include "Steve/Graphics/Components/RenderComponents.h"
+#include "Steve/Graphics/Components/Model.h"
+#include "Steve/Graphics/Components/Mesh.h"
+#include "Steve/Graphics/Components/Context.h"
+
+#include <map>
 
 namespace Steve
 {

@@ -1,30 +1,10 @@
-#include "RenderComponents.h"
-#include "Standard.h"
-#include "Steve/Graphics/Renderer/2D.h"
-#include "Steve/Graphics/Renderer/2D.h"
+#include "Models.h"
 
-#include "ImGuizmo.h"
+#include "Context.h"
+#include "Standard.h"
 
 namespace Steve
 {
-	void Mesh::setVertexData(void* vertex_data, uint64_t vertex_data_size)
-	{
-		const Ref<VertexBuffer> b = VertexBuffer::Create((float*)vertex_data, vertex_data_size);
-		b->setBufferLayout(*mBufferLayout);
-		pVao->addVertexBuffer(b);
-	}
-
-	void Mesh::setIndexData(uint32_t* index_data, uint32_t index_count)
-	{
-		const Ref<IndexBuffer> b = IndexBuffer::Create(index_data, index_count);
-		pVao->setIndexBuffer(b);
-	}
-
-	glm::vec3 Model::GetPosition()
-	{
-		return GetComponent<TransformComponent>()->Position;
-	}
-
 	glm::vec3 Cube::GetColor() const
 	{
 		return *Meshes[0]->pContext->pMaterial->Get<glm::vec3>(MaterialDataTypes::Diffuse);
@@ -47,14 +27,16 @@ namespace Steve
 		GetComponent<LightData>()->Set(LightDataTypes::Position, pos);
 	}
 
-	PointLight::PointLight(RegistryData* reg, UniformData<LightDataTypes>&& context): Cube(StandardCubeComponent(reg))
+	PointLight::PointLight(RegistryData* reg, UniformData<LightDataTypes>&& context) : Cube(StandardCubeComponent(reg))
 	{
-		Type |= POINTLIGHT_ENTITY;
-		Meshes[0]->Type |= POINTLIGHT_ENTITY;
+		Meshes[0]->parent = this;
+
+		type |= NodeType_PointLight;
+		Meshes[0]->type |= NodeType_PointLight;
 
 		// LightData is so light is shining, TransformComponent is so light mesh is rendered
 		Handle<LightData>& l = AddComponent<LightData>(std::move(context));
-		
+
 		GetComponent<TransformComponent>()->Scaling = { 0.05,0.05,0.05 };
 	}
 
@@ -137,7 +119,7 @@ namespace Steve
 
 		return std::make_tuple(positions, normals, indices);
 	}
-	
+
 	std::tuple<glm::vec3*, glm::vec3*, uint32_t*, u32, u32> GenSphereSmoothVertices(glm::vec3 position, float radius, u32 accuracy)
 	{
 		const int numSlices = accuracy;

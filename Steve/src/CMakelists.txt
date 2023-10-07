@@ -13,11 +13,15 @@ add_library(Steve STATIC
 	
 	Steve/Graphics/Renderer/Grid.cpp
 	
-	Steve/Graphics/Components/RenderComponents.cpp
+	
+	Steve/Graphics/Components/Mesh.cpp
+	Steve/Graphics/Components/Models.cpp
 	Steve/Graphics/Components/MiscellaneousComponents.cpp
 	Steve/Graphics/Components/Standard.cpp
+	Steve/Graphics/Components/Model.cpp
 	
 	Steve/Scene/Scene.cpp
+	Steve/Scene/Node.cpp
 
 	Steve/Graphics/GraphicsContext.cpp
 	Steve/Graphics/Shader.cpp
@@ -42,6 +46,7 @@ add_library(Steve STATIC
 	Steve/Physics/BVH.cpp
 	Steve/Physics/PhysicsComponents.cpp
 	Steve/Physics/Splitting.cpp
+	Steve/Physics/PhysicsEngine.cpp
 
 	Steve/Util/Util.cpp
 	 
@@ -55,8 +60,8 @@ add_library(Steve STATIC
 	Platform/OpenGL/OpenGLTextTexture.cpp
 
 	Platform/Linux/LinuxWindow.cpp
-	Platform/Linux/LinuxInput.cpp
-  )
+	Platform/Linux/LinuxInput.cpp 
+)
 
 set_property(TARGET Steve PROPERTY CXX_STANDARD 20)
 target_include_directories(Steve PUBLIC .)

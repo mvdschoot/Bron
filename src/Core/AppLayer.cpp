@@ -17,7 +17,7 @@ namespace Steve
 		FrSpec.width = Width;
 		FrSpec.height = Height;
 		Framebuffer = Framebuffer::Create(FrSpec);
-		Framebuffer->unbind();
+		Framebuffer->unbind(); 
 		
 		Camera = new FrustumCamera(glm::radians(80.0F), (float)Width / (float)Height, 0.1f, 100.0f, Pos, glm::vec3{ 0.0f, 0.0f, 0.0f }, glm::vec3{ 0.0f, 1.0f, 0.0f });
 		Sc.Camera = Camera;
@@ -34,11 +34,7 @@ namespace Steve
 		APP_INFO("Pointlight 1 ID: {}", Sc.PointLights[0]->Id.p_UUID);
 
 		Cube = Sc.AddCube("The cube", {0,3,0}, {1,1,1});
-		Cube->AddComponent<CubeCollisionBody>({{true, Cube->GetComponent<TransformComponent>()}, {1,1,1} });
-
-		Bvh.AddNode(Cube);
-		// Bvh.AddNode(Sc.AllModels[0]);
-
+		//Cube->AddComponent<CubeCollisionBody>({{true, Cube->GetComponent<TransformComponent>()}, {1,1,1} });
 
 		GridRenderer::Init(Camera);
 	}

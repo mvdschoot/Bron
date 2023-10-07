@@ -56,12 +56,6 @@ namespace Steve
 			for (auto& [model, materials] : set.pSet) {
 				Statistics.Models++;
 
-				glm::mat4 modelTransform(1.0f);
-				if (model->Contains<TransformComponent>())
-				{
-					modelTransform = **model->GetComponent<TransformComponent>();
-				}
-
 				for (auto& [material, meshes] : materials.pSet)
 				{
 					Statistics.Materials++;
@@ -86,13 +80,9 @@ namespace Steve
 
 					for (Mesh* mesh : meshes)
 					{
-						glm::mat4 meshTransform = modelTransform;
-						if (mesh->Contains<TransformComponent>())
-						{
-							meshTransform *= **mesh->GetComponent<TransformComponent>();
-						}
+						glm::mat4 t = mesh->GetTransform();
 
-						shader->setUniformMat4("uTransform", meshTransform);
+						shader->setUniformMat4("uTransform", t);
 						Statistics.UniformCalls++;
 
 						Command::DrawIndexed(mesh->pVao, mesh->pVao->getIndexBuffer()->getCount());

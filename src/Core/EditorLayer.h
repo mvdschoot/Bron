@@ -7,6 +7,8 @@
 
 #include "Panels/SceneHierarchy.h"
 
+#include <imgui_spectrum.h>
+
 namespace Steve
 {
 	class EditorLayer final : public Layer
@@ -21,6 +23,8 @@ namespace Steve
 		void ShowDebug();
 		
 		void OnImGuiRender() override;
+
+		void SetStyle();
 
 	private:
 		AppLayer* App;

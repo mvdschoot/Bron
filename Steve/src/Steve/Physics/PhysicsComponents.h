@@ -9,14 +9,16 @@
 
 #include "Steve/Graphics/Components/MiscellaneousComponents.h"
 
+#include "Steve/Scene/Node.h"
+
 #include <vector>
 
 #include <glm/glm.hpp>
 
 
 namespace Steve
-{
-	struct CollisionBody
+{ 
+	struct CollisionBody : public Node
 	{
 		bool Active = true;
 
@@ -29,6 +31,7 @@ namespace Steve
 	/* Internally used by physics engine */
 	struct AABB
 	{
+		AABB() : Min(0.0f), Max(0.0f) {}
 		AABB(glm::vec3 A, glm::vec3 B);
 
 		glm::vec3 Min;
@@ -38,20 +41,17 @@ namespace Steve
 		void ResizeTo(AABB& other);
 	};
 	
-	struct CollisionNod
+	struct CollisionNode
 	{
 		AABB Box;
 
 		// Has body if it is a leaf
 		CollisionBody* Body;
 
-		CollisionNod* Left, * Right;
+		CollisionNode* Left, * Right;
 
-		std::vector<CollisionNod*> Primitives;
+		std::vector<CollisionNode*> Primitives;
 	};
-
-
-
 
 	struct SphereCollisionBody : public CollisionBody
 	{

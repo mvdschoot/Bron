@@ -2,40 +2,43 @@
 
 #include "Splitting.h"
 
+#include "PhysicsEngine.h"
+
 namespace Steve
 {
-	BVH::BVH()
+	BVH::BVH(PhysicsData* data_)
+		: data(data_)
 	{
-		Nodes.push_back({ {{-1,-1,-1}, {1,1,1}}, nullptr, nullptr, nullptr });
+		data->Nodes.push_back({ {{-1,-1,-1}, {1,1,1}}, nullptr, nullptr, nullptr });
 	}
 
-	void BVH::AddNode(Entity* entity)
+	void BVH::AddNode(Node* node)
 	{
-		auto [body, box] = GenerateAABB(entity);
+		auto [body, box] = GenerateAABB(node);
 		
-		Nodes.push_back({ box, body, nullptr, nullptr });
-		InsertPrimitive(Nodes.data(), &Nodes.back());
+		data->Nodes.push_back({ box, body, nullptr, nullptr });
+		InsertPrimitive(data->Nodes.data(), &data->Nodes.back());
 	}
 
-	std::tuple<CollisionBody*, AABB> BVH::GenerateAABB(Entity* entity)
+	std::tuple<CollisionBody*, AABB> BVH::GenerateAABB(Node* node)
 	{
-		if(entity->Contains<SphereCollisionBody>())
+		if(node->Contains<SphereCollisionBody>())
 		{
-			SphereCollisionBody& col = entity->GetComponent<SphereCollisionBody>();
+			SphereCollisionBody& col = node->GetComponent<SphereCollisionBody>();
 			return std::make_tuple(&col, AABB(col.Transform->Position - col.Radius, col.Transform->Position + col.Radius));
 		}
-		if (entity->Contains<CubeCollisionBody>())
+		if (node->Contains<CubeCollisionBody>())
 		{
-			CubeCollisionBody& s = entity->GetComponent<CubeCollisionBody>();
+			CubeCollisionBody& s = node->GetComponent<CubeCollisionBody>();
 			return std::make_tuple(&s, AABB{ s.Transform->Position - (s.Dimensions * 0.5f), s.Transform->Position + (s.Dimensions * 0.5f)});
 		}
 
 		CORE_ASSERT(false, "No collision body detected")
 	}
 
-	void BVH::InsertPrimitive(CollisionNod* current, CollisionNod* n)
+	void BVH::InsertPrimitive(CollisionNode* current, CollisionNode* n)
 	{
-		CollisionNod& c = *current;
+		CollisionNode& c = *current;
 		if (c.Left != nullptr) {
 			if (c.Left->Box.Contains(c.Box))
 			{
@@ -53,7 +56,7 @@ namespace Steve
 		c.Primitives.push_back(n);
 		if (c.Primitives.size() >= max_prims_in_node)
 		{
-			SAH::Split(Nodes, c);
+			SAH::Split(data->Nodes, c);
 		}
 	}
 	
