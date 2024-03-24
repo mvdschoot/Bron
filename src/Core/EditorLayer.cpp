@@ -119,11 +119,11 @@ namespace Steve
 			App->FrSpec.height = viewportPanelSize.y;
 			ViewportWindowSize.x = viewportPanelSize.x;
 			ViewportWindowSize.y = viewportPanelSize.y;
-			App->Framebuffer->invalidate();
+			App->mFramebuffer->invalidate();
 
 		}
 
-		uint64_t textureID = App->Framebuffer->getColorAttachID();
+		uint64_t textureID = App->mFramebuffer->getColorAttachID();
 		ImGui::Image(reinterpret_cast<void*>(textureID), viewportPanelSize, ImVec2{ 0, 1 }, ImVec2{ 1, 0 });
 
 		// Guizmo
@@ -131,23 +131,23 @@ namespace Steve
 		{
 			ImGuizmo::SetOrthographic(false);
 			ImGuizmo::SetDrawlist();
-
+		
 			auto viewportMinRegion = ImGui::GetWindowContentRegionMin();
 			auto viewportOffset = ImGui::GetWindowPos();
 			ImGuizmo::SetRect(viewportMinRegion.x + viewportOffset.x, viewportMinRegion.y + viewportOffset.y, ViewportWindowSize.x, ViewportWindowSize.y);
-
-			glm::mat4 proj = App->Sc.Camera->GetProjectionMatrix();
-			glm::mat4 view = App->Sc.Camera->GetViewMatrix();
-
+		
+			glm::mat4 proj = App->Sc.camera->GetProjectionMatrix();
+			glm::mat4 view = App->Sc.camera->GetViewMatrix();
+		
 			TransformComponent& comp = SceneHierarchyPanel::Data.selected->GetComponent<TransformComponent>();
 			glm::mat4 transform = SceneHierarchyPanel::Data.selected->GetTransform();
 			glm::mat4 parent_transform = SceneHierarchyPanel::Data.selected->parent ? SceneHierarchyPanel::Data.selected->parent->GetTransform() : glm::mat4(1.0f);
-
+		
 			ImGuizmo::Manipulate(value_ptr(view), value_ptr(proj), ImGuizmo::OPERATION::TRANSLATE, ImGuizmo::LOCAL, value_ptr(transform));
-
+		
 			glm::mat4 n = transform / parent_transform;
-
-			ImGuizmo::DecomposeMatrixToComponents(value_ptr(n), (float*) & comp.Position, (float*)&comp.Rotation, (float*)&comp.Scaling);
+		
+			ImGuizmo::DecomposeMatrixToComponents(value_ptr(n), (float*)&comp.Position, (float*)&comp.Rotation, (float*)&comp.Scaling);
 		}
 
 		ImGui::End();

@@ -4,6 +4,7 @@
 #include <unordered_map>
 #include <optional>
 #include <ranges>
+#include <list>
 
 #include "Steve/Core/Core.h"
 #include "Steve/Core/Logger.h"
@@ -92,7 +93,7 @@ namespace Steve
 
 			for (auto& data : mStorageContent)
 			{
-				memcpy_s(new_storage_ptr, data.second.second, data.second.first, data.second.second);
+				memcpy(new_storage_ptr, data.second.first, data.second.second);
 				data.second.first = new_storage_ptr;
 				new_storage_ptr += data.second.second;
 
@@ -392,14 +393,13 @@ namespace Steve
 
 			Iterator end()
 			{
-				auto ret = mPairs.end();
-				return Iterator(ret);
+				return Iterator(mPairs.end());
 			}
 
 			// private constructor
 		private:
-			Iterator(std::unordered_map<const K, V*>& pairs, std::unordered_map<const K, V*>::iterator start = pairs.begin(), std::optional<std::function<bool(std::pair<const K, V*>&)>&&> filter = nullptr)
-				: mPairs(pairs), p(start), mFilter(filter) {}
+			Iterator(std::unordered_map<const K, V*>& pairs, std::optional<std::function<bool(std::pair<const K, V*>&)>&&> filter = nullptr)
+				: mPairs(pairs), p(pairs.begin()), mFilter(filter) {}
 
 		private:
 			std::unordered_map<const K, V*>::iterator p;

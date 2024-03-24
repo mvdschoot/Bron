@@ -54,7 +54,7 @@ namespace Steve
 	{
 		Begin("Scene Hierarchy");
 		
-		TreeNode(Data.scene->Root);
+		TreeNode(Data.scene->root);
 
 		RenameFunction();
 

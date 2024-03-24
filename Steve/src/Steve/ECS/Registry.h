@@ -40,9 +40,13 @@ namespace Steve
 
             // Check if any component already in a group
             bool isInGroup = false;
-            (void(isInGroup = isInGroup || RegistryFunctions::IsInGroup(pData, std::type_index(typeid(Ts))).has_value()), ...);
-            CORE_ASSERT(!isInGroup, "Component already in group")
 
+            bool result[] = {false, (RegistryFunctions::IsInGroup(&pData, std::type_index(typeid(Ts))).has_value(), true)...};
+
+            // (void(isInGroup = isInGroup || RegistryFunctions::IsInGroup(pData, std::type_index(typeid(Ts))).has_value()), ...);
+            for (int x = 1; x < sizeof...(Ts); x++) {
+                CORE_ASSERT(!result[x], "Component already in group")
+            }
 
             Group<Ts...> group(&pData);
             group.SetAll();

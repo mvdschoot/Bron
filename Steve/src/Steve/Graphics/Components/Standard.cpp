@@ -34,8 +34,8 @@ namespace Steve
 		usize vec_size = sizeof(glm::vec3);
 		for (int x = 0; x < 24 * stride; x += stride)
 		{
-			memcpy_s(new_verts + x, vec_size, vertices + (x / stride), vec_size);
-			memcpy_s(new_verts + x + vec_size, vec_size, normals + (x / stride), vec_size);
+			memcpy(new_verts + x, vertices + (x / stride), vec_size);
+			memcpy(new_verts + x + vec_size, normals + (x / stride), vec_size);
 			memset(new_verts + x + (2 * vec_size), 0, sizeof(glm::vec2));
 		}
 
@@ -249,6 +249,6 @@ namespace Steve
 
 	StandardInstances::StandardInstances()
 	{
-		StandardShader = Shader::CreateShaderFromLocation("../../../Steve/Assets/Phong3DShader.glsl");
+		StandardShader = Shader::CreateShaderFromLocation("../Steve/Assets/Phong3DShader.glsl");
 	}
 }

@@ -49,7 +49,7 @@ namespace Steve
 		glm::vec3 ORotation;
 		glm::vec3 OScaling;
 
-		bool IsDirty()
+		bool IsDirty() const
 		{
 			CH_PROFILE_FUNCTION();
 			return !(compare_floats_bits(Position, OPosition)

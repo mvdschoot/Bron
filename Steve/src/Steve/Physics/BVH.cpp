@@ -1,63 +1,69 @@
 #include "BVH.h"
-
 #include "Splitting.h"
 
-#include "PhysicsEngine.h"
+#include <optional>
 
 namespace Steve
 {
-	BVH::BVH(PhysicsData* data_)
-		: data(data_)
+	BVH::BVH()
 	{
-		data->Nodes.push_back({ {{-1,-1,-1}, {1,1,1}}, nullptr, nullptr, nullptr });
+		root = createPt<BvhNode>(AABB {{-1,-1,-1}, {1,1,1}}, nullptr, nullptr, std::vector<Pt<RigidBody>>() );
 	}
 
-	void BVH::AddNode(Node* node)
+	void BVH::addObject(Pt<RigidBody> obj)
 	{
-		auto [body, box] = GenerateAABB(node);
-		
-		data->Nodes.push_back({ box, body, nullptr, nullptr });
-		InsertPrimitive(data->Nodes.data(), &data->Nodes.back());
+		insertPrimitive(root, obj);
 	}
 
-	std::tuple<CollisionBody*, AABB> BVH::GenerateAABB(Node* node)
+	std::vector<Pt<RigidBody>>& BVH::get(Pt<RigidBody>& object) 
 	{
-		if(node->Contains<SphereCollisionBody>())
-		{
-			SphereCollisionBody& col = node->GetComponent<SphereCollisionBody>();
-			return std::make_tuple(&col, AABB(col.Transform->Position - col.Radius, col.Transform->Position + col.Radius));
-		}
-		if (node->Contains<CubeCollisionBody>())
-		{
-			CubeCollisionBody& s = node->GetComponent<CubeCollisionBody>();
-			return std::make_tuple(&s, AABB{ s.Transform->Position - (s.Dimensions * 0.5f), s.Transform->Position + (s.Dimensions * 0.5f)});
-		}
-
-		CORE_ASSERT(false, "No collision body detected")
+		return find(object)->primitives;
 	}
 
-	void BVH::InsertPrimitive(CollisionNode* current, CollisionNode* n)
+	void BVH::insertPrimitive(Pt<BvhNode> current, Pt<RigidBody> n)
 	{
-		CollisionNode& c = *current;
-		if (c.Left != nullptr) {
-			if (c.Left->Box.Contains(c.Box))
+		BvhNode& c = *current;
+		if (c.left != nullptr) {
+			CORE_ASSERT(c.right != nullptr, "Right child cannot be null when left child is not.");
+			if (c.left->box.contains(c.box))
 			{
-				InsertPrimitive(c.Left, n);
+				insertPrimitive(c.left, n);
 			}
-			else if (c.Right->Box.Contains(c.Box)) {
-				InsertPrimitive(c.Right, n);
+			else if (c.right->box.contains(c.box)) {
+				insertPrimitive(c.right, n);
 			}
 			else {
-				c.Primitives.push_back(n);
+				c.primitives.push_back(n);
 			}
-			return;
-		}
-
-		c.Primitives.push_back(n);
-		if (c.Primitives.size() >= max_prims_in_node)
-		{
-			SAH::Split(data->Nodes, c);
+		} else {
+			c.primitives.push_back(n);
+			if (c.primitives.size() >= MAX_PRIMS_IN_NODE)
+			{
+				SAH::Split(current);
+			}
 		}
 	}
 	
+	Pt<BvhNode> BVH::find(Pt<RigidBody> toFind) 
+	{
+		Pt<BvhNode> current = root;
+		while (current != nullptr) /* Dummy condition. Can just as well be 'true'. */ {
+			if (current->primitives.empty()) {
+				if (current->left->box.contains(toFind->boundingBox)) {
+					current = current->left;
+				} else if (current->right->box.contains(toFind->boundingBox)) {
+					current = current->right;
+				} else {
+					CORE_ASSERT(false, "Problem with algorithm");
+				}
+			} else {
+				CORE_ASSERT(current->left == nullptr && current->right == nullptr, "Current functionality requires mutual exclusivity of left,right and primitives");
+				CORE_ASSERT(std::find(current->primitives.begin(), current->primitives.end(), toFind) != current->primitives.end(), "Cannot find the object");
+
+				return current;
+			}
+		}
+		CORE_ASSERT(false, "Unreachable");
+		return {};
+	}
 }

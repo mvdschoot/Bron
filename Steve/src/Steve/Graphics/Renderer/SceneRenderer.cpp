@@ -33,22 +33,22 @@ namespace Steve
 	{
 		Statistics = { 0,0,0,0,0,0 };
 
-		CORE_ASSERT(scene.Camera != nullptr, "This scene has no camera attached")
+		CORE_ASSERT(scene.camera != nullptr, "This scene has no camera attached")
 
-		for (auto& [shader, set] : scene.Queue.pQueue.pSet)
+		for (auto& [shader, set] : scene.queue.pQueue.pSet)
 		{
 			Statistics.Shaders++;
 			shader->bind();
 
 			shader->setUniform1iv("uTextures", (i32*)Data.textureArray, Data.textureSlots);
-			shader->setUniformMat4("uVPmatrix", scene.Camera->GetVPmatrix());
-			shader->setUniformMat4("uViewMatrix", scene.Camera->GetViewMatrix());
+			shader->setUniformMat4("uVPmatrix", scene.camera->GetVPmatrix());
+			shader->setUniformMat4("uViewMatrix", scene.camera->GetViewMatrix());
 			Statistics.UniformCalls += 3;
 			
-			for(int x = 0; x < scene.PointLights.size(); x++)
+			for(int x = 0; x < scene.pointLights.size(); x++)
 			{
-				TransformComponent& t = scene.PointLights[x]->GetComponent<TransformComponent>();
-				LightData& l = scene.PointLights[x]->GetComponent<LightData>();
+				TransformComponent& t = scene.pointLights[x]->GetComponent<TransformComponent>();
+				LightData& l = scene.pointLights[x]->GetComponent<LightData>();
 				shader->setUniforms(*l.Layout, l.Data);
 				Statistics.UniformCalls += l.Layout->Data.size();
 			}

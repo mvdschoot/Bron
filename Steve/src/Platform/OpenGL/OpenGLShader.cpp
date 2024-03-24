@@ -47,7 +47,7 @@ namespace Steve
 		int f = shader.find(f_word);
 		int g = shader.find(g_word);
 
-		CORE_ASSERT(v != -1 && f != -1, "Both vertex and fragment shader should be present.")
+		CORE_ASSERT(v != -1 && f != -1, "Both vertex and fragment shader should be present.");
 
 		if (g == -1)
 		{

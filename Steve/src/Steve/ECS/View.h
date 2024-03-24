@@ -11,6 +11,7 @@
 #include "Containers.h"
 
 #include <vector>
+#include <map>
  
 namespace Steve
 {
@@ -19,7 +20,7 @@ namespace Steve
 	class View
 	{
 	public:
-		using EntityIterator = StaticMap<const UUID, Entity*>::Iterator;
+		using EntityIterator = std::map<const UUID, Entity*>::iterator;
 
 		struct Iterator		// ITERATOR
 		{
@@ -27,14 +28,14 @@ namespace Steve
 
 			[[nodiscard]] Entity* GetEntity() const
 			{
-				return *p.Get();
+				return p->second;
 			}
 
 			//Gets components on the fly, so addr's are always good
 			std::tuple<Handle<Ts>&...> operator*()
 			{
 				CH_PROFILE_FUNCTION();
-				return (*p.Get())->GetComponents<Ts...>();
+				return p->second->GetComponents<Ts...>();
 			}
 			std::tuple<Handle<Ts>&...> operator->() { return operator*(); }
 
@@ -49,8 +50,8 @@ namespace Steve
 			Iterator& operator++() {
 				++p;
 				while (p != mRegData->Entities.end() && !(
-					(*p.Get())->ContainsAll<Ts...>() &&
-					(!mFilter.has_value() || (*mFilter)(*p.Get())))
+					p->second->ContainsAll<Ts...>() &&
+					(!mFilter.has_value() || mFilter.value()(p->second)))
 					) ++p;
 				return *this;
 			}
@@ -70,8 +71,8 @@ namespace Steve
 
 		// private constructor
 		private:
-			Iterator(RegistryData* reg_data, EntityIterator start = reg_data->Entities.begin(), std::function<bool(Entity*)>&& filter = nullptr)
-				: mRegData(reg_data), p(start), mFilter(filter) {}
+			Iterator(RegistryData* reg_data, std::function<bool(Entity*)>&& filter = nullptr)
+				: mRegData(reg_data), p(reg_data->Entities.begin()), mFilter(filter) {}
 			
 		private:
 			RegistryData* mRegData;

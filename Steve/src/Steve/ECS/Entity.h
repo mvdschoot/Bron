@@ -110,8 +110,8 @@ namespace Steve
 		
 
 		// Shortcut to registry function
-		template<typename T>
-		void DestroyComponent() { DestroyComponent(std::type_index(typeid(T))); }
+		// template<typename T>
+		// void DestroyComponent() { RegistryFunctions::DestroyComponent(std::type_index(typeid(T))); }
 
 
 	private:

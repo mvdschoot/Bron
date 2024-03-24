@@ -8,10 +8,4 @@ target_link_libraries(Steve
 	PUBLIC VendorLibrary
 )
 
-enable_testing()
-add_subdirectory("tests")
-target_link_libraries(CheetsTests 
-	PUBLIC Steve
-)
-
 set(CMAKE_EXPORT_COMPILE_COMMANDS 1)

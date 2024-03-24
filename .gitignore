@@ -1,7 +1,5 @@
 build
 out
-Rust
-tests
 
 CMakeFiles
 NOTES.txt

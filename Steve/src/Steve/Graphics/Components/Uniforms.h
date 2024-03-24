@@ -3,7 +3,6 @@
 
 namespace Steve
 {
-
 	template<typename T>
 	struct UniformLayout : public BufferLayout
 	{
@@ -54,13 +53,13 @@ namespace Steve
 		void Set(T type, const uint8_t* value)
 		{
 			const BufferElement& el = Layout->GetElementData(type);
-			memcpy_s(Data + el.offset, el.size, value, el.size);
+			memcpy(Data + el.offset, value, el.size);
 		}
 
 		template<typename S> void Set(T type, S value)
 		{
 			const BufferElement& el = Layout->GetElementData(type);
-			memcpy_s(Data + el.offset, el.size, &value, el.size);
+			memcpy(Data + el.offset, &value, el.size);
 		}
 
 		u8* Get(T type) const

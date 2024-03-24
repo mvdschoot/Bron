@@ -14,6 +14,8 @@
 #include "Steve/Graphics/Camera.h"
 #include "Steve/Graphics/Renderer/2D.h"
 
+// #include "Steve/Physics/PhysicsEngine.h"
+
 namespace Steve
 {
 	class Scene : public Registry
@@ -21,18 +23,20 @@ namespace Steve
 	public:
 		Scene();
 
-		void CreateStandardModel(const char* name, const char* location);
-		void AddModel(Model* model);
-		StandardCubeComponent* AddCube(const char* name, glm::vec3 position, glm::vec3 dimensions);
-		void AddPointLight(glm::vec3 pos, glm::vec3 color);
+		void createStandardModel(const char* name, const char* location);
+		void addModel(Model* model);
+		StandardCubeComponent* addCube(const char* name, glm::vec3 position, glm::vec3 dimensions);
+		void addPointLight(glm::vec3 pos, glm::vec3 color);
 		
-		Node* Root;
+		Node* root;
 
-		RenderQueue Queue;
-		std::vector<Model*> AllModels;
+		RenderQueue queue;
+		std::vector<Model*> allModels;
 
-		std::vector<PointLight*> PointLights;
-		Camera* Camera;
+		std::vector<PointLight*> pointLights;
+		Camera* camera;
+
+		// PhysicsEngine* physics;
 	private:
 	};
 }

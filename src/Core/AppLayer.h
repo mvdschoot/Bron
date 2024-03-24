@@ -24,7 +24,7 @@ namespace Steve
 		uint32_t Width = 0;
 		uint32_t Height = 0;
 
-		Ref<Framebuffer> Framebuffer;
+		Ref<Framebuffer> mFramebuffer;
 		FramebufferSpecification FrSpec;
 
 		FrustumCamera* Camera;

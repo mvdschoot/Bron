@@ -16,17 +16,6 @@ namespace Steve
 		Meshes[0]->pContext->pMaterial->Set(MaterialDataTypes::Specular, color);
 	}
 
-	void PointLight::SetColor(glm::vec3 color)
-	{
-		Cube::SetColor(color);
-		GetComponent<LightData>()->Set(LightDataTypes::Color, color);
-	}
-
-	void PointLight::SetUniformPosition(glm::vec3 pos)
-	{
-		GetComponent<LightData>()->Set(LightDataTypes::Position, pos);
-	}
-
 	PointLight::PointLight(RegistryData* reg, UniformData<LightDataTypes>&& context) : Cube(StandardCubeComponent(reg))
 	{
 		Meshes[0]->parent = this;
@@ -38,6 +27,17 @@ namespace Steve
 		Handle<LightData>& l = AddComponent<LightData>(std::move(context));
 
 		GetComponent<TransformComponent>()->Scaling = { 0.05,0.05,0.05 };
+	}
+
+	void PointLight::SetColor(glm::vec3 color)
+	{
+		Cube::SetColor(color);
+		GetComponent<LightData>()->Set(LightDataTypes::Color, color);
+	}
+
+	void PointLight::SetUniformPosition(glm::vec3 pos)
+	{
+		GetComponent<LightData>()->Set(LightDataTypes::Position, pos);
 	}
 
 	std::tuple<glm::vec3*, glm::vec3*, u32*> GenCubeSmoothVertices(glm::vec3 dimensions)

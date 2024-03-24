@@ -43,7 +43,7 @@ namespace Steve
 		{
 			if (Component != nullptr)
 			{
-				memcpy_s(location, Size, Component, Size);
+				memcpy(location, Component, Size);
 				Component = (ComponentType*)location;
 			}
 		}

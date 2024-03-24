@@ -16,24 +16,24 @@ namespace Steve
 		
 		FrSpec.width = Width;
 		FrSpec.height = Height;
-		Framebuffer = Framebuffer::Create(FrSpec);
-		Framebuffer->unbind(); 
+		mFramebuffer = Framebuffer::Create(FrSpec);
+		mFramebuffer->unbind(); 
 		
 		Camera = new FrustumCamera(glm::radians(80.0F), (float)Width / (float)Height, 0.1f, 100.0f, Pos, glm::vec3{ 0.0f, 0.0f, 0.0f }, glm::vec3{ 0.0f, 1.0f, 0.0f });
-		Sc.Camera = Camera;
-		Sc.CreateStandardModel("The model", "C:/Users/mathi/Documents/Steve/Assets/mymodel/untitled.obj");
+		Sc.camera = Camera;
+		Sc.createStandardModel("The model", "../Assets/mymodel/untitled.obj");
 
-		// Sc.CreateStandardModel("C:/Users/mathi/Documents/Steve/Assets/big_car/textures/911_scene.obj");
+		// Sc.createStandardModel("C:/Users/mathi/Documents/Steve/Assets/big_car/textures/911_scene.obj");
 
-		Sc.AddPointLight({ 4.0, 2.0, 4.0 }, { 1.0, 1.0, 1.0 });
+		Sc.addPointLight({ 4.0, 2.0, 4.0 }, { 1.0, 1.0, 1.0 });
 
-		Handle<LightData>& l = Sc.PointLights[0]->GetComponent<LightData>();
-		Sc.AddPointLight({ -2.0, 2.0, -2.0 }, { 1.0, 1.0, 1.0 });
+		Handle<LightData>& l = Sc.pointLights[0]->GetComponent<LightData>();
+		Sc.addPointLight({ -2.0, 2.0, -2.0 }, { 1.0, 1.0, 1.0 });
 
 		Command::ClearColor({0.0, 0.0, 0.0, 0.5});
-		APP_INFO("Pointlight 1 ID: {}", Sc.PointLights[0]->Id.p_UUID);
+		APP_INFO("Pointlight 1 ID: {}", Sc.pointLights[0]->Id.p_UUID);
 
-		Cube = Sc.AddCube("The cube", {0,3,0}, {1,1,1});
+		Cube = Sc.addCube("The cube", {0,3,0}, {1,1,1});
 		//Cube->AddComponent<CubeCollisionBody>({{true, Cube->GetComponent<TransformComponent>()}, {1,1,1} });
 
 		GridRenderer::Init(Camera);
@@ -93,7 +93,7 @@ namespace Steve
 	void AppLayer::OnUpdate(const Timestep ts) {
 		Ts = ts;
 
-		Framebuffer->bind();
+		mFramebuffer->bind();
 		Command::clear();
 
 
@@ -106,7 +106,7 @@ namespace Steve
 		Command::EnableDepth();
 		SceneRenderer::Draw(Sc);
 
-		Framebuffer->unbind();
+		mFramebuffer->unbind();
 	}
 	 
 	void AppLayer::OnImGuiRender() {

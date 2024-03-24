@@ -11,6 +11,7 @@
 #include "Platform/OpenGL/OpenGLContext.h"
 #include "Steve/Graphics/GraphicsContext.h"
 
+#include "glad/glad.h"
 #define GLFW_INCLUDE_NONE
 #include "GLFW/glfw3.h"
 
