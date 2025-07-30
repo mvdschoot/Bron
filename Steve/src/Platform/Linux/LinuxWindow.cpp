@@ -3,6 +3,7 @@
 
 namespace Steve
 {
+
 	LinuxWindow::LinuxWindow(const WindowProps& w_props) : _is_glfw_initialised(false)
 	{
 		CH_PROFILE_FUNCTION();
@@ -129,5 +130,19 @@ namespace Steve
 			glfwSwapInterval(1);
 		else
 			glfwSwapInterval(0);
+	}
+	
+	float LinuxWindow::getMonitorScale() {
+		float xScale, yScale;
+		glfwGetWindowContentScale(this->_window, &xScale, &yScale);
+
+		CORE_INFO("Monitor scale x: {} y: {}", xScale, yScale);
+
+		if (xScale == yScale) {
+			return xScale;
+		} else {
+			CORE_WARN("The OS's scaling for the primary monitor differs between the x scaling factor and y scaling factor: x: {}, y: {}", xScale, yScale);
+			return xScale;
+		}
 	}
 }

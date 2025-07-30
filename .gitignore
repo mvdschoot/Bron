@@ -1,3 +1,11 @@
+CMakePresets.json
+CMakeSettings.json
+notities.txt
+demo.mp4
+cmake-build-debug
+cmake-build-default
+
+
 build
 out
 

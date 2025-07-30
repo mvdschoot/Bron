@@ -53,6 +53,7 @@ namespace Steve
 
 		virtual unsigned int getWindowWidth() = 0;
 		virtual unsigned int getWindowHeight() = 0;
+		virtual float getMonitorScale() = 0;
 
 		virtual void setEventCallback(const EventCallbackFn& func) = 0;
 

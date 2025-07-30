@@ -6,8 +6,7 @@ set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 
 add_subdirectory(Steve)
 
-add_compile_definitions(COMPILING_CHEETS)
-add_compile_definitions(CH_PROFILE)
+# add_definitions(CH_PROFILE)
 
 
 add_executable(LuigiMaker

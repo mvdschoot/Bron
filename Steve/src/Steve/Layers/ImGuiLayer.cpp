@@ -1,6 +1,7 @@
 #include "ImGuiLayer.h"
 
 #include "ImGuizmo.h"
+#include "Steve/Core/Application.h"
 
 namespace Steve
 {
@@ -28,7 +29,9 @@ namespace Steve
 
 		ImGui::GetIO().ConfigFlags |= ImGuiConfigFlags_DockingEnable;
 
-
+		// For 4k
+		float scale = Application::getWindow()->getMonitorScale();
+		ImGui::GetStyle().FontScaleMain *= scale;
 	}
 
 	void ImGuiLayer::OnDetach()

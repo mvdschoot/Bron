@@ -34,6 +34,7 @@ namespace Steve
 
 		u32 getWindowWidth() override { return _window_data._width; };
 		u32 getWindowHeight() override { return _window_data._height; };
+		float getMonitorScale() override;
 
 		void setEventCallback(const EventCallbackFn& func) override
 		{
