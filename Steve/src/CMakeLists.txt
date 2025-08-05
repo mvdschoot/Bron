@@ -15,9 +15,7 @@ add_library(Steve STATIC
 	
 	
 	Steve/Graphics/Components/Mesh.cpp
-	Steve/Graphics/Components/Models.cpp
 	Steve/Graphics/Components/MiscellaneousComponents.cpp
-	Steve/Graphics/Components/Standard.cpp
 	Steve/Graphics/Components/Model.cpp
 	
 	Steve/Scene/Scene.cpp
@@ -61,7 +59,13 @@ add_library(Steve STATIC
 	Platform/OpenGL/OpenGLTextTexture.cpp
 
 	Platform/Linux/LinuxWindow.cpp
-	Platform/Linux/LinuxInput.cpp 
+	Platform/Linux/LinuxInput.cpp
+		Steve/Graphics/ShaderRegistry.cpp
+		Steve/Graphics/Phong/PhongMaterial.cpp
+		Steve/Graphics/Components/Cube.cpp
+		Steve/Graphics/Components/ModelLoader.cpp
+		Steve/Graphics/Phong/PhongCube.cpp
+        Steve/Graphics/LightManagement.cpp
 )
 
 set_property(TARGET Steve PROPERTY CXX_STANDARD 20)

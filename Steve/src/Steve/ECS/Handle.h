@@ -70,26 +70,26 @@ namespace Steve
 
 		T* operator->()
 		{
-			CORE_ASSERT(Component, "Handle is empty")
-				return static_cast<T*>(static_cast<void*>(Component));
+			CORE_ASSERT(Component, "Handle is empty");
+			return static_cast<T*>(static_cast<void*>(Component));
 		}
 
 		T& operator*()
 		{
-			CORE_ASSERT(Component, "Handle is empty")
-				return *static_cast<T*>(static_cast<void*>(Component));
+			CORE_ASSERT(Component, "Handle is empty");
+			return *static_cast<T*>(static_cast<void*>(Component));
 		}
 
 		const T* operator->() const
 		{
-			CORE_ASSERT(Component, "Handle is empty")
-				return static_cast<const T*>(static_cast<const void*>(Component));
+			CORE_ASSERT(Component, "Handle is empty");
+			return static_cast<const T*>(static_cast<const void*>(Component));
 		}
 
 		const T& operator*() const
 		{
-			CORE_ASSERT(Component, "Handle is empty")
-				return *static_cast<const T*>(static_cast<const void*>(Component));
+			CORE_ASSERT(Component, "Handle is empty");
+			return *static_cast<const T*>(static_cast<const void*>(Component));
 		}
 
 		Handle<T>& operator=(const Handle<T>& o)

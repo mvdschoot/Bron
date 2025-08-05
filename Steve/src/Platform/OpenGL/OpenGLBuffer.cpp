@@ -105,4 +105,67 @@ namespace Steve
 		glBindBuffer(GL_ARRAY_BUFFER, _render_id);
 		glBufferData(GL_ARRAY_BUFFER, count * sizeof(u32), data, GL_DYNAMIC_DRAW);
 	}
+
+	////////////////////////////////////////////////////////////////////////////////
+	//////////////////// Uniform buffer ////////////////////////////////////////////
+	////////////////////////////////////////////////////////////////////////////////
+
+	OpenGLUniformBuffer::OpenGLUniformBuffer(usize size, u32 binding) :
+		bufferSize(size), currentBinding(binding), bound(false)
+	{
+		glGenBuffers(1, &rendererID);
+		glBindBuffer(GL_UNIFORM_BUFFER, rendererID);
+		glBufferData(GL_UNIFORM_BUFFER, size, nullptr, GL_DYNAMIC_DRAW);
+		glBindBufferRange(GL_UNIFORM_BUFFER, binding, rendererID, 0, size);
+		glBindBuffer(GL_UNIFORM_BUFFER, 0);
+	}
+
+	OpenGLUniformBuffer::OpenGLUniformBuffer(const void *data, usize size, u32 binding) :
+		bufferSize(size), currentBinding(binding), bound(false)
+	{
+		glGenBuffers(1, &rendererID);
+		glBindBuffer(GL_UNIFORM_BUFFER, rendererID);
+		glBufferData(GL_UNIFORM_BUFFER, size, data, GL_DYNAMIC_DRAW);
+		glBindBufferRange(GL_UNIFORM_BUFFER, binding, rendererID, 0, size);
+		glBindBuffer(GL_UNIFORM_BUFFER, 0);
+	}
+
+	OpenGLUniformBuffer::~OpenGLUniformBuffer()
+	{
+		glDeleteBuffers(1, &rendererID);
+	}
+
+	void OpenGLUniformBuffer::bind(u32 binding)
+	{
+		if (currentBinding != binding) {
+			unbind();
+		}
+		currentBinding = binding;
+		glBindBufferBase(GL_UNIFORM_BUFFER, binding, rendererID);
+		bound = true;
+	}
+
+	void OpenGLUniformBuffer::unbind() {
+		glBindBuffer(GL_UNIFORM_BUFFER, 0);
+		bound = false;
+	}
+
+	bool OpenGLUniformBuffer::isBound() {
+		return bound;
+	}
+
+	void OpenGLUniformBuffer::setData(const u8* data, usize size, usize offset)
+	{
+		glBindBuffer(GL_UNIFORM_BUFFER, rendererID);
+		glBufferSubData(GL_UNIFORM_BUFFER, offset, size, data);
+		glBindBuffer(GL_UNIFORM_BUFFER, 0);
+	}
+
+	void OpenGLUniformBuffer::resizeAndSetData(const u8* data, usize size)
+	{
+		bufferSize = size;
+		glBindBuffer(GL_UNIFORM_BUFFER, rendererID);
+		glBufferData(GL_UNIFORM_BUFFER, size, data, GL_DYNAMIC_DRAW);
+		glBindBuffer(GL_UNIFORM_BUFFER, 0);
+	}
 }

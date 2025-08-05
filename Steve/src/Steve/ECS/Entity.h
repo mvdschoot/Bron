@@ -24,9 +24,8 @@ namespace Steve
 	{
 	public:
 
-		Entity(RegistryData* regData) : pRegData(regData)
-		{}
-		~Entity() = default;
+		Entity(RegistryData *regData) : pRegData(regData) {}
+		virtual ~Entity() = default;
 
 		// Entity(const Entity& ent) = default;
 

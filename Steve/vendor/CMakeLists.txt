@@ -78,11 +78,23 @@ set(ASSIMP_BUILD_TESTS OFF CACHE BOOL "" FORCE)
 set(ASSIMP_BUILD_ASSIMP_TOOLS OFF CACHE BOOL "" FORCE)
 
 FetchContent_Declare(
-  assimp
-  GIT_REPOSITORY https://github.com/assimp/assimp.git
-  GIT_TAG v6.0.2
+        assimp
+        GIT_REPOSITORY https://github.com/assimp/assimp.git
+        GIT_TAG v6.0.2
 )
 FetchContent_MakeAvailable(assimp)
+
+# --------------------
+# magic_enum (header-only)
+# --------------------
+
+FetchContent_Declare(
+        magic_enum
+        GIT_REPOSITORY https://github.com/Neargye/magic_enum.git
+        GIT_TAG v0.9.7
+)
+FetchContent_MakeAvailable(magic_enum)
+
 
 # --------------------
 # Vendor library (aggregates all dependencies)
@@ -93,13 +105,14 @@ FetchContent_MakeAvailable(assimp)
 
 # Compiled libraries are PUBLIC so they link transitively
 target_link_libraries(VendorLibrary INTERFACE
-  spdlog
-  glad
-  glfw
-  imgui
-  imguizmo
-  freetype
-  assimp
-  stb
-  glm
+    spdlog
+    glad
+    glfw
+    imgui
+    imguizmo
+    freetype
+    assimp
+    stb
+    glm
+    magic_enum
 )

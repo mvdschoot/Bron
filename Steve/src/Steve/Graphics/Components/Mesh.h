@@ -15,38 +15,32 @@
 #include "MiscellaneousComponents.h"
 #include "Steve/ECS/Entity.h"
 #include "Steve/Graphics/Camera.h"
+#include "Steve/Graphics/MaterialBase.h"
 #include "Steve/Graphics/Renderer/2D.h"
 
-#include "Context.h"
-#include "Steve/Graphics/Renderer/2D.h"
-#include "Steve/Graphics/Renderer/2D.h"
-#include "Steve/Graphics/Renderer/2D.h"
-#include "Steve/Graphics/Renderer/2D.h"
 #include "Steve/Scene/Node.h"
 
-namespace Steve
-{
+namespace Steve {
+	enum VertexVariables {
+		POSITIONS,
+		NORMALS,
+		UVS,
+		TANGENTS
+	};
+
+	struct MeshData {
+		std::vector<glm::vec3> positions;
+		std::vector<u32> indices;
+		std::optional<std::vector<glm::vec3>> normals;
+		std::optional<std::vector<glm::vec2>> uvs;
+		std::optional<std::vector<glm::vec3>> tangents;
+	};
+
 	class Mesh : public Node
 	{
 	public:
-		Mesh(RegistryData* reg, const BufferLayout* layout)
-			: Node(reg), mBufferLayout(layout)
-		{
-			type |= NodeType_Mesh;
-		}
-
-		Mesh(RegistryData* reg,
-			const BufferLayout* layout,
-			void* vertex_data, usize vertex_size,
-			u32* index_data, usize index_count,
-			MeshContext* context) :
-				Node(reg),
-				pContext(context),
-				pVao(VertexArray::Create()),
-				mBufferLayout(layout)
-		{
-			setVertexData(vertex_data, vertex_size);
-			setIndexData(index_data, index_count);
+		explicit Mesh(RegistryData* reg, MeshData&& meshData, const Ref<MaterialBase> material)
+				: Node(reg), vertexData(meshData), material(material) {
 			type |= NodeType_Mesh;
 		}
 
@@ -55,15 +49,16 @@ namespace Steve
 			return *this;
 		}
 
-		void setVertexData(void* vertex_data, usize vertex_data_size);
-		void setIndexData(u32* index_data, u32 index_count);
+		static glm::vec3 FindCentroid(const glm::vec3* vertices, uint64_t n);
+		Ref<VertexArray> GetVao(const NamedBufferLayout<VertexVariables>& bufferLayout);
+		Ref<MaterialBase> getMaterial() const { return material;}
 
-		glm::vec3 static FindCentroid(glm::vec3* vertices, uint64_t n);
-
-		MeshContext* pContext;
-		Ref<VertexArray> pVao;
 	private:
-		const BufferLayout* mBufferLayout;
+		void GenerateVao(const NamedBufferLayout<VertexVariables>& bufferLayout);
+
+		Ref<VertexArray> vao = nullptr;
+		MeshData vertexData;
+		Ref<MaterialBase> material;
 	};
 }
 

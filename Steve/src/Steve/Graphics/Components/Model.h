@@ -5,33 +5,22 @@
 #include "MiscellaneousComponents.h"
 #include "Mesh.h"
 
-#include "Steve/Scene/Node.h"
-
 namespace Steve
 {
 	struct Model : public Node
 	{
-		Model(RegistryData* reg)
-			: Node(reg)
+		Model(RegistryData* reg, std::vector<Ref<Mesh>>&& meshes)
+			: Node(reg), meshes(meshes)
 		{
 			type |= NodeType_Model;
 		}
 
-		std::vector<Mesh*> Meshes;
-
-
 		virtual glm::vec3 GetPosition();
-
 		glm::vec3 GetCentroid() const;
+		std::vector<Ref<Mesh>>& GetMeshes() { return meshes; }
 
-		template <typename ... Ts>
-		Mesh* AddMesh(Ts&&... args)
-		{
-			Mesh* m = new Mesh(args...);
-			AddChildNode(m, true);
-			Meshes.push_back(m);
-			return m;
-		}
+	private:
+		std::vector<Ref<Mesh>> meshes;
 	};
 
 

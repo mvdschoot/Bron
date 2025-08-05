@@ -10,8 +10,8 @@ build
 out
 
 CMakeFiles
-NOTES.txt
-notes.txt
+NOTES.md
+NOTES.md
 
 .git
 .vs

@@ -3,25 +3,16 @@
 
 #include "Steve/Core/Core.h"
 #include "Steve/Core/Logger.h"
-#include "Steve/Core/Profiling.h"
 
 #include "Steve/Graphics/Components/Model.h"
 #include "Steve/Graphics/Components/Mesh.h"
-#include "Steve/Graphics/Components/Context.h"
 
 #include <map>
 
+#include "Steve/Graphics/MaterialBase.h"
+
 namespace Steve
 {
-
-	template<typename T, typename C>
-	class SortSet
-	{
-	public:
-		SortSet() = default;
-
-		std::map<T*, C> pSet;
-	};
 
 	/*
 	 * The meshes are already in the registry.
@@ -31,14 +22,11 @@ namespace Steve
 	public:
 		RenderQueue();
 
-		void addModel(Model* model);
+		void addModel(Ref<Model> model);
 
-
-		// Groups based on identical memory loc, not same attributes
-		SortSet<Shader,
-			SortSet<Model, 
-				SortSet<Material,
-					std::vector<Mesh*>>>> pQueue;
+		std::map<const char*,
+			std::map<Ref<MaterialBase>,
+				std::vector<Ref<Mesh>>>> pQueue;
 	};
 }
 

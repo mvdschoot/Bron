@@ -43,22 +43,22 @@ namespace Steve
 		const std::string v_word = "#type vertex\n";
 		const std::string f_word = "#type fragment\n";
 		const std::string g_word = "#type geometry\n";
-		int v = shader.find(v_word);
-		int f = shader.find(f_word);
-		int g = shader.find(g_word);
+		usize v = shader.find(v_word);
+		usize f = shader.find(f_word);
+		usize g = shader.find(g_word);
 
 		CORE_ASSERT(v != -1 && f != -1, "Both vertex and fragment shader should be present.");
 
 		if (g == -1)
 		{
 			_v_shader = shader.substr(v + v_word.size(), f - v_word.size());
-			_f_shader = shader.substr(f + f_word.size(), shader.npos);
+			_f_shader = shader.substr(f + f_word.size(), std::string::npos);
 		}
 		else
 		{
 			_v_shader = shader.substr(v + v_word.size(), g - v_word.size());
 			_g_shader = shader.substr(g + g_word.size(), f - g - g_word.size());
-			_f_shader = shader.substr(f + f_word.size(), shader.npos);
+			_f_shader = shader.substr(f + f_word.size(), std::string::npos);
 		}
 	}
 
@@ -193,7 +193,7 @@ namespace Steve
 	void OpenGLShader::setUniformMat3(std::string name, const glm::mat3& matrix)
 	{
 		u32 loc = _uniform_locations.contains(name) ? _uniform_locations[name] : glGetUniformLocation(_renderer_id, name.c_str());
-		CORE_ASSERT(loc != -1, "Cant find uniform or uniform not used in shader")
+		CORE_ASSERT(loc != -1, "Cant find uniform ({}) or uniform not used in shader", name)
 		glUniformMatrix3fv(loc, 1, GL_FALSE, value_ptr(matrix));
 		_uniform_locations.emplace(name, loc);
 	}
@@ -201,7 +201,7 @@ namespace Steve
 	void OpenGLShader::setUniformMat4(std::string name, const glm::mat4& matrix)
 	{
 		u32 loc = _uniform_locations.contains(name) ? _uniform_locations[name] : glGetUniformLocation(_renderer_id, name.c_str());
-		CORE_ASSERT(loc != -1, "Cant find uniform or uniform not used in shader")
+		CORE_ASSERT(loc != -1, "Cant find uniform ({}) or uniform not used in shader", name)
 		glUniformMatrix4fv(loc, 1, GL_FALSE, value_ptr(matrix));
 		_uniform_locations.emplace(name, loc);
 	}
@@ -209,7 +209,7 @@ namespace Steve
 	void OpenGLShader::setUniform1i(std::string name, u32 a)
 	{
 		u32 loc = _uniform_locations.contains(name) ? _uniform_locations[name] : glGetUniformLocation(_renderer_id, name.c_str());
-		CORE_ASSERT(loc != -1, "Cant find uniform or uniform not used in shader")
+		CORE_ASSERT(loc != -1, "Cant find uniform ({}) or uniform not used in shader", name)
 		glUniform1i(loc, a);
 		_uniform_locations.emplace(name, loc);
 	}
@@ -217,7 +217,7 @@ namespace Steve
 	void OpenGLShader::setUniform2i(std::string name, u32 a, u32 b)
 	{
 		u32 loc = _uniform_locations.contains(name) ? _uniform_locations[name] : glGetUniformLocation(_renderer_id, name.c_str());
-		CORE_ASSERT(loc != -1, "Cant find uniform or uniform not used in shader")
+		CORE_ASSERT(loc != -1, "Cant find uniform ({}) or uniform not used in shader", name)
 		glUniform2i(loc, a, b);
 		_uniform_locations.emplace(name, loc);
 	}
@@ -225,7 +225,7 @@ namespace Steve
 	void OpenGLShader::setUniform3i(std::string name, u32 a, u32 b, u32 c)
 	{
 		u32 loc = _uniform_locations.contains(name) ? _uniform_locations[name] : glGetUniformLocation(_renderer_id, name.c_str());
-		CORE_ASSERT(loc != -1, "Cant find uniform or uniform not used in shader")
+		CORE_ASSERT(loc != -1, "Cant find uniform ({}) or uniform not used in shader", name)
 		glUniform3i(loc, a, b, c);
 		_uniform_locations.emplace(name, loc);
 	}
@@ -233,7 +233,7 @@ namespace Steve
 	void OpenGLShader::setUniform4i(std::string name, u32 a, u32 b, u32 c, u32 d)
 	{
 		u32 loc = _uniform_locations.contains(name) ? _uniform_locations[name] : glGetUniformLocation(_renderer_id, name.c_str());
-		CORE_ASSERT(loc != -1, "Cant find uniform or uniform not used in shader")
+		CORE_ASSERT(loc != -1, "Cant find uniform ({}) or uniform not used in shader", name)
 		glUniform4i(loc, a, b, c, d);
 		_uniform_locations.emplace(name, loc);
 	}
@@ -241,7 +241,7 @@ namespace Steve
 	void OpenGLShader::setUniform1f(std::string name, float a)
 	{
 		u32 loc = _uniform_locations.contains(name) ? _uniform_locations[name] : glGetUniformLocation(_renderer_id, name.c_str());
-		CORE_ASSERT(loc != -1, "Cant find uniform or uniform not used in shader")
+		CORE_ASSERT(loc != -1, "Cant find uniform ({}) or uniform not used in shader", name)
 		glUniform1f(loc, a);
 		_uniform_locations.emplace(name, loc);
 	}
@@ -249,7 +249,7 @@ namespace Steve
 	void OpenGLShader::setUniform2f(std::string name, float a, float b)
 	{
 		u32 loc = _uniform_locations.contains(name) ? _uniform_locations[name] : glGetUniformLocation(_renderer_id, name.c_str());
-		CORE_ASSERT(loc != -1, "Cant find uniform or uniform not used in shader")
+		CORE_ASSERT(loc != -1, "Cant find uniform ({}) or uniform not used in shader", name)
 		glUniform2f(loc, a, b);
 		_uniform_locations.emplace(name, loc);
 	}
@@ -257,7 +257,7 @@ namespace Steve
 	void OpenGLShader::setUniform3f(std::string name, float a, float b, float c)
 	{
 		u32 loc = _uniform_locations.contains(name) ? _uniform_locations[name] : glGetUniformLocation(_renderer_id, name.c_str());
-		CORE_ASSERT(loc != -1, "Cant find uniform or uniform not used in shader")
+		CORE_ASSERT(loc != -1, "Cant find uniform ({}) or uniform not used in shader", name)
 		glUniform3f(loc, a, b, c);
 		_uniform_locations[name] = loc;
 	}
@@ -265,7 +265,7 @@ namespace Steve
 	void OpenGLShader::setUniform4f(std::string name, float a, float b, float c, float d)
 	{
 		u32 loc = _uniform_locations.contains(name) ? _uniform_locations[name] : glGetUniformLocation(_renderer_id, name.c_str());
-		CORE_ASSERT(loc != -1, "Cant find uniform or uniform not used in shader")
+		CORE_ASSERT(loc != -1, "Cant find uniform ({}) or uniform not used in shader", name)
 		glUniform4f(loc, a, b, c, d);
 		_uniform_locations.emplace(name, loc);
 	}
@@ -273,7 +273,7 @@ namespace Steve
 	void OpenGLShader::setUniform1iv(std::string name, int* array, int count)
 	{
 		u32 loc = _uniform_locations.contains(name) ? _uniform_locations[name] : glGetUniformLocation(_renderer_id, name.c_str());
-		CORE_ASSERT(loc != -1, "Cant find uniform or uniform not used in shader")
+		CORE_ASSERT(loc != -1, "Cant find uniform ({}) or uniform not used in shader", name)
 		glUniform1iv(loc, count, array);
 		_uniform_locations.emplace(name, loc);
 	}

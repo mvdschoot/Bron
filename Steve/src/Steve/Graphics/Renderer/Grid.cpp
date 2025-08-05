@@ -21,7 +21,7 @@ namespace Steve
 		CH_PROFILE_FUNCTION();
 
 		gData._Camera = camera;
-		gData._Shader = Shader::CreateShaderFromLocation("../Steve/Assets/GridShader.glsl");
+		gData._Shader = Shader::CreateShaderFromLocation("Steve/Assets/GridShader.glsl");
 
 
 		float vertices[6] = { 0, 0, 0, 0, 0, 0};
