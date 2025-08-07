@@ -8,9 +8,7 @@
 
 #include <string>
 #include <vector>
-#include <stdlib.h>
 
-#include "glad/glad.h"
 
 namespace Steve
 {
@@ -138,6 +136,24 @@ namespace Steve
 
 		static Ref<IndexBuffer> Create(u32* indices, u32 count);
 		static Ref<IndexBuffer> Create(usize size);
+	};
+
+	class STEVE_API UniformBuffer
+	{
+	public:
+		UniformBuffer() = default;
+		virtual ~UniformBuffer() = default;
+
+		virtual void bind(u32 binding) = 0;
+		virtual void unbind() = 0;
+		virtual bool isBound() = 0;
+
+		virtual void setData(const uint8_t *data, uint64_t size, uint64_t offset = 0) = 0;
+		virtual void resizeAndSetData(const uint8_t *data, uint64_t size) = 0;
+
+		// Factory methods
+		static Ref<UniformBuffer> Create(usize size, u32 binding);
+		static Ref<UniformBuffer> Create(const void* data, usize size, u32 binding);
 	};
 }
 

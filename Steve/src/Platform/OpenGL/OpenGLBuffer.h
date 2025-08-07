@@ -11,7 +11,7 @@
 
 namespace Steve
 {
-	class OpenGLVertexBuffer : public VertexBuffer
+	class OpenGLVertexBuffer final : public VertexBuffer
 	{
 	public:
 		OpenGLVertexBuffer(usize size);
@@ -36,7 +36,7 @@ namespace Steve
 	};
 
 
-	class OpenGLIndexBuffer : public IndexBuffer
+	class OpenGLIndexBuffer final : public IndexBuffer
 	{
 	public:
 		OpenGLIndexBuffer(u32 count);
@@ -56,6 +56,27 @@ namespace Steve
 	private:
 		u32 _render_id;
 		u32 _count;
+	};
+
+	class OpenGLUniformBuffer final : public UniformBuffer
+	{
+	public:
+		OpenGLUniformBuffer(usize size, u32 binding);
+		OpenGLUniformBuffer(const void* data, usize size, u32 binding);
+		~OpenGLUniformBuffer() override;
+
+		void bind(u32 binding) override;
+		void unbind() override;
+		bool isBound() override;
+
+		void setData(const uint8_t *data, uint64_t size, uint64_t offset = 0) override;
+		void resizeAndSetData(const uint8_t *data, uint64_t size) override;
+
+	private:
+		GLuint rendererID;
+		usize bufferSize;
+		u32 currentBinding;
+		bool bound;
 	};
 }
 

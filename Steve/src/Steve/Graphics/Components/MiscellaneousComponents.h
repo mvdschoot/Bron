@@ -5,11 +5,13 @@
 
 #include <glm/glm.hpp>
 #include <glm/gtc/matrix_transform.hpp>
-#include "gtc/type_ptr.hpp"
+// #include "glm/gtc/type_ptr.hpp"
 
 #include "Steve/Util/Util.h"
-#include <gtx/quaternion.hpp>
+#include <glm/gtc/quaternion.hpp>
 
+#define GLM_ENABLE_EXPERIMENTAL
+#include <glm/gtx/quaternion.hpp>
 
 namespace Steve
 {
@@ -20,10 +22,10 @@ namespace Steve
 			if (IsDirty())
 			{
 				OPosition = Position;
-				ORotation = Rotation;
+				ORotationQuat = RotationQuat;
 				OScaling = Scaling;
 				 
-				glm::mat4 rotation = glm::toMat4(glm::quat(Rotation));
+				glm::mat4 rotation = glm::toMat4(glm::quat(RotationQuat));
 
 				Matrix = glm::translate(glm::mat4(1.0f), Position)
 					* rotation
@@ -32,30 +34,43 @@ namespace Steve
 			return Matrix;
 		}
 
+		void SyncEulerFromQuat()
+		{
+			EulerCache = glm::degrees(glm::eulerAngles(RotationQuat));
+		}
+
+		void SyncQuatFromEuler()
+		{
+			RotationQuat = glm::quat(glm::radians(EulerCache));
+		}
+
+		bool IsDirty() const
+		{
+			CH_PROFILE_FUNCTION();
+			return !(compare_floats_bits(Position, OPosition)
+				&& compare_floats_bits((glm::vec4*)(&RotationQuat), (glm::vec4*)(&ORotationQuat))
+				&& compare_floats_bits(Scaling, OScaling));
+		}
+
 		TransformComponent() : Position(0.0),
-			Rotation(0.0), Scaling(1.0), Matrix(1.0f),
-			OPosition(0.0), ORotation(0.0), OScaling(1.0) {}
+			RotationQuat({1.0f, 0.0f, 0.0f, 0.0f}), Scaling(1.0), Matrix(1.0f),
+			OPosition(0.0), ORotationQuat({1.0f, 0.0f, 0.0f, 0.0f}), OScaling(1.0) {}
 		operator glm::mat4&() { return GetMatrix(); }
 		glm::mat4& operator*() { return GetMatrix(); }
 
 		glm::vec3 Position;
-		glm::vec3 Rotation;
+		glm::quat RotationQuat; // w,x,y,z
 		glm::vec3 Scaling;
+
+		glm::vec3 EulerCache{0.0f}; // purely for ImGui UI
 
 	private:
 		glm::mat4 Matrix;
 
 		glm::vec3 OPosition;
-		glm::vec3 ORotation;
+		glm::quat ORotationQuat;
 		glm::vec3 OScaling;
 
-		bool IsDirty()
-		{
-			CH_PROFILE_FUNCTION();
-			return !(compare_floats_bits(Position, OPosition)
-				&& compare_floats_bits(Rotation, ORotation)
-				&& compare_floats_bits(Scaling, OScaling));
-		}
 	};
 
 

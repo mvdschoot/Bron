@@ -1,6 +1,8 @@
 #include "SceneRenderer.h"
 
 #include "Command.h"
+#include "Steve/Graphics/Phong/PhongDefinitions.h"
+#include "Steve/Graphics/ShaderRegistry.h"
 
 
 namespace Steve
@@ -12,7 +14,7 @@ namespace Steve
 		Ref<Texture> whiteTexture;
 
 		static constexpr u32 textureSlots = 32;
-		u32 textureArray[textureSlots];
+		u32 textureArray[textureSlots]{};
 
 	};
 	static SceneRendererData Data;
@@ -23,7 +25,7 @@ namespace Steve
 		u32 white_data = 0xffffffff;
 		Data.whiteTexture->setData(&white_data, sizeof(u32));
 
-		for(int i = 0; i < Data.textureSlots; i++)
+		for(int i = 0; i < Steve::SceneRendererData::textureSlots; i++)
 		{
 			Data.textureArray[i] = i;
 		}
@@ -31,65 +33,45 @@ namespace Steve
 
 	void SceneRenderer::Draw(Scene& scene)
 	{
-		Statistics = { 0,0,0,0,0,0 };
+		Statistics = { 0,0,0,0,0 };
 
-		CORE_ASSERT(scene.Camera != nullptr, "This scene has no camera attached")
+		CORE_ASSERT(scene.camera != nullptr, "This scene has no camera attached")
 
-		for (auto& [shader, set] : scene.Queue.pQueue.pSet)
+		for (auto& [shader_name, set] : scene.queue.pQueue)
 		{
 			Statistics.Shaders++;
+			Ref<Shader> shader = ShaderRegistry::GetShader(shader_name);
 			shader->bind();
 
-			shader->setUniform1iv("uTextures", (i32*)Data.textureArray, Data.textureSlots);
-			shader->setUniformMat4("uVPmatrix", scene.Camera->GetVPmatrix());
-			shader->setUniformMat4("uViewMatrix", scene.Camera->GetViewMatrix());
+			shader->setUniform1iv("u_Textures", (i32*)Data.textureArray, Data.textureSlots);
+			shader->setUniformMat4("u_Projection", scene.camera->GetProjectionMatrix());
+			shader->setUniformMat4("u_View", scene.camera->GetViewMatrix());
+			shader->setUniform3f("u_ViewPos", scene.camera->GetPosition().x, scene.camera->GetPosition().y, scene.camera->GetPosition().z);
 			Statistics.UniformCalls += 3;
 			
-			for(int x = 0; x < scene.PointLights.size(); x++)
+			scene.lightManagement.bind();
+			shader->setUniform1i("u_NumPointLights", scene.lightManagement.numberPointLights());
+
+			for (auto& [material, meshes] : set)
 			{
-				TransformComponent& t = scene.PointLights[x]->GetComponent<TransformComponent>();
-				LightData& l = scene.PointLights[x]->GetComponent<LightData>();
-				shader->setUniforms(*l.Layout, l.Data);
-				Statistics.UniformCalls += l.Layout->Data.size();
-			}
+				Statistics.Materials++;
 
-			for (auto& [model, materials] : set.pSet) {
-				Statistics.Models++;
+				Data.whiteTexture->bind(0);
 
-				for (auto& [material, meshes] : materials.pSet)
+				material->Bind(shader, 1);
+				Statistics.UniformCalls += material->NumberUniformCalls();
+
+				for (Ref<Mesh>& mesh : meshes)
 				{
-					Statistics.Materials++;
+					glm::mat4 t = mesh->GetTransform();
 
-					material->Set(MaterialDataTypes::DiffuseTexture, 0);
-					material->Set(MaterialDataTypes::SpecularTexture, 0);
-					material->Set(MaterialDataTypes::NormalTexture, 0);
-					Data.whiteTexture->bind(0);
+					shader->setUniformMat4("u_Model", t);
+					Statistics.UniformCalls++;
 
-					if (material->Textures != nullptr) {
-						u16 count = 1;
-						for (auto& [type, texture] : material->Textures->Textures)
-						{
-							texture->bind(count);
-							material->Set(TextureConverter(type), (float)count);
-							count++;
-						}
-					}
+					Command::DrawIndexed(mesh->GetVao(PhongVertexLayout), mesh->GetVao(PhongVertexLayout)->getIndexBuffer()->getCount());
 
-					shader->setUniforms(*material->Layout, material->Data);
-					Statistics.UniformCalls += material->Layout->Data.size();
-
-					for (Mesh* mesh : meshes)
-					{
-						glm::mat4 t = mesh->GetTransform();
-
-						shader->setUniformMat4("uTransform", t);
-						Statistics.UniformCalls++;
-
-						Command::DrawIndexed(mesh->pVao, mesh->pVao->getIndexBuffer()->getCount());
-
-						Statistics.DrawCalls++;
-						Statistics.Meshes++;
-					}
+					Statistics.DrawCalls++;
+					Statistics.Meshes++;
 				}
 			}
 		}

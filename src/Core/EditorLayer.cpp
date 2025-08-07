@@ -2,6 +2,7 @@
 
 #include <ImGuizmo.h>
 #include "IconManagement.h"
+#include <glm/gtx/matrix_decompose.hpp>
 
 namespace Steve
 {
@@ -39,7 +40,6 @@ namespace Steve
 			{
 				ImGui::Indent();
 				ImGui::Text("Shaders: %d", SceneRenderer::Statistics.Shaders);
-				ImGui::Text("Models: %d", SceneRenderer::Statistics.Models);
 				ImGui::Text("Materials: %d", SceneRenderer::Statistics.Materials);
 				ImGui::Text("Meshes: %d", SceneRenderer::Statistics.Meshes);
 				ImGui::Text("Draw calls: %d", SceneRenderer::Statistics.DrawCalls);
@@ -119,36 +119,60 @@ namespace Steve
 			App->FrSpec.height = viewportPanelSize.y;
 			ViewportWindowSize.x = viewportPanelSize.x;
 			ViewportWindowSize.y = viewportPanelSize.y;
-			App->Framebuffer->invalidate();
+			App->mFramebuffer->invalidate();
 
 		}
 
-		uint64_t textureID = App->Framebuffer->getColorAttachID();
+		uint64_t textureID = App->mFramebuffer->getColorAttachID();
 		ImGui::Image(reinterpret_cast<void*>(textureID), viewportPanelSize, ImVec2{ 0, 1 }, ImVec2{ 1, 0 });
 
 		// Guizmo
-		if (SceneHierarchyPanel::Data.selected)
+		if (SceneHierarchyPanel::Data.selectedObject)
 		{
 			ImGuizmo::SetOrthographic(false);
 			ImGuizmo::SetDrawlist();
 
 			auto viewportMinRegion = ImGui::GetWindowContentRegionMin();
 			auto viewportOffset = ImGui::GetWindowPos();
-			ImGuizmo::SetRect(viewportMinRegion.x + viewportOffset.x, viewportMinRegion.y + viewportOffset.y, ViewportWindowSize.x, ViewportWindowSize.y);
+			ImGuizmo::SetRect(viewportMinRegion.x + viewportOffset.x,
+							  viewportMinRegion.y + viewportOffset.y,
+							  ViewportWindowSize.x, ViewportWindowSize.y);
 
-			glm::mat4 proj = App->Sc.Camera->GetProjectionMatrix();
-			glm::mat4 view = App->Sc.Camera->GetViewMatrix();
+			glm::mat4 proj = App->Sc.camera->GetProjectionMatrix();
+			glm::mat4 view = App->Sc.camera->GetViewMatrix();
 
-			TransformComponent& comp = SceneHierarchyPanel::Data.selected->GetComponent<TransformComponent>();
-			glm::mat4 transform = SceneHierarchyPanel::Data.selected->GetTransform();
-			glm::mat4 parent_transform = SceneHierarchyPanel::Data.selected->parent ? SceneHierarchyPanel::Data.selected->parent->GetTransform() : glm::mat4(1.0f);
+			TransformComponent& comp = SceneHierarchyPanel::Data.selectedObject->GetComponent<TransformComponent>();
+			glm::mat4 transform = SceneHierarchyPanel::Data.selectedObject->GetTransform();
 
-			ImGuizmo::Manipulate(value_ptr(view), value_ptr(proj), ImGuizmo::OPERATION::TRANSLATE, ImGuizmo::LOCAL, value_ptr(transform));
+			ImGuizmo::Manipulate(glm::value_ptr(view), glm::value_ptr(proj),
+								 SceneHierarchyPanel::Data.selectedObjectOperation,
+								 ImGuizmo::LOCAL, glm::value_ptr(transform));
 
-			glm::mat4 n = transform / parent_transform;
+			if (ImGuizmo::IsUsing()) // only update if the user is manipulating
+			{
+				// Compute local transform
+				glm::mat4 parent_transform = SceneHierarchyPanel::Data.selectedObject->parent ?
+										 SceneHierarchyPanel::Data.selectedObject->parent->GetTransform() :
+										 glm::mat4(1.0f);
+				glm::mat4 local = glm::inverse(parent_transform) * transform;
+				glm::mat4 diff = comp.GetMatrix() - local;
+				CORE_INFO(print_matrix(diff));
 
-			ImGuizmo::DecomposeMatrixToComponents(value_ptr(n), (float*) & comp.Position, (float*)&comp.Rotation, (float*)&comp.Scaling);
+				// Extract TRS in a stable way
+				glm::vec3 skew;
+				glm::vec4 perspective;
+				glm::quat rotationQuat;
+				glm::decompose(local, comp.Scaling, rotationQuat, comp.Position, skew, perspective);
+				glm::quat newQuat = glm::normalize(rotationQuat);
+				if (glm::dot(rotationQuat, comp.RotationQuat) < 0.0f)
+					newQuat = -newQuat;
+
+				comp.RotationQuat = newQuat;
+
+				int a = 5;
+			}
 		}
+
 
 		ImGui::End();
 

@@ -1,5 +1,6 @@
 #include "OpenGLContext.h"
 
+#include <iostream>
 
 namespace Steve
 {
@@ -14,7 +15,8 @@ namespace Steve
 	{
 		CH_PROFILE_FUNCTION();
 		glfwMakeContextCurrent(_graphics_window);
-		CORE_ASSERT(gladLoadGLLoader((GLADloadproc)glfwGetProcAddress), "Cant init glad.")
+		CORE_ASSERT(gladLoadGLLoader((GLADloadproc)glfwGetProcAddress) != 0, "Cant init glad.");
+
 		glClearColor(1.0, 0.0, 1.0, 0.0);
 
 

@@ -40,8 +40,8 @@ namespace Steve
 	#define APP_TRACE(...) 		::Steve::Logger::getAppLogger()->trace(__VA_ARGS__)
 
 	// Assertions
-	#define APP_ASSERT(x, msg) {if(!(x)) { APP_ERROR(msg); CH_DEBUGBREAK} }
-	#define CORE_ASSERT(x, msg) {if(!(x)) { CORE_ERROR(msg); CH_DEBUGBREAK} }
+	#define APP_ASSERT(x, ...) {if(!(x)) { APP_ERROR(__VA_ARGS__); CH_DEBUGBREAK} }
+	#define CORE_ASSERT(x, ...) {if(!(x)) { CORE_ERROR(__VA_ARGS__); CH_DEBUGBREAK} }
 
 	#define APP__STATIC_ASSERT(x) (static_assert(x))
 	#define CORE_STATIC_ASSERT(x) (static_assert(x))

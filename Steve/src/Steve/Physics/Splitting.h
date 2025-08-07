@@ -1,17 +1,18 @@
 #ifndef _BVHSPLITTING_HEADER__
 #define _BVHSPLITTING_HEADER__
 
-#include "PhysicsComponents.h"
+#include "Components.h"
+#include "BVH.h"
 
 namespace Steve
 {
 	class SAH
 	{
 	public:
-		static void Split(std::vector<CollisionNode>& nodes, CollisionNode& node);
+		static void Split(Pt<BvhNode> node);
 
 	private:
-		static float Cost(CollisionNode& node, AABB a, AABB b);
+		static float Cost(Pt<BvhNode> node, AABB a, AABB b);
 
 		static constexpr u8 SplitPerAxis = 3;
 		static constexpr u8 CostTraverse = 1;

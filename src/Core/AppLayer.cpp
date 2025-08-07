@@ -1,6 +1,7 @@
 #include "AppLayer.h"
 
 #include "ImGuizmo.h"
+#include "Panels/SceneHierarchy.h"
 
 namespace Steve
 {
@@ -16,24 +17,21 @@ namespace Steve
 		
 		FrSpec.width = Width;
 		FrSpec.height = Height;
-		Framebuffer = Framebuffer::Create(FrSpec);
-		Framebuffer->unbind(); 
+		mFramebuffer = Framebuffer::Create(FrSpec);
+		mFramebuffer->unbind(); 
 		
 		Camera = new FrustumCamera(glm::radians(80.0F), (float)Width / (float)Height, 0.1f, 100.0f, Pos, glm::vec3{ 0.0f, 0.0f, 0.0f }, glm::vec3{ 0.0f, 1.0f, 0.0f });
-		Sc.Camera = Camera;
-		Sc.CreateStandardModel("The model", "C:/Users/mathi/Documents/Steve/Assets/mymodel/untitled.obj");
+		Sc.camera = Camera;
 
-		// Sc.CreateStandardModel("C:/Users/mathi/Documents/Steve/Assets/big_car/textures/911_scene.obj");
+		Sc.createPhongModel("The model", "Assets/mymodel/untitled.obj");
 
-		Sc.AddPointLight({ 4.0, 2.0, 4.0 }, { 1.0, 1.0, 1.0 });
+		// Sc.createStandardModel("C:/Users/mathi/Documents/Steve/Assets/big_car/textures/911_scene.obj");
 
-		Handle<LightData>& l = Sc.PointLights[0]->GetComponent<LightData>();
-		Sc.AddPointLight({ -2.0, 2.0, -2.0 }, { 1.0, 1.0, 1.0 });
+		Sc.addPointLight({ 4.0, 2.0, 4.0 }, { 1.0, 1.0, 1.0 });
+		Sc.addPointLight({ -2.0, 2.0, -2.0 }, { 1.0, 1.0, 1.0 });
 
 		Command::ClearColor({0.0, 0.0, 0.0, 0.5});
-		APP_INFO("Pointlight 1 ID: {}", Sc.PointLights[0]->Id.p_UUID);
 
-		Cube = Sc.AddCube("The cube", {0,3,0}, {1,1,1});
 		//Cube->AddComponent<CubeCollisionBody>({{true, Cube->GetComponent<TransformComponent>()}, {1,1,1} });
 
 		GridRenderer::Init(Camera);
@@ -45,7 +43,6 @@ namespace Steve
 
 	void AppLayer::OnEvent(Steve::Event &event)
 	{
-		// APP_INFO("Event: {}", event.GetName());
 		Steve::EventDispatcher e(event);
 		e.Dispatch<Steve::MouseScrolledEvent>(BIND_EVENT_FN(AppLayer::OnMouseScrolled));
 	}
@@ -63,29 +60,59 @@ namespace Steve
 	void AppLayer::IsKeyPressed(const Timestep ts)
 	{
 		float dt = ts.getSeconds();
+		// Horizontal rotation (XZ plane)
 		if (Steve::Input::isKeyPressed(Steve::Key::A))
 		{
 			XZAngle += dt;
-			Pos.x = cos(XZAngle) * Radius;
-			Pos.z = sin(XZAngle) * Radius;
 		}
 		if (Steve::Input::isKeyPressed(Steve::Key::D))
 		{
 			XZAngle -= dt;
-			Pos.x = cos(XZAngle) * Radius;
-			Pos.z = sin(XZAngle) * Radius;
 		}
 
+		// Vertical rotation (Y axis tilt)
 		if (Steve::Input::isKeyPressed(Steve::Key::W))
 		{
-			YAngle += YAngle > 0.5*PI ? 0 : dt;
-			Pos.y = sin(YAngle) * Radius;
+			YAngle += (YAngle > 0.5f * PI ? 0 : dt);
 		}
-
 		if (Steve::Input::isKeyPressed(Steve::Key::S))
 		{
-			YAngle -= YAngle < -0.5*PI ? 0 : dt;
-			Pos.y = sin(YAngle) * Radius;
+			YAngle -= (YAngle < -0.5f * PI ? 0 : dt);
+		}
+
+		// Compute new position relative to Center
+		glm::vec3 center = Camera->GetDirection();
+		Pos.x = center.x + cos(XZAngle) * cos(YAngle) * Radius;
+		Pos.z = center.z + sin(XZAngle) * cos(YAngle) * Radius;
+		Pos.y = center.y + sin(YAngle) * Radius;
+
+
+		if (Steve::Input::isKeyPressed(Steve::Key::T)) {
+			SceneHierarchyPanel::Data.selectedObjectOperation = ImGuizmo::OPERATION::TRANSLATE;
+		}
+
+		if (Steve::Input::isKeyPressed(Steve::Key::R)) {
+			SceneHierarchyPanel::Data.selectedObjectOperation = ImGuizmo::OPERATION::ROTATE;
+		}
+
+		if (Steve::Input::isKeyPressed(Steve::Key::H)) {
+			SceneHierarchyPanel::Data.selectedObjectOperation = ImGuizmo::OPERATION::SCALE;
+		}
+
+		if (Steve::Input::isKeyPressed(Steve::Key::F)) {
+			if (SceneHierarchyPanel::Data.selectedObject) {
+				const TransformComponent& selectedObjectTrans = *SceneHierarchyPanel::Data.selectedObject->GetComponent<TransformComponent>();
+
+				// Set the Camera target and reset the X,Y,Z angles
+				Camera->SetTarget(selectedObjectTrans.Position);
+				XZAngle = 0;
+				YAngle = 0.5;
+
+				// Update to the new position.
+				Pos.x = selectedObjectTrans.Position.x + cos(XZAngle) * cos(YAngle) * Radius;
+				Pos.z = selectedObjectTrans.Position.z + sin(XZAngle) * cos(YAngle) * Radius;
+				Pos.y = selectedObjectTrans.Position.y + sin(YAngle) * Radius;
+			}
 		}
 	}
 
@@ -93,7 +120,7 @@ namespace Steve
 	void AppLayer::OnUpdate(const Timestep ts) {
 		Ts = ts;
 
-		Framebuffer->bind();
+		mFramebuffer->bind();
 		Command::clear();
 
 
@@ -106,7 +133,7 @@ namespace Steve
 		Command::EnableDepth();
 		SceneRenderer::Draw(Sc);
 
-		Framebuffer->unbind();
+		mFramebuffer->unbind();
 	}
 	 
 	void AppLayer::OnImGuiRender() {

@@ -1,5 +1,7 @@
 #include "Application.h"
 
+#include "Steve/Graphics/ShaderRegistry.h"
+
 namespace Steve
 {
 	Ref<Window> Application::_window = nullptr;
@@ -58,10 +60,12 @@ namespace Steve
 		srand(time(nullptr));
 
 		WindowProps props;
-		props._width = 1280;
-		props._height = 720;
+		props._width = 1280 * 2;
+		props._height = 720 * 2;
 		_window = Window::Create(props);
 		_window->setEventCallback(BIND_EVENT_FN(Application::OnEvent));
+
+		ShaderRegistry::Init();
 
 		auto imgui_overlay = new Overlay;
 		auto profiling_overlay = new Overlay;

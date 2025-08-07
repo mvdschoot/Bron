@@ -36,6 +36,10 @@ namespace Steve
 		if (!parent || depth == 1)
 			return *t;
 
+		if (!parent->Contains<TransformComponent>()) {
+			return *t;
+		}
+
 		return parent->GetTransform(--depth) * *t;
 	}
 }

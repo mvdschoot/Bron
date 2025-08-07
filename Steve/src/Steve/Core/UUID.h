@@ -28,12 +28,12 @@ namespace Steve
 
 			UUID(const UUID* other)
 			{
-				strcpy_s(p_UUID, other->p_UUID);
+				strcpy(p_UUID, other->p_UUID);
 			}
 
 			UUID(const UUID& other)
 			{
-				strcpy_s(p_UUID, other.p_UUID);
+				strcpy(p_UUID, other.p_UUID);
 			}
 
 			~UUID() = default;

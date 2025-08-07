@@ -1,6 +1,7 @@
 #ifndef __SCENEHIERARCHYPANEL_HEADER__
 #define __SCENEHIERARCHYPANEL_HEADER__
 
+#include "ImGuizmo.h"
 #include "Steve/src/Steve.h"
 
 namespace Steve
@@ -8,7 +9,8 @@ namespace Steve
 	struct SceneHierarchyPanelData
 	{
 		Scene* scene;
-		Node* selected;
+		Node* selectedObject;
+		ImGuizmo::OPERATION selectedObjectOperation = ImGuizmo::OPERATION::TRANSLATE;
 	};
 
 	class SceneHierarchyPanel
@@ -24,7 +26,6 @@ namespace Steve
 	private:
 		static void TreeNode(Node* node);
 		static bool SkipNode(Node* entity);
-
 	};
 }
 

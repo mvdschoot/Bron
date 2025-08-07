@@ -7,14 +7,12 @@ namespace Steve
 	}
 
 
-	void RenderQueue::addModel(Model* model)
+	void RenderQueue::addModel(Ref<Model> model)
 	{
-		for(Mesh* m : model->Meshes)
+		for(Ref<Mesh>& m : model->GetMeshes())
 		{
-			pQueue.pSet[m->pContext->pShader]
-				.pSet[model]
-				.pSet[m->pContext->pMaterial]
-				.push_back(m);
+			Ref<MaterialBase> material = m->getMaterial();
+			pQueue[material->shaderName][material].push_back(m);
 		}
 	}
 

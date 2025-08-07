@@ -1,30 +1,40 @@
 #type vertex
-#version 330 core
+#version 450 core
+
 layout(location = 0) in vec3 a_Position;
 layout(location = 1) in vec3 a_Normal;
 layout(location = 2) in vec2 a_TexCoords;
-//layout(location = 3) in float a_MaterialIndex;
 
-out vec3 f_Position;
-out vec3 f_Normal;
-out vec2 f_TexCoords;
-//flat out float f_MaterialIndex;
+out VS_OUT {
+	vec3 FragPos;	    // world-space position
+	vec3 Normal;		// world-space normal
+	vec2 TexCoords;
+	vec3 NormalRaw;
+} vs_out;
 
-uniform mat4 uVPmatrix;
-uniform mat4 uTransform;
+uniform mat4 u_Model;
+uniform mat4 u_View;
+uniform mat4 u_Projection;
 
-void main() {
-	f_Position = (uTransform * vec4(a_Position, 1)).xyz;
-    f_Normal = normalize(mat3(transpose(inverse(mat4(1.0)))) * a_Normal);
-    f_TexCoords = a_TexCoords;
-	//f_MaterialIndex = a_MaterialIndex;
-    
-	gl_Position = uVPmatrix * (uTransform * vec4(a_Position, 1.0));
+void main()
+{
+	vec4 worldPos = u_Model * vec4(a_Position, 1.0);
+	vs_out.FragPos = worldPos.xyz;
+
+	// Transform normal to world space (ignoring non-uniform scaling correction)
+	vs_out.Normal = mat3(transpose(inverse(u_Model))) * a_Normal;
+
+	vs_out.TexCoords = a_TexCoords;
+
+	vs_out.NormalRaw = a_Normal;
+
+	gl_Position = u_Projection * u_View * worldPos;
 }
 
 
+
 #type fragment
-#version 330 core
+#version 450 core
 
 struct Material {
 	float AmbientFactor;
@@ -32,74 +42,67 @@ struct Material {
 	vec3 Specular;
 	float Shininess;
 	float ShininessStrength;
-	float DiffuseTexture;
-	float SpecularTexture;
-	float NormalTexture;
+	float DiffuseTexture; // index in the texture array
+	float SpecularTexture; // index in the texture array
 };
 
 struct LightStruct {
-	vec3 Position;
+	vec3 Position;  // world-space
 	vec3 Color;
 };
 
-in vec3 f_Position;
-in vec3 f_Normal;
-in vec2 f_TexCoords;
-//flat in float f_MaterialIndex;
+layout(std140, binding = 0) uniform PointLightBlock {
+	LightStruct POINTLIGHTS[32];
+};
 
-layout(location = 0) out vec4 FragColor;
+uniform int u_NumPointLights;
+uniform vec3 u_ViewPos;
+uniform Material u_Material;
 
-uniform Material uMaterial;
-uniform LightStruct uLight[32];
-uniform sampler2D uTextures[32];
+// Array of textures. Texture 0 = pure white texture.
+uniform sampler2D u_Textures[32];
 
-uniform mat4 uViewMatrix;
+in VS_OUT {
+	vec3 FragPos;
+	vec3 Normal;
+	vec2 TexCoords;
+	vec3 NormalRaw;
+} fs_in;
 
+out vec4 FragColor;
 
 void main()
 {
-	vec3 norm;
-	if (uMaterial.NormalTexture == 0.0) {
-		norm = normalize(f_Normal);
-	} else {
-		norm = normalize(texture(uTextures[int(uMaterial.NormalTexture)], f_TexCoords).rgb);
-	}
+	vec3 norm = normalize(fs_in.Normal);
+	vec3 viewDir = normalize(u_ViewPos - fs_in.FragPos);
 
-	vec3 viewDir = normalize(vec3(inverse(uViewMatrix) * vec4(0.0,0.0,0.0,1.0)) - f_Position);
+	// Base color from material and texture
+	int diffuseIdx = int(u_Material.DiffuseTexture);
+	int specularIdx = int(u_Material.SpecularTexture);
 
-	// Diffuse lighting
-	// Lot of duplicate code, because now only 1 if-statement
-	vec4 diffuse = vec4(0,0,0,1);
-	vec4 initDiffuseColor;
-	if (uMaterial.DiffuseTexture == 0.0) {
-		initDiffuseColor = vec4(uMaterial.Diffuse, 1.0);
-	} else {
-		initDiffuseColor = texture(uTextures[int(uMaterial.DiffuseTexture)], f_TexCoords);
-	}
+	vec3 texDiffuse = texture(u_Textures[diffuseIdx], fs_in.TexCoords).rgb;
+	vec3 texSpecular = texture(u_Textures[specularIdx], fs_in.TexCoords).rgb;
 
-	for(int i = 0; i < 32; i++) {
-		vec3 lightDir = normalize(uLight[i].Position - f_Position);
+	vec3 ambient = u_Material.AmbientFactor * u_Material.Diffuse * texDiffuse;
+
+	vec3 result = ambient;
+
+	for(int i = 0; i < u_NumPointLights; ++i)
+	{
+		vec3 lightDir = normalize(POINTLIGHTS[i].Position - fs_in.FragPos);
+
+		// Diffuse shading
 		float diff = max(dot(norm, lightDir), 0.0);
-		diffuse += vec4(uLight[i].Color, 1.0) * initDiffuseColor * diff;
+		vec3 diffuse = diff * u_Material.Diffuse * texDiffuse * POINTLIGHTS[i].Color;
+
+		// Specular shading (Phong)
+		vec3 reflectDir = reflect(-lightDir, norm);
+		float spec = pow(max(dot(viewDir, reflectDir), 0.0), u_Material.Shininess);
+		vec3 specular = spec * u_Material.Specular * texSpecular * POINTLIGHTS[i].Color * u_Material.ShininessStrength;
+
+		result += diffuse + specular;
 	}
 
-	// Specular lighting 
-	// Lot of duplicate code, because now only 1 if-statement
-	vec4 initSpecularColor;
-	if (uMaterial.SpecularTexture == 0.0) {
-		initSpecularColor = vec4(uMaterial.Specular, 1.0);
-	} else {
-		initSpecularColor = texture(uTextures[int(uMaterial.SpecularTexture)], f_TexCoords);
-	}
-	
-	vec4 specular = vec4(0,0,0,1);
-	for(int i = 0; i < 32; i++) {
-		vec3 lightDir = normalize(uLight[i].Position - f_Position);
-		vec3 reflectDir = reflect(-lightDir, norm);
-		float spec = pow(max(dot(viewDir, reflectDir), 0.0), uMaterial.Shininess);
-		specular += vec4(uLight[i].Color, 1.0) * initSpecularColor * spec * uMaterial.ShininessStrength;
-	}
-	 
-	// Combine all the lighting components
-	FragColor = uMaterial.AmbientFactor * initDiffuseColor + (diffuse+ specular);
+	FragColor = vec4(result, 1.0);
+	// FragColor = vec4(fs_in.NormalRaw * 0.5 + 0.5, 1.0);
 }

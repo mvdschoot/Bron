@@ -8,9 +8,9 @@ namespace Steve
 	Ref<Shader> Shader::CreateShaderFromLocation(const std::string& shader_loc)
 	{
 		std::ifstream a(shader_loc);
-		CORE_ASSERT(!a.fail(), "Shaderloc does not exist!")
+		CORE_ASSERT(!a.fail(), "Shaderloc does not exist!");
 
-			std::stringstream v;
+		std::stringstream v;
 		v << a.rdbuf();
 
 		return Create(v.str());

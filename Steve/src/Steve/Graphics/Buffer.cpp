@@ -35,13 +35,33 @@ namespace Steve
 		return nullptr;
 	}
 
-	Ref<IndexBuffer> IndexBuffer::Create(usize size)
-	{
-		switch (Platform::getAPI())
-		{
-		case Platform::API::None: CORE_ASSERT(false, "No Rendering API selected!");
-		case Platform::API::OpenGL: return createRef<OpenGLIndexBuffer>(size);
+	Ref<IndexBuffer> IndexBuffer::Create(usize size) {
+		switch (Platform::getAPI()) {
+			case Platform::API::None:
+				CORE_ASSERT(false, "No Rendering API selected!");
+			case Platform::API::OpenGL:
+				return createRef<OpenGLIndexBuffer>(size);
 		}
 		return nullptr;
 	}
-}
+
+	Ref<UniformBuffer> UniformBuffer::Create(usize size, u32 binding) {
+		switch (Platform::getAPI()) {
+			case Platform::API::None:
+				CORE_ASSERT(false, "No Rendering API selected!");
+			case Platform::API::OpenGL:
+				return createRef<OpenGLUniformBuffer>(size, binding);
+		}
+		return nullptr;
+	}
+
+	Ref<UniformBuffer> UniformBuffer::Create(const void *data, usize size, u32 binding) {
+		switch (Platform::getAPI()) {
+			case Platform::API::None:
+				CORE_ASSERT(false, "No Rendering API selected!");
+			case Platform::API::OpenGL:
+				return createRef<OpenGLUniformBuffer>(data, size, binding);
+		}
+		return nullptr;
+	}
+} // namespace Steve

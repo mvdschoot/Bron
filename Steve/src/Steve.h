@@ -34,8 +34,6 @@
 #include "Steve/ECS/Registry.h"
 #include "Steve/ECS/Entity.h"
 
-#include "Steve/Physics/BVH.h"
-
 #include "Steve/Util/Util.h"
 
 

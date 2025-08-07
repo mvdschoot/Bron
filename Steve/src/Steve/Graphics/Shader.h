@@ -45,13 +45,12 @@ namespace Steve
 
 		static Ref<Shader> Create(std::string shader);
 		static Ref<Shader> CreateShaderFromLocation(const std::string& shader_loc);
-		
 	};
 
 	inline void Shader::setUniform(ShaderDataType type, std::string name, u8* data)
 	{
 		if (type == ShaderDataType::Float) return setUniform1f(std::move(name), *(float*)data);
-		if (type == ShaderDataType::Float2) return setUniform2f(std::move(name), *((float*)data), *((float*)data + 1));
+		if (type == ShaderDataType::Float2) return setUniform2f(std::move(name), *(float*) data, *((float*)data + 1));
 		if (type == ShaderDataType::Float3) return setUniform3f(std::move(name), *((float*)data), *((float*)data + 1), *((float*)data + 2));
 		if (type == ShaderDataType::Float4) return setUniform4f(std::move(name), *((float*)data), *((float*)data + 1), *((float*)data + 2), *((float*)data + 3));
 		if (type == ShaderDataType::Int) return setUniform1i(std::move(name), *((u32*)data));

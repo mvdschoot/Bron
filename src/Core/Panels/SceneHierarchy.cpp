@@ -12,15 +12,15 @@ namespace Steve
 	void SceneHierarchyPanel::OnAttach(Scene* scene)
 	{
 		Data.scene = scene;
-		Data.selected = nullptr;
+		Data.selectedObject = nullptr;
 	}
 
 
 	void SceneHierarchyPanel::RenameFunction()
 	{
-		if (Data.selected == nullptr)
+		if (Data.selectedObject == nullptr)
 			return;
-		std::string name = "Rename '" + Data.selected->name + "'";
+		std::string name = "Rename '" + Data.selectedObject->name + "'";
 		if (IsKeyPressed(ImGuiKey_F2, false))
 		{
 			OpenPopup(name.c_str());
@@ -39,7 +39,7 @@ namespace Steve
 
 			if (text || Button("OK", ImVec2(120, 0)))
 			{
-				Data.selected->name = std::string(buf);
+				Data.selectedObject->name = std::string(buf);
 				CloseCurrentPopup();
 			}
 			SetItemDefaultFocus();
@@ -54,7 +54,7 @@ namespace Steve
 	{
 		Begin("Scene Hierarchy");
 		
-		TreeNode(Data.scene->Root);
+		TreeNode(Data.scene->root);
 
 		RenameFunction();
 
@@ -68,36 +68,35 @@ namespace Steve
 
 		Begin("Properties");
 
-		Node* ent = Data.selected;
+		Node* ent = Data.selectedObject;
 		if (ent == nullptr)
 		{
 			End();
 			return;
 		}
 
-
-		// TextColored(ImColor(128,128,128,255), "%s: '%s'", header.c_str(), ent->Name.c_str());
-		// Separator();
-
 		if (ent->Contains<TransformComponent>() && CollapsingHeader("Transform", ImGuiTreeNodeFlags_DefaultOpen))
 		{
 			TransformComponent& t = *ent->GetComponent<TransformComponent>();
 
+			// Dragger position
 			DragFloat3("Position", value_ptr(t.Position));
-			DragFloat3("Rotation", value_ptr(t.Rotation));
-			DragFloat3("Scaling", value_ptr(t.Scaling));
-			
-			if (ent->type & NodeType_PointLight && !(ent->type & NodeType_Mesh))
-			{
-				((PointLight*)ent)->SetUniformPosition(t.Position);
+
+			// Dragger rotation
+			t.SyncEulerFromQuat();
+			if (DragFloat3("Rotation", value_ptr(t.EulerCache))) {
+				t.SyncQuatFromEuler();
 			}
+
+			// Dragger scaling
+			DragFloat3("Scaling", value_ptr(t.Scaling));
 		}
 
 		if (ent->type & NodeType_PointLight && CollapsingHeader("Light settings", ImGuiTreeNodeFlags_DefaultOpen))
 		{
-			glm::vec3 color = ((PointLight*)ent)->GetColor();
+			glm::vec3 color = ((PointLight*)ent)->getColor();
 			ColorEdit3("Color", value_ptr(color));
-			((PointLight*)ent)->SetColor(color);
+			((PointLight*)ent)->setColor(color);
 		}
 
 		End();
@@ -113,7 +112,7 @@ namespace Steve
 		ImGuiTreeNodeFlags entity_base_flags = ImGuiTreeNodeFlags_OpenOnDoubleClick;
 
 		ImGuiTreeNodeFlags node_flags = entity_base_flags;
-		if (Data.selected == node)
+		if (Data.selectedObject == node)
 		{
 			node_flags |= ImGuiTreeNodeFlags_Selected;
 		}
@@ -121,7 +120,7 @@ namespace Steve
 		SetNextItemOpen(true);
 		bool open = TreeNodeEx(node->name.c_str(), node_flags);
 		if (IsItemClicked() && !IsItemToggledOpen())
-			Data.selected = node;
+			Data.selectedObject = node;
 
 
 		float height = GetTextLineHeight();

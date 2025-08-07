@@ -53,7 +53,7 @@ namespace Steve
 
 		bool _running, _minimized;
 		float _last_frame_time;
-		volatile uint64_t _frame_count;
+		uint64_t _frame_count;
 		bool _profiling;
 
 		void Init();

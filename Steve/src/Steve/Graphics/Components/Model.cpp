@@ -7,15 +7,13 @@ namespace Steve
 		return GetComponent<TransformComponent>()->Position;
 	}
 
-	glm::vec3 Model::GetCentroid() const
-	{
+	glm::vec3 Model::GetCentroid() const {
 		glm::vec3 res(0.0f);
 
-		for(Mesh* mesh : Meshes)
-		{
+		for (Ref<Mesh> mesh: meshes) {
 			res += mesh->GetComponent<TransformComponent>()->Position;
 		}
 
-		return res / (float)Meshes.size();
+		return res / (float) meshes.size();
 	}
-}
+} // namespace Steve
