@@ -1,6 +1,4 @@
-# LuigiMaker
+# Steve
 
-The beginning of a game engine.
-Built with OpenGL.
-
-![](https://github.com/mvdschoot/Steve/Assets/demo.gif)
+Game engine. Built with C++ and OpenGL.
+I have been working on this for about 2 years, but it is never really done.
