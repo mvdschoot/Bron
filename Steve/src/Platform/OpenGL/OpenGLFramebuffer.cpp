@@ -5,7 +5,7 @@ namespace Steve
 	OpenGLFramebuffer::OpenGLFramebuffer(FramebufferSpecification& spec)
 		: _spec(spec)
 	{
-		invalidate();
+		OpenGLFramebuffer::invalidate();
 	}
 
 	OpenGLFramebuffer::~OpenGLFramebuffer()
