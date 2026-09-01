@@ -1,5 +1,7 @@
 #include "2D.h"
 
+#include "Steve/Util/Paths.h"
+
 
 namespace Steve
 {
@@ -54,7 +56,7 @@ namespace Steve
 		CH_PROFILE_FUNCTION();
 
 		AddVAO(
-			Shader::CreateShaderFromLocation("../Steve/Assets/2d_shader.glsl"), 
+			Shader::CreateShaderFromLocation(Paths::EngineAssetString("2d_shader.glsl")), 
 			BufferLayout({
 				{"a_Position", ShaderDataType::Float2},
 				{"a_Color", ShaderDataType::Float4},

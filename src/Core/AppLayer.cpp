@@ -2,6 +2,7 @@
 
 #include "ImGuizmo.h"
 #include "Panels/SceneHierarchy.h"
+#include "Steve/Util/Paths.h"
 
 namespace Steve
 {
@@ -23,7 +24,7 @@ namespace Steve
 		Camera = new FrustumCamera(glm::radians(80.0F), (float)Width / (float)Height, 0.1f, 100.0f, Pos, glm::vec3{ 0.0f, 0.0f, 0.0f }, glm::vec3{ 0.0f, 1.0f, 0.0f });
 		Sc.camera = Camera;
 
-		Sc.CreatePhongModel("The model", "Assets/mymodel/untitled.glb");
+		Sc.CreatePhongModel("The model", Paths::ProjectAssetString("mymodel/untitled.glb").c_str());
 
 		// Sc.createStandardModel("C:/Users/mathi/Documents/Steve/Assets/big_car/textures/911_scene.obj");
 

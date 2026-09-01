@@ -1,33 +1,48 @@
-cmake_minimum_required(VERSION 3.16)
+cmake_minimum_required(VERSION 3.21)
 
-project(LuigiMaker VERSION 1.0)
+project(LuigiMaker VERSION 1.0 LANGUAGES C CXX)
 
 set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 
-add_subdirectory(Steve)
+# Single-config generators (Ninja, Unix Makefiles) have no build type by
+# default, which silently gives you an unoptimised, undefined-NDEBUG build.
+if(NOT CMAKE_BUILD_TYPE AND NOT CMAKE_CONFIGURATION_TYPES)
+	set(CMAKE_BUILD_TYPE Debug CACHE STRING "" FORCE)
+endif()
 
-# add_definitions(CH_PROFILE)
-get_target_property(SPDLOG_OPTIONS spdlog INTERFACE_LINK_OPTIONS)
-message(STATUS "spdlog INTERFACE_LINK_OPTIONS: ${SPDLOG_OPTIONS}")
+# Everything lands in one place regardless of generator, so the DLLs Windows
+# needs at runtime end up next to the executable.
+set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/bin)
+set(CMAKE_LIBRARY_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/bin)
+set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/lib)
+
+# Asset roots are baked into the binary so that nothing depends on the working
+# directory, which differs per IDE. See Steve/Util/Paths.h.
+set(STEVE_ENGINE_ASSET_DIR "${CMAKE_CURRENT_SOURCE_DIR}/Steve/Assets" CACHE PATH "Engine-owned assets (shaders)")
+set(STEVE_PROJECT_ASSET_DIR "${CMAKE_CURRENT_SOURCE_DIR}/Assets" CACHE PATH "Application assets (models, icons)")
+
+add_subdirectory(Steve)
 
 add_executable(LuigiMaker
 	src/Core/App.cpp
 	src/Core/AppLayer.cpp
 	src/Core/EditorLayer.cpp
 	src/Core/IconManagement.cpp
- 
+
 	src/Core/Panels/SceneHierarchy.cpp
 	src/Core/Panels/ComponentRegistry.cpp
-
 )
 
-target_include_directories(LuigiMaker 
+target_include_directories(LuigiMaker
 	PUBLIC .
 	PUBLIC src
 )
 
-set_property(TARGET LuigiMaker PROPERTY CXX_STANDARD 20)
+target_compile_features(LuigiMaker PUBLIC cxx_std_20)
+set_target_properties(LuigiMaker PROPERTIES CXX_EXTENSIONS OFF)
+
 target_link_libraries(LuigiMaker PUBLIC Steve)
 target_link_libraries(LuigiMaker PUBLIC VendorLibrary)
 
-# add_definitions(-w)  # re-enable only if the noise gets unmanageable
+# Makes F5 in Visual Studio start the app instead of ALL_BUILD.
+set_property(DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR} PROPERTY VS_STARTUP_PROJECT LuigiMaker)

@@ -4,11 +4,13 @@
 
 #include "ShaderRegistry.h"
 
+#include "Steve/Util/Paths.h"
+
 namespace Steve {
 	std::map<std::string, Ref<Shader>> ShaderRegistry::shaders = std::map<std::string, Ref<Shader>>();
 
 	void ShaderRegistry::Init() {
-		ShaderRegistry::CreateShader(PHONG_SHADER, "Steve/Assets/Phong3DShader.glsl");
+		ShaderRegistry::CreateShader(PHONG_SHADER, Paths::EngineAssetString("Phong3DShader.glsl").c_str());
 	}
 
 	Ref<Shader> ShaderRegistry::GetShader(const char *name) {

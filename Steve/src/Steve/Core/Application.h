@@ -12,7 +12,7 @@
 #include "Steve/Layers/Layer.h"
 #include "Steve/Layers/ImGuiLayer.h"
 
-#include "Platform/Linux/LinuxWindow.h"
+#include "Platform/Desktop/DesktopWindow.h"
 #include "Steve/Graphics/GraphicsContext.h"
 
 #include "imgui.h"

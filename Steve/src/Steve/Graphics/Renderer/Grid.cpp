@@ -1,6 +1,7 @@
 #include "Grid.h"
 
 #include "Command.h"
+#include "Steve/Util/Paths.h"
 
 namespace Steve
 {
@@ -21,7 +22,7 @@ namespace Steve
 		CH_PROFILE_FUNCTION();
 
 		gData._Camera = camera;
-		gData._Shader = Shader::CreateShaderFromLocation("Steve/Assets/GridShader.glsl");
+		gData._Shader = Shader::CreateShaderFromLocation(Paths::EngineAssetString("GridShader.glsl"));
 
 
 		float vertices[6] = { 0, 0, 0, 0, 0, 0};

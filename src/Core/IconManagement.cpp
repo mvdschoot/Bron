@@ -1,6 +1,7 @@
 #include "IconManagement.h"
 #include <iostream>
 #include <filesystem>
+#include "Steve/Util/Paths.h"
 
 
 namespace Steve
@@ -12,7 +13,7 @@ namespace Steve
 	void Icons::Load()
 	{
         try {
-            for (const auto& entry : fs::directory_iterator("Assets/Icons")) {
+            for (const auto& entry : fs::directory_iterator(Paths::ProjectAsset("Icons"))) {
                 if (entry.is_regular_file() && entry.path().extension() == ".png") {
                     icons.emplace(entry.path().stem().string(), Texture2D::Create(entry.path().string().c_str()));
                 }

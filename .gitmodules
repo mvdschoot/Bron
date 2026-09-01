@@ -1,3 +1,0 @@
-[submodule "Steve/vendor/imgui"]
-	path = Steve/vendor/imgui
-	url = https://github.com/mvdschoot/imgui.git

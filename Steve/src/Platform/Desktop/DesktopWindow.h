@@ -20,12 +20,12 @@
 
 namespace Steve
 {
-	class LinuxWindow : public Window
+	class DesktopWindow : public Window
 	{
 	public:
-		LinuxWindow(const WindowProps& w_props);
+		DesktopWindow(const WindowProps& w_props);
 
-		~LinuxWindow()
+		~DesktopWindow()
 		{
 		};
 

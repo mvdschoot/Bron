@@ -1,57 +1,56 @@
-CMakePresets.json
-CMakeSettings.json
-notities.txt
-demo.mp4
-cmake-build-debug
-cmake-build-default
-
-
+# --- Build output -----------------------------------------------------------
 build
 out
-
+cmake-build-*
 CMakeFiles
-NOTES.md
-NOTES.md
+compile_commands.json
 
-.git
+# --- Local / per-user tooling config ----------------------------------------
+# CMakePresets.json IS committed on purpose: it is what makes the build
+# IDE-independent. Per-user overrides go in CMakeUserPresets.json.
+CMakeUserPresets.json
+CMakeSettings.json
 .vs
 .vscode
 .idea
-cmake-build-debug-visual-studio
-
-compile_commands.json
 Folder.DotSettings.user
 
-# Prerequisites
+# --- Runtime / scratch ------------------------------------------------------
+imgui.ini
+notities.txt
+demo.mp4
+NOTES.md
+/NOTES
+
+# --- Prerequisites ----------------------------------------------------------
 *.d
 
-# Compiled Object files
+# --- Compiled object files --------------------------------------------------
 *.slo
 *.lo
 *.o
 *.obj
 
-# Precompiled Headers
+# --- Precompiled headers ----------------------------------------------------
 *.gch
 *.pch
 
-# Compiled Dynamic libraries
+# --- Compiled dynamic libraries ---------------------------------------------
 *.so
 *.dylib
 *.dll
 
-# Fortran module files
+# --- Fortran module files ---------------------------------------------------
 *.mod
 *.smod
 
-# Compiled Static libraries
+# --- Compiled static libraries ----------------------------------------------
 *.lai
 *.la
 *.a
 *.lib
 
-# Executables
+# --- Executables ------------------------------------------------------------
 *.exe
 *.out
 *.app
-/NOTES

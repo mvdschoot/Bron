@@ -1,10 +1,10 @@
-#include "LinuxWindow.h"
+#include "DesktopWindow.h"
 #include "GLFW/glfw3.h"
 
 namespace Steve
 {
 
-	LinuxWindow::LinuxWindow(const WindowProps& w_props) : _is_glfw_initialised(false)
+	DesktopWindow::DesktopWindow(const WindowProps& w_props) : _is_glfw_initialised(false)
 	{
 		CH_PROFILE_FUNCTION();
 		_window_data._title = w_props._title;
@@ -116,7 +116,7 @@ namespace Steve
 		});
 	}
 
-	void LinuxWindow::onUpdate()
+	void DesktopWindow::onUpdate()
 	{
 		CH_PROFILE_FUNCTION();
 		// glViewport(0, 0, _width, _height);
@@ -124,7 +124,7 @@ namespace Steve
 		glfwPollEvents();
 	}
 
-	void LinuxWindow::setVSync(bool enabled)
+	void DesktopWindow::setVSync(bool enabled)
 	{
 		if (enabled)
 			glfwSwapInterval(1);
@@ -132,7 +132,7 @@ namespace Steve
 			glfwSwapInterval(0);
 	}
 	
-	float LinuxWindow::getMonitorScale() {
+	float DesktopWindow::getMonitorScale() {
 		float xScale, yScale;
 		glfwGetWindowContentScale(this->_window, &xScale, &yScale);
 

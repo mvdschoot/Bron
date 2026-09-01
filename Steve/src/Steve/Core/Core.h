@@ -32,39 +32,49 @@
 
 #if defined(_WIN32)
 	#define CH_PLATFORM_WINDOWS
+#elif defined(__APPLE__)
+	#define CH_PLATFORM_MACOS
 #elif defined(__linux__)
 	#define CH_PLATFORM_LINUX
 #else
 	#define CH_PLATFORM_UNKNOWN
 #endif
 
-#ifdef CH_PLATFORM_WINDOWS
+#if defined(CH_PLATFORM_WINDOWS)
 	#define DLL_EXPORT __declspec(dllexport)
 	#define DLL_IMPORT __declspec(dllimport)
-#elif defined(CH_PLATFORM_LINUX)
-    #define DLL_EXPORT __attribute__((visibility("default")))
-    #define DLL_IMPORT
+#elif defined(__GNUC__) || defined(__clang__)
+	#define DLL_EXPORT __attribute__((visibility("default")))
+	#define DLL_IMPORT
 #else
+	// Unknown dynamic-link semantics; static linking still works.
 	#define DLL_EXPORT
 	#define DLL_IMPORT
-	#pragma warning Unknown dynamic link import/export semantics.
 #endif
 
 #if defined(CH_DEBUG)
-	#ifdef CH_PLATFORM_WINDOWS
+	#if defined(_MSC_VER)
 		#define CH_DEBUGBREAK __debugbreak();
-	#elif defined(CH_PLATFORM_LINUX)
-		#include <signal.h>
+	#elif defined(__GNUC__) || defined(__clang__)
+		#include <csignal>
 		#define CH_DEBUGBREAK raise(SIGTRAP);
 	#else
 		#define CH_DEBUGBREAK
 	#endif
+#else
+	#define CH_DEBUGBREAK
 #endif
 
-#if defined(CH_COMPILE)
-	#define STEVE_API DLL_EXPORT
+// Steve is a static library by default, where dllexport/dllimport are both
+// wrong. STEVE_SHARED is defined by CMake only for a shared build.
+#if defined(STEVE_SHARED)
+	#if defined(CH_COMPILE)
+		#define STEVE_API DLL_EXPORT
+	#else
+		#define STEVE_API DLL_IMPORT
+	#endif
 #else
-	#define STEVE_API DLL_IMPORT
+	#define STEVE_API
 #endif
 
 namespace Steve

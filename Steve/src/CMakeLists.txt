@@ -42,6 +42,7 @@ add_library(Steve STATIC
 	Steve/Physics/Collisions.cpp
 
 	Steve/Util/Util.cpp
+	Steve/Util/Paths.cpp
 	 
 	Platform/OpenGL/OpenGLContext.cpp
 	Platform/OpenGL/OpenGLBuffer.cpp
@@ -52,8 +53,8 @@ add_library(Steve STATIC
 	Platform/OpenGL/OpenGLFramebuffer.cpp
 	Platform/OpenGL/OpenGLTextTexture.cpp
 
-	Platform/Linux/LinuxWindow.cpp
-	Platform/Linux/LinuxInput.cpp
+	Platform/Desktop/DesktopWindow.cpp
+	Platform/Desktop/DesktopInput.cpp
 		Steve/Graphics/ShaderRegistry.cpp
 		Steve/Graphics/Phong/PhongMaterial.cpp
 		Steve/Graphics/Components/Cube.cpp
@@ -61,5 +62,39 @@ add_library(Steve STATIC
         Steve/Graphics/LightManagement.cpp
 )
 
-set_property(TARGET Steve PROPERTY CXX_STANDARD 20)
 target_include_directories(Steve PUBLIC .)
+
+# cxx_std_20 as a compile feature (rather than the CXX_STANDARD property) makes
+# the requirement mandatory and propagates it to anything linking Steve.
+target_compile_features(Steve PUBLIC cxx_std_20)
+set_target_properties(Steve PROPERTIES CXX_EXTENSIONS OFF)
+
+# Build configuration that used to be hardcoded in Steve/Core/Config.h.
+target_compile_definitions(Steve
+	PUBLIC
+		CH_API_OPENGL
+		$<$<OR:$<CONFIG:Debug>,$<CONFIG:RelWithDebInfo>>:CH_DEBUG>
+	PRIVATE
+		CH_COMPILE
+)
+
+# Asset roots, so nothing has to guess at the working directory. Overridable at
+# runtime with STEVE_ENGINE_ASSETS / STEVE_PROJECT_ASSETS.
+target_compile_definitions(Steve PUBLIC
+	STEVE_ENGINE_ASSET_DIR="${STEVE_ENGINE_ASSET_DIR}"
+	STEVE_PROJECT_ASSET_DIR="${STEVE_PROJECT_ASSET_DIR}"
+)
+
+if(MSVC)
+	# /utf-8 makes MSVC read sources as UTF-8 like every other compiler;
+	# /permissive- turns off the MSVC-only language extensions that let
+	# non-portable code compile here but fail on GCC and Clang.
+	target_compile_options(Steve PUBLIC /utf-8 /permissive-)
+	target_compile_definitions(Steve PUBLIC
+		NOMINMAX
+		WIN32_LEAN_AND_MEAN
+		_CRT_SECURE_NO_WARNINGS
+	)
+else()
+	target_compile_options(Steve PUBLIC -fvisibility=hidden)
+endif()

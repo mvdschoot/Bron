@@ -19,7 +19,8 @@ namespace Steve
 		{
 			None = 0,
 			Windows = 1,
-			Linux = 2
+			Linux = 2,
+			MacOS = 3
 		};
 
 	public:
@@ -28,10 +29,12 @@ namespace Steve
 #if defined(CH_PLATFORM_WINDOWS)
 			return OS::Windows;
 #elif defined(CH_PLATFORM_LINUX)
-					return OS::Linux;
+			return OS::Linux;
+#elif defined(CH_PLATFORM_MACOS)
+			return OS::MacOS;
 #else
-					CORE_ERROR("No Platform detected");
-					return OS::None;
+			CORE_ERROR("No Platform detected");
+			return OS::None;
 #endif
 		}
 
@@ -40,8 +43,8 @@ namespace Steve
 #if defined(CH_API_OPENGL)
 			return API::OpenGL;
 #else
-					CORE_ERROR("No Platform detected");
-					return API::None;
+			CORE_ERROR("No rendering API selected");
+			return API::None;
 #endif
 		}
 	};
