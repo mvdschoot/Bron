@@ -28,6 +28,17 @@ namespace Steve
 		return nullptr;
 	}
 
+	Ref<Texture> Texture2D::CreateFromMemory(const void* data, u32 size)
+	{
+		switch (Platform::getAPI())
+		{
+		case Platform::API::None: CORE_ASSERT(false, "No rendering API detected!");
+		case Platform::API::OpenGL: return createRef<OpenGLTexture2D>(data, size);
+		}
+
+		return nullptr;
+	}
+
 	Ref<TextTexture> TextTexture::Create(u32 width, u32 height)
 	{
 		switch (Platform::getAPI())

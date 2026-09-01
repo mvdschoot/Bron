@@ -28,6 +28,9 @@ namespace Steve
 	public:
 		static Ref<Texture> Create(u32 width, u32 height);
 		static Ref<Texture> Create(const char* path);
+		// Creates a texture from a compressed image (png/jpg/...) held in memory, such as a
+		// texture embedded inside a model file (.glb, binary .fbx).
+		static Ref<Texture> CreateFromMemory(const void* data, u32 size);
 
 	public:
 		virtual ~Texture2D() {}

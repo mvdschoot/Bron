@@ -49,7 +49,7 @@ namespace Steve
 	template<typename T>
 	struct NamedBufferData
 	{
-		NamedBufferData(const NamedBufferLayout<T>* layout) : Layout(layout), Data(new u8[layout->GetStride()])
+		NamedBufferData(const NamedBufferLayout<T>* layout) : Layout(layout), Data(new u8[layout->GetStride()]())
 		{}
 
 		void Set(T type, uint8_t* value)
@@ -61,6 +61,10 @@ namespace Steve
 		template<typename S> void Set(T type, S value)
 		{
 			const BufferElement& el = Layout->GetElementData(type);
+			// The element size decides how much is copied, so a value of a different size would either
+			// read past the end of 'value' or only partially fill the element.
+			CORE_ASSERT(sizeof(S) == el.size, "Value of {} bytes does not match the {} byte element it is written to.",
+						sizeof(S), el.size)
 			memcpy(Data + el.offset, &value, el.size);
 		}
 

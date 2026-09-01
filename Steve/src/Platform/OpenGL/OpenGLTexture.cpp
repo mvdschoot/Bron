@@ -21,16 +21,40 @@ namespace Steve
 	{
 		CH_PROFILE_FUNCTION();
 		stbi_set_flip_vertically_on_load(1);
-		stbi_uc* data = nullptr;
 
 		int width, height, channels;
-		data = stbi_load(path.c_str(), &width, &height, &channels, 0);
+		stbi_uc* data = stbi_load(path.c_str(), &width, &height, &channels, 0);
+
+		CORE_ASSERT(data, "Cannot load image data from file: {}", path)
+
+		uploadPixels(data, width, height, channels);
+
+		stbi_image_free(data);
+	}
+
+	OpenGLTexture2D::OpenGLTexture2D(const void* buffer, u32 size)
+	{
+		CH_PROFILE_FUNCTION();
+		stbi_set_flip_vertically_on_load(1);
+
+		int width, height, channels;
+		stbi_uc* data = stbi_load_from_memory(static_cast<const stbi_uc*>(buffer), static_cast<int>(size), &width,
+											  &height, &channels, 0);
+
+		CORE_ASSERT(data, "Cannot load embedded image data ({} bytes)", size)
+
+		uploadPixels(data, width, height, channels);
+
+		stbi_image_free(data);
+	}
+
+	void OpenGLTexture2D::uploadPixels(const void* pixels, int width, int height, int channels)
+	{
+		CH_PROFILE_FUNCTION();
 
 		p_width = width;
 		p_height = height;
 		_channels = channels;
-
-		CORE_ASSERT(data, "Cannot load image data")
 
 		if (channels == 3)
 		{
@@ -44,7 +68,7 @@ namespace Steve
 		}
 		else
 		{
-			CORE_ASSERT(false, "Invalid number of channels");
+			CORE_ASSERT(false, "Invalid number of channels ({})", channels);
 		}
 
 		glCreateTextures(GL_TEXTURE_2D, 1, &p_rendererId);
@@ -56,10 +80,10 @@ namespace Steve
 		glTextureParameteri(p_rendererId, GL_TEXTURE_WRAP_S, GL_REPEAT);
 		glTextureParameteri(p_rendererId, GL_TEXTURE_WRAP_T, GL_REPEAT);
 
-		glTextureSubImage2D(p_rendererId, 0, 0, 0, width, height, _dataFormat, GL_UNSIGNED_BYTE, data);
-
-
-		stbi_image_free(data);
+		// Rows of an RGB image are not 4-byte aligned, which is what GL expects by default.
+		glPixelStorei(GL_UNPACK_ALIGNMENT, channels == 4 ? 4 : 1);
+		glTextureSubImage2D(p_rendererId, 0, 0, 0, p_width, p_height, _dataFormat, GL_UNSIGNED_BYTE, pixels);
+		glPixelStorei(GL_UNPACK_ALIGNMENT, 4);
 	}
 
 	OpenGLTexture2D::~OpenGLTexture2D()

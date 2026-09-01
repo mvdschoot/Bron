@@ -14,8 +14,8 @@ namespace Steve {
 		}
 
 		// Reset the textures
-		Set(PhongMaterialVariables::DiffuseTexture, 0);
-		Set(PhongMaterialVariables::SpecularTexture, 0);
+		Set(PhongMaterialVariables::DiffuseTexture, 0.0f);
+		Set(PhongMaterialVariables::SpecularTexture, 0.0f);
 		// Set(PhongMaterialVariables::NormalTexture, 0);
 
 		// Bind the available textures to texture slots
