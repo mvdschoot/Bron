@@ -1,6 +1,7 @@
 #ifndef __SCENEHIERARCHYPANEL_HEADER__
 #define __SCENEHIERARCHYPANEL_HEADER__
 
+#include "imgui.h"
 #include "ImGuizmo.h"
 #include "Steve/src/Steve.h"
 

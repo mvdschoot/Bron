@@ -23,7 +23,7 @@ namespace Steve
 		Camera = new FrustumCamera(glm::radians(80.0F), (float)Width / (float)Height, 0.1f, 100.0f, Pos, glm::vec3{ 0.0f, 0.0f, 0.0f }, glm::vec3{ 0.0f, 1.0f, 0.0f });
 		Sc.camera = Camera;
 
-		Sc.createPhongModel("The model", "Assets/mymodel/untitled.obj");
+		Sc.createPhongModel("The model", "Assets/mymodel/untitled.glb");
 
 		// Sc.createStandardModel("C:/Users/mathi/Documents/Steve/Assets/big_car/textures/911_scene.obj");
 

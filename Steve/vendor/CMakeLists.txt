@@ -3,76 +3,79 @@ project(VendorLibraries)
 
 include(FetchContent)
 
-
 add_library(VendorLibrary INTERFACE)
 
 
 # --------------------
-# SPDLOG (header-only with optional compiled mode)
+# SPDLOG
 # --------------------
 FetchContent_Declare(
-  spdlog
-  GIT_REPOSITORY https://github.com/gabime/spdlog.git
-  GIT_TAG v1.15.3
+        spdlog
+        GIT_REPOSITORY https://github.com/gabime/spdlog.git
+        GIT_TAG v1.15.3
 )
 FetchContent_MakeAvailable(spdlog)
 
-# --------------------
-# GLAD (local)
-# --------------------
-add_subdirectory(glad)
-target_include_directories(VendorLibrary INTERFACE glad/include)
 
 # --------------------
-# GLFW (compiled library)
+# GLAD
+# --------------------
+add_subdirectory(glad)
+
+
+# --------------------
+# GLFW
 # --------------------
 FetchContent_Declare(
-  glfw
-  GIT_REPOSITORY https://github.com/glfw/glfw.git
-  GIT_TAG 3.4
+        glfw
+        GIT_REPOSITORY https://github.com/glfw/glfw.git
+        GIT_TAG 3.4
 )
 FetchContent_MakeAvailable(glfw)
 
+
 # --------------------
-# ImGui (local)
+# ImGui
 # --------------------
 add_subdirectory(imgui)
-target_include_directories(VendorLibrary INTERFACE imgui)
+
 
 # --------------------
-# stb (header-only)
+# stb
 # --------------------
 add_subdirectory(stb)
-target_include_directories(VendorLibrary INTERFACE stb)
+
 
 # --------------------
-# ImGuizmo (header-only + single .cpp)
+# ImGuizmo
 # --------------------
-add_subdirectory(imguizmo)
-target_include_directories(VendorLibrary INTERFACE imguizmo)
+add_subdirectory(ImGuizmo)
+
 
 # --------------------
-# Freetype (compiled library)
+# Freetype
 # --------------------
 FetchContent_Declare(
-  freetype
-  GIT_REPOSITORY https://gitlab.freedesktop.org/freetype/freetype.git
-  GIT_TAG VER-2-13-3
+        freetype
+        GIT_REPOSITORY https://gitlab.freedesktop.org/freetype/freetype.git
+        GIT_TAG VER-2-13-3
 )
 FetchContent_MakeAvailable(freetype)
 
+
 # --------------------
-# GLM (header-only)
+# GLM
 # --------------------
 FetchContent_Declare(
-  glm
-  GIT_REPOSITORY https://github.com/g-truc/glm.git
-  GIT_TAG master
+        glm
+        GIT_REPOSITORY https://github.com/g-truc/glm.git
+        GIT_TAG master
 )
 FetchContent_MakeAvailable(glm)
 
+
 # --------------------
-# ASSIMP (compiled library)
+# ASSIMP
 # --------------------
 set(ASSIMP_BUILD_TESTS OFF CACHE BOOL "" FORCE)
 set(ASSIMP_BUILD_ASSIMP_TOOLS OFF CACHE BOOL "" FORCE)
@@ -84,10 +87,10 @@ FetchContent_Declare(
 )
 FetchContent_MakeAvailable(assimp)
 
-# --------------------
-# magic_enum (header-only)
-# --------------------
 
+# --------------------
+# magic_enum
+# --------------------
 FetchContent_Declare(
         magic_enum
         GIT_REPOSITORY https://github.com/Neargye/magic_enum.git
@@ -97,22 +100,17 @@ FetchContent_MakeAvailable(magic_enum)
 
 
 # --------------------
-# Vendor library (aggregates all dependencies)
+# Vendor library
 # --------------------
-
-# set_target_properties(VendorLibrary PROPERTIES LINKER_LANGUAGE CXX)
-
-
-# Compiled libraries are PUBLIC so they link transitively
 target_link_libraries(VendorLibrary INTERFACE
-    spdlog
-    glad
-    glfw
-    imgui
-    imguizmo
-    freetype
-    assimp
-    stb
-    glm
-    magic_enum
+        spdlog
+        glad
+        glfw
+        imgui
+        imguizmo
+        freetype
+        assimp
+        stb
+        glm
+        magic_enum
 )

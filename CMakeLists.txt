@@ -7,7 +7,8 @@ set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 add_subdirectory(Steve)
 
 # add_definitions(CH_PROFILE)
-
+get_target_property(SPDLOG_OPTIONS spdlog INTERFACE_LINK_OPTIONS)
+message(STATUS "spdlog INTERFACE_LINK_OPTIONS: ${SPDLOG_OPTIONS}")
 
 add_executable(LuigiMaker
 	src/Core/App.cpp

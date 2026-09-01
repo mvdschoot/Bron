@@ -30,9 +30,9 @@
 #define FOLD_LAMBDA_WITH_REFERENCE(expr) ([&, this]() expr, ...);
 
 
-#if defined(_MSC_VER)
+#if defined(_WIN32)
 	#define CH_PLATFORM_WINDOWS
-#elif defined(__GNUC__)
+#elif defined(__linux__)
 	#define CH_PLATFORM_LINUX
 #else
 	#define CH_PLATFORM_UNKNOWN

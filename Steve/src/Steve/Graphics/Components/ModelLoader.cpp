@@ -157,10 +157,10 @@ namespace Steve {
 			// material->GetTexture(aiTextureType_HEIGHT, 0, &norm);
 
 			if (dif.length != 0) {
-				phongMaterial->AddTexture(PhongMaterialTextureTypes::Diffuse, Texture2D::Create((directory / dif.C_Str()).c_str()));
+				phongMaterial->AddTexture(PhongMaterialTextureTypes::Diffuse, Texture2D::Create((directory / dif.C_Str()).string().c_str()));
 			}
 			if (spec.length != 0) {
-				phongMaterial->AddTexture(PhongMaterialTextureTypes::Specular, Texture2D::Create((directory / spec.C_Str()).c_str()));
+				phongMaterial->AddTexture(PhongMaterialTextureTypes::Specular, Texture2D::Create((directory / spec.C_Str()).string().c_str()));
 			}
 			// if (norm.length != 0) {
 			// 	phongMaterial->AddTexture(PhongMaterialTextureTypes::Normal, Texture2D::Create((directory / norm.C_Str()).c_str()));
