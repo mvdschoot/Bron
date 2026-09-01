@@ -20,6 +20,8 @@
 
 namespace Steve {
 
+class Scene;
+
 class LightManagement {
 public:
 	struct ShaderPointlightStruct {
@@ -30,7 +32,9 @@ public:
 		float padding2;
 	};
 
-	explicit LightManagement(entt::registry& reg) : reg(reg) {}
+	// Holds the scene rather than just its registry: a light's position has to be resolved through
+	// the hierarchy, which only the scene can do.
+	explicit LightManagement(Scene& scene) : scene(scene) {}
 	~LightManagement() = default;
 
 	// Uploads every point light and binds the UBO. Call once per frame, before the draw loop.
@@ -43,7 +47,7 @@ public:
 	[[nodiscard]] u8 numberPointLights() const;
 
 private:
-	entt::registry& reg;
+	Scene& scene;
 
 	Ref<UniformBuffer> ubo;
 };

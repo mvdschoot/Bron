@@ -8,10 +8,11 @@
 #include <vector>
 
 #include "Steve/Scene/Components.h"
+#include "Steve/Scene/Scene.h"
 
 namespace Steve {
 	u8 LightManagement::numberPointLights() const {
-		return static_cast<u8>(std::min<usize>(reg.view<PointLightComponent>().size(), POINTLIGHT_MAX));
+		return static_cast<u8>(std::min<usize>(scene.reg.view<PointLightComponent>().size(), POINTLIGHT_MAX));
 	}
 
 	void LightManagement::bind() {
@@ -21,13 +22,15 @@ namespace Steve {
 		std::vector<ShaderPointlightStruct> lights(POINTLIGHT_MAX);
 
 		usize i = 0;
-		for (auto [entity, transform, light] : reg.view<TransformComponent, PointLightComponent>().each()) {
+		for (auto [entity, transform, light] : scene.reg.view<TransformComponent, PointLightComponent>().each()) {
 			if (i >= POINTLIGHT_MAX) {
 				CORE_WARN("Scene has more than {} point lights; the rest are ignored.", POINTLIGHT_MAX);
 				break;
 			}
 
-			lights[i].position = transform.Position;
+			// The shader lights in world space, so a light parented to something has to be composed
+			// with its parents rather than uploaded at its local position.
+			lights[i].position = glm::vec3(scene.WorldTransform(entity)[3]);
 			lights[i].color = light.color;
 			i++;
 		}

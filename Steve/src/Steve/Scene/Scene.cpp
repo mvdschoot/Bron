@@ -7,7 +7,7 @@
 
 namespace Steve
 {
-	Scene::Scene() : lightManagement(reg)
+	Scene::Scene() : lightManagement(*this)
 	{
 		root = CreateEntity("Root node");
 	}
