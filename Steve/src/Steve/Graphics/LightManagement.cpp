@@ -14,8 +14,12 @@ namespace Steve {
 	void LightManagement::bind() {
 		CH_PROFILE_FUNCTION();
 
-		// A light that moved is only visible through its transform, so scan for that on top of
-		// the explicit dirty flag set by adding a light or editing its color.
+		// Lights added or removed since the last build, e.g. from the editor's Add Component menu.
+		const usize lightCount = reg.view<PointLightComponent>().size();
+		isDirty |= lightCount != lastLightCount;
+
+		// A light that moved is only visible through its transform, so scan for that too. Colour edits
+		// are the one change neither check can see, and set the flag through MarkDirty().
 		for (auto [entity, transform, light] : reg.view<TransformComponent, PointLightComponent>().each()) {
 			isDirty |= transform.IsDirty();
 
@@ -27,6 +31,7 @@ namespace Steve {
 		if (isDirty || pointlightsUbo == nullptr) {
 			generateUbo();
 			isDirty = false;
+			lastLightCount = lightCount;
 		}
 
 		if (!pointlightsUbo->isBound()) {

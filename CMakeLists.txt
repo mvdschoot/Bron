@@ -17,6 +17,7 @@ add_executable(LuigiMaker
 	src/Core/IconManagement.cpp
  
 	src/Core/Panels/SceneHierarchy.cpp
+	src/Core/Panels/ComponentRegistry.cpp
 
 )
 

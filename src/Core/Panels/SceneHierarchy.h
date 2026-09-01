@@ -22,10 +22,6 @@ namespace Steve
 		static void OnImguiRender();
 		static void PropertiesPanel();
 
-		// Euler angles are only a UI representation of the transform's quaternion; the panel owns the cache
-		// so the same quaternion keeps producing the same angles while it is being dragged.
-		static void InvalidateEulerCache();
-
 		static SceneHierarchyPanelData Data;
 
 	private:

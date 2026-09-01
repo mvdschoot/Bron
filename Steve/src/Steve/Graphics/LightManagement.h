@@ -36,8 +36,8 @@ public:
 	// Regenerates the UBO when any light moved or changed, then binds it.
 	void bind();
 
-	// Forces a UBO regeneration on the next bind(). Call after adding a light or editing its color,
-	// neither of which the transform dirty check can see.
+	// Forces a UBO regeneration on the next bind(). Only needed for a colour edit; lights being
+	// added, removed or moved are picked up by bind() itself.
 	void MarkDirty() { isDirty = true; }
 
 	[[nodiscard]] u8 numberPointLights() const;
@@ -50,6 +50,7 @@ private:
 	Ref<UniformBuffer> pointlightsUbo;
 
 	bool isDirty = true;
+	usize lastLightCount = 0;
 };
 
 } // Steve

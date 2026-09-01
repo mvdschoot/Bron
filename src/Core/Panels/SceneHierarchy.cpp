@@ -1,6 +1,8 @@
 #include "SceneHierarchy.h"
 #include <imgui_internal.h>
 
+#include "ComponentRegistry.h"
+
 #include "Core/IconManagement.h"
 
 namespace Steve
@@ -9,21 +11,10 @@ namespace Steve
 
 	using namespace ImGui;
 
-	// Euler angles for the currently selected entity. Cached because converting a quaternion to euler
-	// angles is lossy: recomputing it every frame makes a rotation drag jump around near the poles.
-	static entt::entity sEulerCacheOwner = entt::null;
-	static glm::vec3 sEulerCache{0.0f};
-
 	void SceneHierarchyPanel::OnAttach(Scene* scene)
 	{
 		Data.scene = scene;
 		Data.selectedObject = entt::null;
-		InvalidateEulerCache();
-	}
-
-	void SceneHierarchyPanel::InvalidateEulerCache()
-	{
-		sEulerCacheOwner = entt::null;
 	}
 
 	void SceneHierarchyPanel::RenameFunction()
@@ -78,7 +69,6 @@ namespace Steve
 
 	void SceneHierarchyPanel::PropertiesPanel()
 	{
-
 		Begin("Properties");
 
 		const entt::entity entity = Data.selectedObject;
@@ -88,38 +78,57 @@ namespace Steve
 			return;
 		}
 
-		entt::registry& reg = Data.scene->reg;
+		Scene& scene = *Data.scene;
 
-		if (TransformComponent* t = reg.try_get<TransformComponent>(entity);
-			t && CollapsingHeader("Transform", ImGuiTreeNodeFlags_DefaultOpen))
+		for (const ComponentMeta& component : ComponentRegistry::All())
 		{
-			// Dragger position
-			DragFloat3("Position", value_ptr(t->Position));
+			if (!component.has(scene, entity))
+				continue;
 
-			// Dragger rotation. The cache is only refreshed when the selection changes, so that dragging
-			// through a pole does not send the angles somewhere else mid-drag.
-			if (sEulerCacheOwner != entity)
+			PushID(component.name);
+
+			const bool open = CollapsingHeader(component.name, ImGuiTreeNodeFlags_DefaultOpen);
+
+			// Remove button on the header row itself, so a collapsed section can still be removed.
+			bool removeRequested = false;
+			if (component.remove)
 			{
-				sEulerCacheOwner = entity;
-				sEulerCache = glm::degrees(glm::eulerAngles(t->RotationQuat));
+				SameLine(GetWindowWidth() - 30.0f);
+				removeRequested = SmallButton("x");
 			}
 
-			if (DragFloat3("Rotation", value_ptr(sEulerCache)))
-			{
-				t->RotationQuat = glm::quat(glm::radians(sEulerCache));
-			}
+			if (open)
+				component.draw(scene, entity);
 
-			// Dragger scaling
-			DragFloat3("Scaling", value_ptr(t->Scaling));
+			PopID();
+
+			// Applied after drawing, so this frame's draw still sees a live component.
+			if (removeRequested)
+				component.remove(scene, entity);
 		}
 
-		if (PointLightComponent* light = reg.try_get<PointLightComponent>(entity);
-			light && CollapsingHeader("Light settings", ImGuiTreeNodeFlags_DefaultOpen))
+		Separator();
+
+		if (Button("Add Component"))
+			OpenPopup("AddComponent");
+
+		if (BeginPopup("AddComponent"))
 		{
-			if (ColorEdit3("Color", value_ptr(light->color)))
+			bool anyOffered = false;
+			for (const ComponentMeta& component : ComponentRegistry::All())
 			{
-				Data.scene->lightManagement.MarkDirty();
+				if (!component.add || component.has(scene, entity))
+					continue;
+
+				anyOffered = true;
+				if (MenuItem(component.name))
+					component.add(scene, entity);
 			}
+
+			if (!anyOffered)
+				TextDisabled("Nothing left to add");
+
+			EndPopup();
 		}
 
 		End();
@@ -145,10 +154,7 @@ namespace Steve
 		PushID(static_cast<int>(static_cast<u32>(entity)));
 		bool open = TreeNodeEx(reg.get<TagComponent>(entity).name.c_str(), node_flags);
 		if (IsItemClicked() && !IsItemToggledOpen())
-		{
 			Data.selectedObject = entity;
-			InvalidateEulerCache();
-		}
 
 		if(open)
 		{

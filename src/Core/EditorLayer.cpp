@@ -2,6 +2,7 @@
 
 #include <ImGuizmo.h>
 #include "IconManagement.h"
+#include "Panels/ComponentRegistry.h"
 #include <glm/gtx/matrix_decompose.hpp>
 
 namespace Steve
@@ -172,7 +173,7 @@ namespace Steve
 				comp.RotationQuat = newQuat;
 
 				// The properties panel caches euler angles; the gizmo just changed the quaternion under it.
-				SceneHierarchyPanel::InvalidateEulerCache();
+				ComponentRegistry::InvalidateEulerCache();
 			}
 		}
 
