@@ -4,6 +4,9 @@
 #include "Steve/Graphics/Phong/PhongDefinitions.h"
 #include "Steve/Graphics/ShaderRegistry.h"
 
+#include <map>
+#include <string>
+
 
 namespace Steve
 {
@@ -33,14 +36,26 @@ namespace Steve
 
 	void SceneRenderer::Draw(Scene& scene)
 	{
+		CH_PROFILE_FUNCTION();
+
 		Statistics = { 0,0,0,0,0 };
 
 		CORE_ASSERT(scene.camera != nullptr, "This scene has no camera attached")
 
-		for (auto& [shader_name, set] : scene.queue.pQueue)
+		// Sort the drawable entities by shader, then by material, so each is only bound once.
+		// Rebuilt every frame: the registry is the single source of truth, and a scene of this size
+		// makes the sort free compared to keeping a second container in sync.
+		std::map<std::string, std::map<MaterialBase*, std::vector<entt::entity>>> queue;
+		for (auto [entity, mesh] : scene.reg.view<MeshComponent>().each())
+		{
+			CORE_ASSERT(mesh.material != nullptr, "Mesh has no material and cannot be drawn")
+			queue[mesh.material->shaderName][mesh.material.get()].push_back(entity);
+		}
+
+		for (auto& [shader_name, materials] : queue)
 		{
 			Statistics.Shaders++;
-			Ref<Shader> shader = ShaderRegistry::GetShader(shader_name);
+			Ref<Shader> shader = ShaderRegistry::GetShader(shader_name.c_str());
 			shader->bind();
 
 			shader->setUniform1iv("u_Textures", (i32*)Data.textureArray, Data.textureSlots);
@@ -48,11 +63,11 @@ namespace Steve
 			shader->setUniformMat4("u_View", scene.camera->GetViewMatrix());
 			shader->setUniform3f("u_ViewPos", scene.camera->GetPosition().x, scene.camera->GetPosition().y, scene.camera->GetPosition().z);
 			Statistics.UniformCalls += 3;
-			
+
 			scene.lightManagement.bind();
 			shader->setUniform1i("u_NumPointLights", scene.lightManagement.numberPointLights());
 
-			for (auto& [material, meshes] : set)
+			for (auto& [material, entities] : materials)
 			{
 				Statistics.Materials++;
 
@@ -61,14 +76,15 @@ namespace Steve
 				material->Bind(shader, 1);
 				Statistics.UniformCalls += material->NumberUniformCalls();
 
-				for (Ref<Mesh>& mesh : meshes)
+				for (const entt::entity entity : entities)
 				{
-					glm::mat4 t = mesh->GetTransform();
+					MeshComponent& mesh = scene.reg.get<MeshComponent>(entity);
 
-					shader->setUniformMat4("u_Model", t);
+					shader->setUniformMat4("u_Model", scene.WorldTransform(entity));
 					Statistics.UniformCalls++;
 
-					Command::DrawIndexed(mesh->GetVao(PhongVertexLayout), mesh->GetVao(PhongVertexLayout)->getIndexBuffer()->getCount());
+					const Ref<VertexArray> vao = GetVao(mesh, PhongVertexLayout);
+					Command::DrawIndexed(vao, vao->getIndexBuffer()->getCount());
 
 					Statistics.DrawCalls++;
 					Statistics.Meshes++;

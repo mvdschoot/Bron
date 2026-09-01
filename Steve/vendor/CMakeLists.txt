@@ -100,6 +100,17 @@ FetchContent_MakeAvailable(magic_enum)
 
 
 # --------------------
+# EnTT
+# --------------------
+FetchContent_Declare(
+        EnTT
+        GIT_REPOSITORY https://github.com/skypjack/entt.git
+        GIT_TAG v3.16.0
+)
+FetchContent_MakeAvailable(EnTT)
+
+
+# --------------------
 # Vendor library
 # --------------------
 target_link_libraries(VendorLibrary INTERFACE
@@ -113,4 +124,5 @@ target_link_libraries(VendorLibrary INTERFACE
         stb
         glm
         magic_enum
+        EnTT::EnTT
 )

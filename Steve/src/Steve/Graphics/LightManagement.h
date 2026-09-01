@@ -4,7 +4,15 @@
 
 #ifndef LIGHTMANAGEMENT_H
 #define LIGHTMANAGEMENT_H
-#include "Components/PointLight.h"
+
+#include <entt/entity/registry.hpp>
+
+#include <glm/glm.hpp>
+
+#include "Steve/Core/Core.h"
+#include "Steve/Core/Logger.h"
+#include "Steve/Core/Profiling.h"
+#include "Steve/Graphics/Buffer.h"
 
 #define POINTLIGHT_UBO_INDEX 0
 
@@ -22,21 +30,26 @@ public:
 		float padding2;
 	};
 
-	explicit LightManagement(RegistryData* regData) : regData(regData) {};
+	explicit LightManagement(entt::registry& reg) : reg(reg) {}
 	~LightManagement() = default;
 
+	// Regenerates the UBO when any light moved or changed, then binds it.
 	void bind();
-	Ref<PointLight> createPointLight();
-	[[nodiscard]] u8 numberPointLights() const { return pointlights.size();}
+
+	// Forces a UBO regeneration on the next bind(). Call after adding a light or editing its color,
+	// neither of which the transform dirty check can see.
+	void MarkDirty() { isDirty = true; }
+
+	[[nodiscard]] u8 numberPointLights() const;
+
 private:
 	void generateUbo();
 
-	RegistryData* regData;
+	entt::registry& reg;
 
-	std::vector<Ref<PointLight>> pointlights;
 	Ref<UniformBuffer> pointlightsUbo;
 
-	bool isPointlightAdded = false;
+	bool isDirty = true;
 };
 
 } // Steve

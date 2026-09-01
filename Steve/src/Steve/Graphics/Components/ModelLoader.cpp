@@ -16,10 +16,25 @@
 
 #include "Steve/Graphics/Phong/PhongMaterial.h"
 #include "Steve/Graphics/Texture.h"
+#include "Steve/Scene/Scene.h"
 
 namespace Steve {
 
-	Ref<Model> ModelLoader::loadModel(RegistryData *regData, MaterialWorkflow type, const char *modelLocation) {
+	// Average of the child mesh positions, i.e. the centroid of the model as a whole.
+	static glm::vec3 ModelCentroid(entt::registry &reg, const std::vector<entt::entity> &meshes) {
+		if (meshes.empty())
+			return glm::vec3(0.0f);
+
+		glm::vec3 res(0.0f);
+
+		for (const entt::entity mesh : meshes) {
+			res += reg.get<TransformComponent>(mesh).Position;
+		}
+
+		return res / static_cast<float>(meshes.size());
+	}
+
+	entt::entity ModelLoader::loadModel(Scene &target, MaterialWorkflow type, const char *modelLocation) {
 		// Assimp load model
 		Assimp::Importer importer;
 		const aiScene *scene = importer.ReadFile(modelLocation, aiProcess_Triangulate | aiProcess_GenSmoothNormals);
@@ -41,28 +56,28 @@ namespace Steve {
 				CORE_ASSERT(false, "This MaterialWorkflow does not exist ({}).", magic_enum::enum_name(type));
 		}
 
-		std::vector<Ref<Mesh>> meshes = processNode(regData, &materials, scene->mRootNode, scene, aiMatrix4x4());
+		std::vector<entt::entity> meshes = processNode(target, &materials, scene->mRootNode, scene, aiMatrix4x4());
 
-		// Create the model
-		auto model = Ref<Model>(new Model(regData, std::move(meshes)));
+		// Create the model root. It stays unparented; the caller decides where it goes in the scene.
+		const entt::entity model = target.CreateEntity(std::filesystem::path(modelLocation).stem().string());
 
-		// Set model centroid & adapt Mesh centroids
-		const glm::vec3 model_centroid = model->GetCentroid();
-		for (const Ref<Mesh>& mesh: model->GetMeshes()) {
-			mesh->GetComponent<TransformComponent>()->Position -= model_centroid;
-			mesh->parent = model.get();
+		// The model sits at the centroid of its meshes, and each mesh is placed relative to that.
+		const glm::vec3 model_centroid = ModelCentroid(target.reg, meshes);
+		for (const entt::entity mesh : meshes) {
+			target.reg.get<TransformComponent>(mesh).Position -= model_centroid;
+			target.AddChild(model, mesh);
 		}
-		model->GetComponent<TransformComponent>()->Position = model_centroid;
+		target.reg.get<TransformComponent>(model).Position = model_centroid;
 
 		return model;
 	}
 
-	std::vector<Ref<Mesh>> ModelLoader::processNode(RegistryData *regData, std::vector<Ref<MaterialBase>> *materials,
-													const aiNode *node, const aiScene *scene,
-													const aiMatrix4x4 &parentTransform) {
+	std::vector<entt::entity> ModelLoader::processNode(Scene &target, std::vector<Ref<MaterialBase>> *materials,
+													   const aiNode *node, const aiScene *scene,
+													   const aiMatrix4x4 &parentTransform) {
 		CH_PROFILE_FUNCTION();
 
-		std::vector<Ref<Mesh>> meshes;
+		std::vector<entt::entity> meshes;
 
 		// A node positions, rotates and scales its meshes relative to its parent. Formats that keep their
 		// scene graph intact (glTF/.glb especially) put a large part of the placement here instead of in the
@@ -71,19 +86,18 @@ namespace Steve {
 
 		for (unsigned int i = 0; i < node->mNumMeshes; i++) {
 			aiMesh *mesh = scene->mMeshes[node->mMeshes[i]];
-			Ref<Mesh> addedMesh = processMesh(regData, materials, mesh, scene, transform);
-			meshes.push_back(addedMesh);
+			meshes.push_back(processMesh(target, materials, mesh, scene, transform));
 		}
 		for (unsigned int i = 0; i < node->mNumChildren; i++) {
-			std::vector<Ref<Mesh>> addedMeshes = processNode(regData, materials, node->mChildren[i], scene, transform);
+			std::vector<entt::entity> addedMeshes = processNode(target, materials, node->mChildren[i], scene, transform);
 			meshes.insert(meshes.end(), addedMeshes.begin(), addedMeshes.end());
 		}
 
 		return meshes;
 	}
 
-	Ref<Mesh> ModelLoader::processMesh(RegistryData *regData, const std::vector<Ref<MaterialBase>> *materials,
-									   const aiMesh *aiMesh, const aiScene *scene, const aiMatrix4x4 &transform) {
+	entt::entity ModelLoader::processMesh(Scene &target, const std::vector<Ref<MaterialBase>> *materials,
+										  const aiMesh *aiMesh, const aiScene *scene, const aiMatrix4x4 &transform) {
 		CH_PROFILE_FUNCTION();
 
 		// First figure out the number of vertices in the mesh
@@ -129,7 +143,7 @@ namespace Steve {
 		}
 
 		// The vertices are stored relative to the centroid of the mesh, which becomes the mesh its position.
-		const glm::vec3 centroid = Mesh::FindCentroid(meshData.positions.data(), meshData.positions.size());
+		const glm::vec3 centroid = FindCentroid(meshData.positions.data(), meshData.positions.size());
 		for (glm::vec3 &position: meshData.positions) {
 			position -= centroid;
 		}
@@ -142,12 +156,14 @@ namespace Steve {
 			i += aiMesh->mFaces[x].mNumIndices;
 		}
 
-		// Create mesh
+		// Create the mesh entity
 		const Ref<MaterialBase>& meshMaterial = (*materials)[aiMesh->mMaterialIndex];
-		Ref<Mesh> mesh = createRef<Mesh>(regData, std::move(meshData), meshMaterial);
+
+		const entt::entity mesh = target.CreateEntity(aiMesh->mName.length > 0 ? aiMesh->mName.C_Str() : "Mesh");
+		target.reg.emplace<MeshComponent>(mesh, std::move(meshData), meshMaterial);
 
 		// Set the position of the mesh
-		mesh->GetComponent<TransformComponent>()->Position = centroid;
+		target.reg.get<TransformComponent>(mesh).Position = centroid;
 
 		return mesh;
 	}

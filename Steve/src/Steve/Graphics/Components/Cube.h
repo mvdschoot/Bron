@@ -4,25 +4,20 @@
 
 #ifndef CUBE_H
 #define CUBE_H
-#include "Model.h"
+
+#include <entt/entity/registry.hpp>
+
+#include "Steve/Graphics/MaterialBase.h"
+#include "Steve/Scene/Components.h"
 
 namespace Steve {
-	class Cube : public Model
-	{
-	public:
-		virtual glm::vec3 GetColor() const = 0;
-		virtual void SetColor(glm::vec3 color) = 0;
+	class Scene;
 
-	protected:
-		explicit Cube(RegistryData* reg) : Model(reg, { generateMesh(reg) }) {}
+	/// Creates a unit cube entity with the given material. Unparented; the caller decides where it goes.
+	entt::entity CreateCube(Scene &target, const Ref<MaterialBase> &material);
 
-		virtual Ref<MaterialBase> generateMaterial() = 0;
-
-	private:
-		Ref<Mesh> generateMesh(RegistryData* reg);
-
-		Ref<Mesh> mesh;
-	};
+	/// Creates a unit cube with a plain phong material of the given colour.
+	entt::entity CreatePhongCube(Scene &target, glm::vec3 color = glm::vec3(1.0f));
 }
 
 #endif //CUBE_H

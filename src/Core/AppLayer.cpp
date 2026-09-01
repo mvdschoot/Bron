@@ -23,16 +23,14 @@ namespace Steve
 		Camera = new FrustumCamera(glm::radians(80.0F), (float)Width / (float)Height, 0.1f, 100.0f, Pos, glm::vec3{ 0.0f, 0.0f, 0.0f }, glm::vec3{ 0.0f, 1.0f, 0.0f });
 		Sc.camera = Camera;
 
-		Sc.createPhongModel("The model", "Assets/mymodel/untitled.glb");
+		Sc.CreatePhongModel("The model", "Assets/mymodel/untitled.glb");
 
 		// Sc.createStandardModel("C:/Users/mathi/Documents/Steve/Assets/big_car/textures/911_scene.obj");
 
-		Sc.addPointLight({ 4.0, 2.0, 4.0 }, { 1.0, 1.0, 1.0 });
-		Sc.addPointLight({ -2.0, 2.0, -2.0 }, { 1.0, 1.0, 1.0 });
+		Sc.CreatePointLight({ 4.0, 2.0, 4.0 }, { 1.0, 1.0, 1.0 });
+		Sc.CreatePointLight({ -2.0, 2.0, -2.0 }, { 1.0, 1.0, 1.0 });
 
 		Command::ClearColor({0.0, 0.0, 0.0, 0.5});
-
-		//Cube->AddComponent<CubeCollisionBody>({{true, Cube->GetComponent<TransformComponent>()}, {1,1,1} });
 
 		GridRenderer::Init(Camera);
 	}
@@ -100,8 +98,9 @@ namespace Steve
 		}
 
 		if (Steve::Input::isKeyPressed(Steve::Key::F)) {
-			if (SceneHierarchyPanel::Data.selectedObject) {
-				const TransformComponent& selectedObjectTrans = *SceneHierarchyPanel::Data.selectedObject->GetComponent<TransformComponent>();
+			if (SceneHierarchyPanel::Data.selectedObject != entt::null) {
+				const TransformComponent& selectedObjectTrans =
+					Sc.reg.get<TransformComponent>(SceneHierarchyPanel::Data.selectedObject);
 
 				// Set the Camera target and reset the X,Y,Z angles
 				Camera->SetTarget(selectedObjectTrans.Position);

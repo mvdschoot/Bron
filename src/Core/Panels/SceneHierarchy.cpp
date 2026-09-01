@@ -9,18 +9,31 @@ namespace Steve
 
 	using namespace ImGui;
 
+	// Euler angles for the currently selected entity. Cached because converting a quaternion to euler
+	// angles is lossy: recomputing it every frame makes a rotation drag jump around near the poles.
+	static entt::entity sEulerCacheOwner = entt::null;
+	static glm::vec3 sEulerCache{0.0f};
+
 	void SceneHierarchyPanel::OnAttach(Scene* scene)
 	{
 		Data.scene = scene;
-		Data.selectedObject = nullptr;
+		Data.selectedObject = entt::null;
+		InvalidateEulerCache();
 	}
 
+	void SceneHierarchyPanel::InvalidateEulerCache()
+	{
+		sEulerCacheOwner = entt::null;
+	}
 
 	void SceneHierarchyPanel::RenameFunction()
 	{
-		if (Data.selectedObject == nullptr)
+		if (Data.selectedObject == entt::null)
 			return;
-		std::string name = "Rename '" + Data.selectedObject->name + "'";
+
+		TagComponent& tag = Data.scene->reg.get<TagComponent>(Data.selectedObject);
+
+		std::string name = "Rename '" + tag.name + "'";
 		if (IsKeyPressed(ImGuiKey_F2, false))
 		{
 			OpenPopup(name.c_str());
@@ -39,7 +52,7 @@ namespace Steve
 
 			if (text || Button("OK", ImVec2(120, 0)))
 			{
-				Data.selectedObject->name = std::string(buf);
+				tag.name = std::string(buf);
 				CloseCurrentPopup();
 			}
 			SetItemDefaultFocus();
@@ -53,7 +66,7 @@ namespace Steve
 	void SceneHierarchyPanel::OnImguiRender()
 	{
 		Begin("Scene Hierarchy");
-		
+
 		TreeNode(Data.scene->root);
 
 		RenameFunction();
@@ -68,35 +81,45 @@ namespace Steve
 
 		Begin("Properties");
 
-		Node* ent = Data.selectedObject;
-		if (ent == nullptr)
+		const entt::entity entity = Data.selectedObject;
+		if (entity == entt::null)
 		{
 			End();
 			return;
 		}
 
-		if (ent->Contains<TransformComponent>() && CollapsingHeader("Transform", ImGuiTreeNodeFlags_DefaultOpen))
+		entt::registry& reg = Data.scene->reg;
+
+		if (TransformComponent* t = reg.try_get<TransformComponent>(entity);
+			t && CollapsingHeader("Transform", ImGuiTreeNodeFlags_DefaultOpen))
 		{
-			TransformComponent& t = *ent->GetComponent<TransformComponent>();
-
 			// Dragger position
-			DragFloat3("Position", value_ptr(t.Position));
+			DragFloat3("Position", value_ptr(t->Position));
 
-			// Dragger rotation
-			t.SyncEulerFromQuat();
-			if (DragFloat3("Rotation", value_ptr(t.EulerCache))) {
-				t.SyncQuatFromEuler();
+			// Dragger rotation. The cache is only refreshed when the selection changes, so that dragging
+			// through a pole does not send the angles somewhere else mid-drag.
+			if (sEulerCacheOwner != entity)
+			{
+				sEulerCacheOwner = entity;
+				sEulerCache = glm::degrees(glm::eulerAngles(t->RotationQuat));
+			}
+
+			if (DragFloat3("Rotation", value_ptr(sEulerCache)))
+			{
+				t->RotationQuat = glm::quat(glm::radians(sEulerCache));
 			}
 
 			// Dragger scaling
-			DragFloat3("Scaling", value_ptr(t.Scaling));
+			DragFloat3("Scaling", value_ptr(t->Scaling));
 		}
 
-		if (ent->type & NodeType_PointLight && CollapsingHeader("Light settings", ImGuiTreeNodeFlags_DefaultOpen))
+		if (PointLightComponent* light = reg.try_get<PointLightComponent>(entity);
+			light && CollapsingHeader("Light settings", ImGuiTreeNodeFlags_DefaultOpen))
 		{
-			glm::vec3 color = ((PointLight*)ent)->getColor();
-			ColorEdit3("Color", value_ptr(color));
-			((PointLight*)ent)->setColor(color);
+			if (ColorEdit3("Color", value_ptr(light->color)))
+			{
+				Data.scene->lightManagement.MarkDirty();
+			}
 		}
 
 		End();
@@ -104,69 +127,38 @@ namespace Steve
 
 
 
-	void SceneHierarchyPanel::TreeNode(Node* node)
+	void SceneHierarchyPanel::TreeNode(const entt::entity entity)
 	{
-		if (SkipNode(node))
-			return;
+		entt::registry& reg = Data.scene->reg;
 
 		ImGuiTreeNodeFlags entity_base_flags = ImGuiTreeNodeFlags_OpenOnDoubleClick;
 
 		ImGuiTreeNodeFlags node_flags = entity_base_flags;
-		if (Data.selectedObject == node)
+		if (Data.selectedObject == entity)
 		{
 			node_flags |= ImGuiTreeNodeFlags_Selected;
 		}
 
 		SetNextItemOpen(true);
-		bool open = TreeNodeEx(node->name.c_str(), node_flags);
+
+		// Entities are recycled, so the pointer of the name is not a stable id; push the entity itself.
+		PushID(static_cast<int>(static_cast<u32>(entity)));
+		bool open = TreeNodeEx(reg.get<TagComponent>(entity).name.c_str(), node_flags);
 		if (IsItemClicked() && !IsItemToggledOpen())
-			Data.selectedObject = node;
-
-
-		float height = GetTextLineHeight();
-
-		// SameLine();
-		// ImGui::SetCursorPosX(ImGui::GetCursorPosX() + ImGui::GetColumnWidth() - ImGui::CalcTextSize(node->name.c_str()).x
-		// 	- ImGui::GetScrollX() - 2 * ImGui::GetStyle().ItemSpacing.x);
-
-
-		//
-		// u32 id = Icons::GetIconId("add");
-		// if(ImageButton(reinterpret_cast<void*>(id), ImVec2{ height,height }))
-		// {
-		// 	OpenPopup("Node options");
-		// }
-		//
-		//
-		// if (BeginPopupContextWindow("Node options"))
-		// {
-		// 	if (MenuItem("Add rigidBody"))
-		// 	{
-		// 		// Data.scene->
-		// 	}
-		// 	if (MenuItem("Close"))
-		// 	{
-		// 		CloseCurrentPopup();
-		// 	}
-		// 	EndPopup();
-		// }
+		{
+			Data.selectedObject = entity;
+			InvalidateEulerCache();
+		}
 
 		if(open)
 		{
-			for(Node* n : node->children)
+			for(const entt::entity child : reg.get<HierarchyComponent>(entity).children)
 			{
-				TreeNode(n);
+				TreeNode(child);
 			}
 
 			TreePop();
 		}
-	}
-
-	bool SceneHierarchyPanel::SkipNode(Node* entity)
-	{
-		u32 type = entity->type;
-		if (type & NodeType_Mesh && type & NodeType_PointLight)
-			return true;
-		return false;
+		PopID();
 	}
 }

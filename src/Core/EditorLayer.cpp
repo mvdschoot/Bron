@@ -127,8 +127,11 @@ namespace Steve
 		ImGui::Image(reinterpret_cast<void*>(textureID), viewportPanelSize, ImVec2{ 0, 1 }, ImVec2{ 1, 0 });
 
 		// Guizmo
-		if (SceneHierarchyPanel::Data.selectedObject)
+		const entt::entity selected = SceneHierarchyPanel::Data.selectedObject;
+		if (selected != entt::null)
 		{
+			Scene& scene = App->Sc;
+
 			ImGuizmo::SetOrthographic(false);
 			ImGuizmo::SetDrawlist();
 
@@ -138,11 +141,13 @@ namespace Steve
 							  viewportMinRegion.y + viewportOffset.y,
 							  ViewportWindowSize.x, ViewportWindowSize.y);
 
-			glm::mat4 proj = App->Sc.camera->GetProjectionMatrix();
-			glm::mat4 view = App->Sc.camera->GetViewMatrix();
+			glm::mat4 proj = scene.camera->GetProjectionMatrix();
+			glm::mat4 view = scene.camera->GetViewMatrix();
 
-			TransformComponent& comp = SceneHierarchyPanel::Data.selectedObject->GetComponent<TransformComponent>();
-			glm::mat4 transform = SceneHierarchyPanel::Data.selectedObject->GetTransform();
+			TransformComponent& comp = scene.reg.get<TransformComponent>(selected);
+
+			// The gizmo manipulates a world transform; the component stores a local one.
+			glm::mat4 transform = scene.WorldTransform(selected);
 
 			ImGuizmo::Manipulate(glm::value_ptr(view), glm::value_ptr(proj),
 								 SceneHierarchyPanel::Data.selectedObjectOperation,
@@ -150,13 +155,10 @@ namespace Steve
 
 			if (ImGuizmo::IsUsing()) // only update if the user is manipulating
 			{
-				// Compute local transform
-				glm::mat4 parent_transform = SceneHierarchyPanel::Data.selectedObject->parent ?
-										 SceneHierarchyPanel::Data.selectedObject->parent->GetTransform() :
-										 glm::mat4(1.0f);
+				// Back out the parent transform, so the entity keeps its place in the hierarchy.
+				const entt::entity parent = scene.reg.get<HierarchyComponent>(selected).parent;
+				glm::mat4 parent_transform = parent != entt::null ? scene.WorldTransform(parent) : glm::mat4(1.0f);
 				glm::mat4 local = glm::inverse(parent_transform) * transform;
-				glm::mat4 diff = comp.GetMatrix() - local;
-				CORE_INFO(print_matrix(diff));
 
 				// Extract TRS in a stable way
 				glm::vec3 skew;
@@ -169,7 +171,8 @@ namespace Steve
 
 				comp.RotationQuat = newQuat;
 
-				int a = 5;
+				// The properties panel caches euler angles; the gizmo just changed the quaternion under it.
+				SceneHierarchyPanel::InvalidateEulerCache();
 			}
 		}
 

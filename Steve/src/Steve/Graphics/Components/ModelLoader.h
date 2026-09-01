@@ -10,21 +10,30 @@
 #include <unordered_map>
 
 
-#include "Model.h"
+#include <entt/entity/registry.hpp>
+
+#include "Steve/Graphics/MaterialBase.h"
+#include "Steve/Graphics/Texture.h"
+#include "Steve/Scene/Components.h"
 #include "assimp/scene.h"
 
 namespace Steve {
 
+class Scene;
+
 class ModelLoader {
 public:
-	static Ref<Model> loadModel(RegistryData *regData, MaterialWorkflow type, const char *modelLocation);
+	/// Loads a model into the scene. Returns the model root entity: an unparented entity whose children
+	/// are one entity per mesh. The root's transform is the model centroid, each mesh's transform its own
+	/// centroid relative to it.
+	static entt::entity loadModel(Scene &target, MaterialWorkflow type, const char *modelLocation);
 	/// Walks the node hierarchy. Nodes carry a transform relative to their parent, so the transform handed
 	/// down here is the accumulated transform of everything above this node.
-	static std::vector<Ref<Mesh>> processNode(RegistryData *regData, std::vector<Ref<MaterialBase>> *materials,
-											  const aiNode *node, const aiScene *scene,
-											  const aiMatrix4x4 &parentTransform);
-	static Ref<Mesh> processMesh(RegistryData *regData, const std::vector<Ref<MaterialBase>> *materials,
-								 const aiMesh *aiMesh, const aiScene *scene, const aiMatrix4x4 &transform);
+	static std::vector<entt::entity> processNode(Scene &target, std::vector<Ref<MaterialBase>> *materials,
+												 const aiNode *node, const aiScene *scene,
+												 const aiMatrix4x4 &parentTransform);
+	static entt::entity processMesh(Scene &target, const std::vector<Ref<MaterialBase>> *materials,
+									const aiMesh *aiMesh, const aiScene *scene, const aiMatrix4x4 &transform);
 	static std::vector<Ref<MaterialBase>> processPhongMaterials(const aiScene *scene,
 																const std::filesystem::path &directory);
 

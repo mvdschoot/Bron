@@ -4,16 +4,29 @@
 
 #include "LightManagement.h"
 
+#include "Steve/Scene/Components.h"
+
 namespace Steve {
+	u8 LightManagement::numberPointLights() const {
+		return static_cast<u8>(reg.view<PointLightComponent>().size());
+	}
+
 	void LightManagement::bind() {
-		// Check if the light data has been updated.
-		bool isUpdated = false;
-		for (auto& pointlight : pointlights) {
-			isUpdated |= pointlight->isUpdatedAndReset();
+		CH_PROFILE_FUNCTION();
+
+		// A light that moved is only visible through its transform, so scan for that on top of
+		// the explicit dirty flag set by adding a light or editing its color.
+		for (auto [entity, transform, light] : reg.view<TransformComponent, PointLightComponent>().each()) {
+			isDirty |= transform.IsDirty();
+
+			// Lights are not drawn, so nothing else consumes their dirty state. Recompute the matrix
+			// here to clear it, otherwise every frame would look dirty and rebuild the UBO.
+			transform.GetMatrix();
 		}
 
-		if (isUpdated) {
+		if (isDirty || pointlightsUbo == nullptr) {
 			generateUbo();
+			isDirty = false;
 		}
 
 		if (!pointlightsUbo->isBound()) {
@@ -21,28 +34,27 @@ namespace Steve {
 		}
 	}
 
-	Ref<PointLight> LightManagement::createPointLight() {
-		auto light = Ref<PointLight>(new PointLight(regData));
-		pointlights.push_back(light);
-		isPointlightAdded = true;
-		return light;
-	}
-
 	void LightManagement::generateUbo() {
-		std::vector<ShaderPointlightStruct> lights;
-		for (auto& pointlight : pointlights) {
-			ShaderPointlightStruct& lightStruct = lights.emplace_back();
-			lightStruct.position = pointlight->GetComponent<TransformComponent>()->Position;
-			lightStruct.color = pointlight->getColor();
-		}
+		CH_PROFILE_FUNCTION();
 
 		constexpr usize lightDataSize = sizeof(ShaderPointlightStruct);
 		constexpr usize totalSize = lightDataSize * POINTLIGHT_MAX;
-		u8 *lightData = new u8[totalSize];
-		memset(lightData, 0, totalSize);
-		memcpy(lightData, &lights[0], lightDataSize * lights.size());
 
-		pointlightsUbo = UniformBuffer::Create(lightData, totalSize, POINTLIGHT_UBO_INDEX);
+		// Zero-filled, so unused slots read as black lights at the origin.
+		std::vector<ShaderPointlightStruct> lights(POINTLIGHT_MAX);
 
+		usize i = 0;
+		for (auto [entity, transform, light] : reg.view<TransformComponent, PointLightComponent>().each()) {
+			if (i >= POINTLIGHT_MAX) {
+				CORE_WARN("Scene has more than {} point lights; the rest are ignored.", POINTLIGHT_MAX);
+				break;
+			}
+
+			lights[i].position = transform.Position;
+			lights[i].color = light.color;
+			i++;
+		}
+
+		pointlightsUbo = UniformBuffer::Create(lights.data(), totalSize, POINTLIGHT_UBO_INDEX);
 	}
 } // Steve

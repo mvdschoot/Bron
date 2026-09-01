@@ -1,34 +1,46 @@
 #ifndef _SCENE_HEADER__
 #define _SCENE_HEADER__
 
-#include "Steve/ECS/Registry.h"
+#include <entt/entity/registry.hpp>
 
-#include "Steve/Graphics/Components/MiscellaneousComponents.h"
-#include "Steve/Graphics/Renderer/RenderQueue.h"
+#include <string>
+
+#include "Steve/Scene/Components.h"
 
 #include "Steve/Graphics/Camera.h"
 #include "Steve/Graphics/LightManagement.h"
 
 namespace Steve
 {
-	class Scene : public Registry
+	class Scene
 	{
 	public:
 		Scene();
 
-		void createPhongModel(const char* name, const char* location);
-		void addPointLight(glm::vec3 pos, glm::vec3 color);
-		
-		Node* root;
+		// Creates an entity with a Tag, a Transform and a Hierarchy. Parents it to 'parent'
+		// when one is given, otherwise it is left unparented.
+		entt::entity CreateEntity(const std::string& name, entt::entity parent = entt::null);
 
-		RenderQueue queue;
-		std::vector<Ref<Model>> allModels;
+		// Destroys the entity and everything below it in the hierarchy.
+		void DestroyEntity(entt::entity entity);
+
+		void AddChild(entt::entity parent, entt::entity child);
+		void RemoveChild(entt::entity parent, entt::entity child);
+
+		// Local transform composed with every parent transform up to the root.
+		glm::mat4 WorldTransform(entt::entity entity);
+
+		// Loads a model from disk and parents it to the root.
+		entt::entity CreatePhongModel(const char* name, const char* location);
+
+		entt::entity CreatePointLight(glm::vec3 pos, glm::vec3 color);
+
+		entt::registry reg;
+		entt::entity root;
 
 		LightManagement lightManagement;
-		Camera* camera;
-	private:
+		Camera* camera = nullptr;
 	};
 }
-
 
 #endif //_SCENE_HEADER__

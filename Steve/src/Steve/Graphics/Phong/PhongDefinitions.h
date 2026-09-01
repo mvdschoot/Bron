@@ -8,6 +8,7 @@
 #include "Steve/Graphics/Buffer.h"
 #include "Steve/Graphics/Components/BufferExtentions.h"
 #include "Steve/Graphics/ShaderDataFunctions.h"
+#include "Steve/Scene/Components.h"
 
 namespace Steve {
 

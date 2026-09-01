@@ -29,4 +29,4 @@ set_property(TARGET LuigiMaker PROPERTY CXX_STANDARD 20)
 target_link_libraries(LuigiMaker PUBLIC Steve)
 target_link_libraries(LuigiMaker PUBLIC VendorLibrary)
 
-add_definitions(-w)
+# add_definitions(-w)  # re-enable only if the noise gets unmanageable
