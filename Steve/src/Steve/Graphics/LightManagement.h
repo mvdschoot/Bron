@@ -33,24 +33,19 @@ public:
 	explicit LightManagement(entt::registry& reg) : reg(reg) {}
 	~LightManagement() = default;
 
-	// Regenerates the UBO when any light moved or changed, then binds it.
+	// Uploads every point light and binds the UBO. Call once per frame, before the draw loop.
+	// The buffer is a fixed POINTLIGHT_MAX entries, so re-uploading it unconditionally is cheaper
+	// than tracking what changed.
 	void bind();
 
-	// Forces a UBO regeneration on the next bind(). Only needed for a colour edit; lights being
-	// added, removed or moved are picked up by bind() itself.
-	void MarkDirty() { isDirty = true; }
-
+	// Clamped to POINTLIGHT_MAX: the shader indexes a fixed size array with this count, and bind()
+	// only fills that many slots.
 	[[nodiscard]] u8 numberPointLights() const;
 
 private:
-	void generateUbo();
-
 	entt::registry& reg;
 
-	Ref<UniformBuffer> pointlightsUbo;
-
-	bool isDirty = true;
-	usize lastLightCount = 0;
+	Ref<UniformBuffer> ubo;
 };
 
 } // Steve

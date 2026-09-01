@@ -107,8 +107,6 @@ namespace Steve
 		reg.get<TransformComponent>(light).Position = pos;
 		reg.emplace<PointLightComponent>(light, color);
 
-		lightManagement.MarkDirty();
-
 		return light;
 	}
 }

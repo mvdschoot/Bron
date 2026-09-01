@@ -7,6 +7,15 @@ namespace Steve
 	{
 	}
 
+	void FrustumCamera::SetAspectRatio(const float aspect_ratio)
+	{
+		if (aspect_ratio <= 0.0f || aspect_ratio == mAspectRatio)
+			return;
+
+		mAspectRatio = aspect_ratio;
+		mProjectionMat = glm::perspective(mFovY, mAspectRatio, mNear, mFar);
+	}
+
 	void FrustumCamera::SetPosition(glm::vec3 pos)
 	{
 		mPosition = pos;

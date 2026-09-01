@@ -73,11 +73,7 @@ namespace Steve
 
 		void DrawPointLight(Scene& scene, const entt::entity entity)
 		{
-			PointLightComponent& light = scene.reg.get<PointLightComponent>(entity);
-
-			// Colour is not covered by the transform dirty scan, so the UBO has to be told explicitly.
-			if (ColorEdit3("Color", value_ptr(light.color)))
-				scene.lightManagement.MarkDirty();
+			ColorEdit3("Color", value_ptr(scene.reg.get<PointLightComponent>(entity).color));
 		}
 
 

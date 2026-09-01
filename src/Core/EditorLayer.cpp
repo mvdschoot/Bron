@@ -122,10 +122,14 @@ namespace Steve
 			ViewportWindowSize.y = viewportPanelSize.y;
 			App->mFramebuffer->invalidate();
 
+			// The projection has to follow the panel, otherwise the scene is stretched to fit it.
+			if (viewportPanelSize.y > 0.0f)
+				App->Camera->SetAspectRatio(viewportPanelSize.x / viewportPanelSize.y);
+
 		}
 
 		uint64_t textureID = App->mFramebuffer->getColorAttachID();
-		ImGui::Image(reinterpret_cast<void*>(textureID), viewportPanelSize, ImVec2{ 0, 1 }, ImVec2{ 1, 0 });
+		ImGui::Image(textureID, viewportPanelSize, ImVec2{ 0, 1 }, ImVec2{ 1, 0 });
 
 		// Guizmo
 		const entt::entity selected = SceneHierarchyPanel::Data.selectedObject;

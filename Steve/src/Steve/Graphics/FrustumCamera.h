@@ -22,6 +22,10 @@ namespace Steve
 		[[nodiscard]] glm::vec3 GetPosition() const override { return mPosition; }
 		[[nodiscard]] glm::vec3 GetDirection() const override { return mTarget; }
 
+		/// Keeps the projection matching the render target, so a resize widens the view
+		/// instead of stretching what was already on screen.
+		void SetAspectRatio(float aspect_ratio);
+
 		void SetPosition(glm::vec3 pos);
 		void SetTarget(glm::vec3 target);
 		void SetUpvector(glm::vec3 up);

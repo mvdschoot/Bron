@@ -87,7 +87,10 @@ namespace Steve
 
 			PushID(component.name);
 
-			const bool open = CollapsingHeader(component.name, ImGuiTreeNodeFlags_DefaultOpen);
+			// AllowOverlap lets the remove button below claim clicks in the part of the header row it
+			// covers; without it the header is submitted first and swallows them into a collapse toggle.
+			const bool open = CollapsingHeader(component.name,
+											   ImGuiTreeNodeFlags_DefaultOpen | ImGuiTreeNodeFlags_AllowOverlap);
 
 			// Remove button on the header row itself, so a collapsed section can still be removed.
 			bool removeRequested = false;

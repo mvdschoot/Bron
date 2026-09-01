@@ -52,6 +52,9 @@ namespace Steve
 			queue[mesh.material->shaderName][mesh.material.get()].push_back(entity);
 		}
 
+		// Light data is shared by every shader, so upload and bind it once for the whole frame.
+		scene.lightManagement.bind();
+
 		for (auto& [shader_name, materials] : queue)
 		{
 			Statistics.Shaders++;
@@ -64,7 +67,6 @@ namespace Steve
 			shader->setUniform3f("u_ViewPos", scene.camera->GetPosition().x, scene.camera->GetPosition().y, scene.camera->GetPosition().z);
 			Statistics.UniformCalls += 3;
 
-			scene.lightManagement.bind();
 			shader->setUniform1i("u_NumPointLights", scene.lightManagement.numberPointLights());
 
 			for (auto& [material, entities] : materials)
