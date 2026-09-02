@@ -1,0 +1,23 @@
+#pragma once
+
+#include "Bron/Core/Core.h"
+#include "Bron/Core/Profiling.h"
+#include "Bron/Core/Logger.h"
+
+#include "Defs.h"
+
+#include <vector>
+#include "Components.h"
+#include "BVH.h"
+
+namespace Bron {
+
+    class System {
+    public:
+        void add(Pt<RigidBody> object);
+        void loop();
+
+    private:
+        BVH bvh;
+    };
+}
