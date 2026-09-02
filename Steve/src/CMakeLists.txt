@@ -19,6 +19,7 @@ add_library(Steve STATIC
 
 	Steve/Graphics/GraphicsContext.cpp
 	Steve/Graphics/Shader.cpp
+	Steve/Graphics/BuiltinShaders.cpp
 	
 	Steve/Graphics/OrthographicCamera.cpp
 	Steve/Graphics/VertexArray.cpp
@@ -78,10 +79,10 @@ target_compile_definitions(Steve
 		CH_COMPILE
 )
 
-# Asset roots, so nothing has to guess at the working directory. Overridable at
-# runtime with STEVE_ENGINE_ASSETS / STEVE_PROJECT_ASSETS.
+# Application asset root, so nothing has to guess at the working directory.
+# Overridable at runtime with STEVE_PROJECT_ASSETS. The engine itself needs no
+# such root - its shaders live in Steve/Graphics/BuiltinShaders.cpp.
 target_compile_definitions(Steve PUBLIC
-	STEVE_ENGINE_ASSET_DIR="${STEVE_ENGINE_ASSET_DIR}"
 	STEVE_PROJECT_ASSET_DIR="${STEVE_PROJECT_ASSET_DIR}"
 )
 

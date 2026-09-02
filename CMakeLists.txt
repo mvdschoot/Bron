@@ -16,9 +16,10 @@ set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/bin)
 set(CMAKE_LIBRARY_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/bin)
 set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/lib)
 
-# Asset roots are baked into the binary so that nothing depends on the working
-# directory, which differs per IDE. See Steve/Util/Paths.h.
-set(STEVE_ENGINE_ASSET_DIR "${CMAKE_CURRENT_SOURCE_DIR}/Steve/Assets" CACHE PATH "Engine-owned assets (shaders)")
+# The application asset root is baked into the binary so that nothing depends
+# on the working directory, which differs per IDE. See Steve/Util/Paths.h. The
+# engine has no asset root of its own - its shaders are compiled into the
+# library (see Steve/Graphics/BuiltinShaders.h).
 set(STEVE_PROJECT_ASSET_DIR "${CMAKE_CURRENT_SOURCE_DIR}/Assets" CACHE PATH "Application assets (models, icons)")
 
 add_subdirectory(Steve)

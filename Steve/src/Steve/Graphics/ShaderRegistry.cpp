@@ -4,13 +4,13 @@
 
 #include "ShaderRegistry.h"
 
-#include "Steve/Util/Paths.h"
+#include "BuiltinShaders.h"
 
 namespace Steve {
 	std::map<std::string, Ref<Shader>> ShaderRegistry::shaders = std::map<std::string, Ref<Shader>>();
 
 	void ShaderRegistry::Init() {
-		ShaderRegistry::CreateShader(PHONG_SHADER, Paths::EngineAssetString("Phong3DShader.glsl").c_str());
+		ShaderRegistry::CreateShaderFromSource(PHONG_SHADER, BuiltinShaders::Source(BuiltinShaders::Id::Phong3D));
 	}
 
 	Ref<Shader> ShaderRegistry::GetShader(const char *name) {
@@ -21,5 +21,9 @@ namespace Steve {
     void ShaderRegistry::CreateShader(const char *name, const char *pathToShader) {
         const Ref<Shader> newShader = Shader::CreateShaderFromLocation(pathToShader);
         shaders[name] = newShader;
+    }
+
+    void ShaderRegistry::CreateShaderFromSource(const char *name, const std::string &source) {
+        shaders[name] = Shader::Create(source);
     }
 } // Steve

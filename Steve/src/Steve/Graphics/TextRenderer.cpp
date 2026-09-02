@@ -1,5 +1,7 @@
 #include "TextRenderer.h"
 
+#include "Steve/Graphics/BuiltinShaders.h"
+
 #include <iostream>
 
 namespace Steve
@@ -17,7 +19,7 @@ namespace Steve
 		if (FT_Init_FreeType(&s_text_data.FT_library)) CORE_ERROR("Could not initialise FreeText library");
 
 		s_text_data.ShaderId = R2D::AddShader(
-			Shader::CreateShaderFromLocation(Paths::EngineAssetString("text_shader.glsl")), 
+			Shader::Create(BuiltinShaders::Source(BuiltinShaders::Id::Text)), 
 			BufferLayout({
 				{"a_Position", ShaderDataType::Float2},
 				{"a_Color", ShaderDataType::Float4},
