@@ -17,7 +17,6 @@ target_compile_features(BronEditor PUBLIC cxx_std_20)
 set_target_properties(BronEditor PROPERTIES CXX_EXTENSIONS OFF)
 
 target_link_libraries(BronEditor PUBLIC Bron)
-target_link_libraries(BronEditor PUBLIC VendorLibrary)
 
 # Makes F5 in Visual Studio start the editor instead of ALL_BUILD.
 set_property(DIRECTORY ${CMAKE_SOURCE_DIR} PROPERTY VS_STARTUP_PROJECT BronEditor)

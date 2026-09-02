@@ -22,9 +22,15 @@ namespace Bron
 		u32 getDepthStencilAttachID() override;
 
 	private:
-		u32 _renderer_id;
-		u32 _color_attachment;
-		u32 _depth_stencil_attachment;
+		// Deletes the framebuffer and its attachments. Safe to call on a half-built or
+		// already-destroyed framebuffer.
+		void destroy();
+
+		// Zero-initialised so the first invalidate() can delete unconditionally - GL
+		// silently ignores name 0.
+		u32 _renderer_id = 0;
+		u32 _color_attachment = 0;
+		u32 _depth_stencil_attachment = 0;
 		FramebufferSpecification& _spec;
 	};
 }

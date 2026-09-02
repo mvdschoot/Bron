@@ -30,7 +30,11 @@ namespace Bron::Editor
 
 	void EditorLayer::ShowDebug()
 	{
-		if (ImGui::Begin("Debug")) {
+		// Begin() returning false only means the contents are clipped (collapsed, or the
+		// whole window minimised) - the window is still on the stack, so End() has to be
+		// called either way or the outer dockspace window loses its End().
+		if (ImGui::Begin("Debug"))
+		{
 			ImGui::Text("FPS: %f", 1000.0f / App->Ts.getMilliseconds());
 
 			ImGui::NewLine();
@@ -46,9 +50,8 @@ namespace Bron::Editor
 				ImGui::Text("Draw calls: %d", SceneRenderer::Statistics.DrawCalls);
 				ImGui::Text("Uniform calls: %d", SceneRenderer::Statistics.UniformCalls);
 			}
-
-			ImGui::End();
 		}
+		ImGui::End();
 	}
 
 
@@ -114,7 +117,13 @@ namespace Bron::Editor
 
 		ImGui::Begin("Viewport");
 		ImVec2 viewportPanelSize = ImGui::GetContentRegionAvail();
-		if (!compare_float(viewportPanelSize.x, ViewportWindowSize.x) || !compare_float(viewportPanelSize.y, ViewportWindowSize.y))
+
+		// Minimising the application collapses the panel to 0x0. Resizing the framebuffer to
+		// that gives it 0x0 attachments, which are incomplete - so hold on to the last good
+		// size and pick the resize back up when the window is restored.
+		const bool viewportVisible = viewportPanelSize.x > 0.0f && viewportPanelSize.y > 0.0f;
+		if (viewportVisible &&
+			(!compare_float(viewportPanelSize.x, ViewportWindowSize.x) || !compare_float(viewportPanelSize.y, ViewportWindowSize.y)))
 		{
 			App->FrSpec.width = viewportPanelSize.x;
 			App->FrSpec.height = viewportPanelSize.y;
@@ -123,8 +132,7 @@ namespace Bron::Editor
 			App->mFramebuffer->invalidate();
 
 			// The projection has to follow the panel, otherwise the scene is stretched to fit it.
-			if (viewportPanelSize.y > 0.0f)
-				App->Camera->SetAspectRatio(viewportPanelSize.x / viewportPanelSize.y);
+			App->Camera->SetAspectRatio(viewportPanelSize.x / viewportPanelSize.y);
 
 		}
 

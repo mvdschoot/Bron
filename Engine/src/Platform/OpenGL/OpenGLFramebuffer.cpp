@@ -10,7 +10,20 @@ namespace Bron
 
 	OpenGLFramebuffer::~OpenGLFramebuffer()
 	{
+		destroy();
+	}
+
+	// The attachments are owned by this framebuffer, so they go with it - deleting only the
+	// framebuffer object leaves the two textures alive.
+	void OpenGLFramebuffer::destroy()
+	{
 		glDeleteFramebuffers(1, &_renderer_id);
+		glDeleteTextures(1, &_color_attachment);
+		glDeleteTextures(1, &_depth_stencil_attachment);
+
+		_renderer_id = 0;
+		_color_attachment = 0;
+		_depth_stencil_attachment = 0;
 	}
 
 	void OpenGLFramebuffer::bind()
@@ -27,6 +40,11 @@ namespace Bron
 
 	void OpenGLFramebuffer::invalidate()
 	{
+		// invalidate() is a resize as much as a first-time build, so anything from a previous
+		// call has to go first, otherwise every viewport resize leaks a framebuffer and two
+		// textures.
+		destroy();
+
 		glCreateFramebuffers(1, &_renderer_id);
 		glBindFramebuffer(GL_FRAMEBUFFER, _renderer_id);
 
