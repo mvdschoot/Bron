@@ -23,7 +23,7 @@ const char* kDefaultScene = "Scenes/Main.json";
 Scope<Project> Project::Load(const std::filesystem::path& file) {
 	std::ifstream stream(file);
 	if (!stream) {
-		BR_CORE_ERROR("Could not open project {}", file.string());
+		BR_APP_ERROR("Could not open project {}", file.string());
 		return nullptr;
 	}
 
@@ -31,13 +31,13 @@ Scope<Project> Project::Load(const std::filesystem::path& file) {
 	try {
 		stream >> document;
 	} catch (const json::exception& e) {
-		BR_CORE_ERROR("{} is not a valid project file: {}", file.string(), e.what());
+		BR_APP_ERROR("{} is not a valid project file: {}", file.string(), e.what());
 		return nullptr;
 	}
 
 	const int version = document.value("version", 0);
 	if (version != kProjectVersion) {
-		BR_CORE_ERROR("{} is a version {} project, this build reads version {}", file.string(), version,
+		BR_APP_ERROR("{} is a version {} project, this build reads version {}", file.string(), version,
 					  kProjectVersion);
 		return nullptr;
 	}
@@ -54,7 +54,7 @@ Scope<Project> Project::Load(const std::filesystem::path& file) {
 	if (project->settings_.startup_scene.empty()) {
 		// Older or hand-edited files can name no scene. The invariant is worth more than
 		// the file's word, so one is put back and written out.
-		BR_CORE_WARN("{} names no scene; adding {}.", file.string(), kDefaultScene);
+		BR_APP_WARN("{} names no scene; adding {}.", file.string(), kDefaultScene);
 		project->settings_.startup_scene = kDefaultScene;
 		project->Save();
 	}
@@ -73,7 +73,7 @@ Scope<Project> Project::Create(const std::filesystem::path& file, const std::str
 	std::error_code error;
 	std::filesystem::create_directories(project->AssetRoot(), error);
 	if (error) {
-		BR_CORE_ERROR("Could not create {}: {}", project->AssetRoot().string(), error.message());
+		BR_APP_ERROR("Could not create {}: {}", project->AssetRoot().string(), error.message());
 		return nullptr;
 	}
 
@@ -87,6 +87,10 @@ Scope<Project> Project::Create(const std::filesystem::path& file, const std::str
 }
 
 bool Project::Save() const {
+	// The scene first: if writing it fails there is no point advertising it in the .brn.
+	if (active_scene_)
+		Serialization::SerializeScene(*active_scene_, StartupScenePath());
+
 	json document;
 	document["version"] = kProjectVersion;
 	document["project"]["name"] = settings_.name;
@@ -97,7 +101,7 @@ bool Project::Save() const {
 
 	std::ofstream stream(file_);
 	if (!stream) {
-		BR_CORE_ERROR("Could not write {}", file_.string());
+		BR_APP_ERROR("Could not write {}", file_.string());
 		return false;
 	}
 
@@ -105,13 +109,26 @@ bool Project::Save() const {
 	return true;
 }
 
-void Project::MakeActive() const { paths::SetAssetRoot(AssetRoot()); }
+void Project::MakeActive() const { paths::SetRoots(directory_, AssetRoot()); }
+
+void Project::OpenStartupScene() {
+	EnsureStartupScene();
+
+	active_scene_ = CreateScope<Scene>();
+	Serialization::DeserializeScene(*active_scene_, StartupScenePath());
+}
 
 std::filesystem::path Project::AssetRoot() const { return (directory_ / settings_.asset_directory).lexically_normal(); }
 
-std::filesystem::path Project::Resolve(const std::filesystem::path& relative) const { return AssetRoot() / relative; }
+std::filesystem::path Project::ResolveAsset(const std::filesystem::path& relative) const {
+	return AssetRoot() / relative;
+}
 
-std::filesystem::path Project::StartupScenePath() const { return Resolve(settings_.startup_scene); }
+std::filesystem::path Project::ResolveProject(const std::filesystem::path& relative) const {
+	return directory_ / relative;
+}
+
+std::filesystem::path Project::StartupScenePath() const { return ResolveAsset(settings_.startup_scene); }
 
 void Project::EnsureStartupScene() const {
 	const std::filesystem::path file = StartupScenePath();
@@ -121,7 +138,7 @@ void Project::EnsureStartupScene() const {
 	std::error_code error;
 	std::filesystem::create_directories(file.parent_path(), error);
 	if (error) {
-		BR_CORE_ERROR("Could not create {}: {}", file.parent_path().string(), error.message());
+		BR_APP_ERROR("Could not create {}: {}", file.parent_path().string(), error.message());
 		return;
 	}
 
@@ -129,6 +146,6 @@ void Project::EnsureStartupScene() const {
 	const Scene initial;
 
 	Serialization::SerializeScene(initial, file);
-	BR_CORE_INFO("Created the initial scene {}", file.string());
+	BR_APP_INFO("Created the initial scene {}", file.string());
 }
 } // namespace bron::editor

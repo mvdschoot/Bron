@@ -1,6 +1,7 @@
 #pragma once
 
 #include "Bron/Core/Core.h"
+#include "Bron/Scene/Scene.h"
 
 #include <filesystem>
 #include <string>
@@ -34,11 +35,21 @@ public:
 	/// Returns null on failure.
 	static Scope<Project> Create(const std::filesystem::path& file, const std::string& name);
 
-	/// Writes the .brn file.
+	/// Writes the project file and the scenes it has open. There is one save action on
+	/// purpose: a .brn naming a scene that was never written is a broken project, so the
+	/// two are never saved apart.
 	bool Save() const;
 
-	/// Points bron::Paths at this project's asset root. Call when it becomes the open one.
+	/// Points bron::paths at this project's roots. Call when it becomes the open one.
 	void MakeActive() const;
+
+	/// Reads the startup scene into memory, creating the file first if it is missing. Call
+	/// after MakeActive(): loading a scene resolves asset paths against this project's root.
+	void OpenStartupScene();
+
+	/// The scene being edited, owned by the project. Null until OpenStartupScene() has run.
+	/// A project holds one scene for now; this is what grows into a list.
+	[[nodiscard]] Scene* ActiveScene() const { return active_scene_.get(); }
 
 	const std::filesystem::path& File() const { return file_; }
 
@@ -47,16 +58,16 @@ public:
 
 	std::filesystem::path AssetRoot() const;
 
-	/// Absolute location of a path stored relative to the asset root.
-	std::filesystem::path Resolve(const std::filesystem::path& relative) const;
+	/// Absolute location of a path stored relative to this project's asset root. Unlike
+	/// paths::ResolveAsset this works on any project, not only the open one.
+	std::filesystem::path ResolveAsset(const std::filesystem::path& relative) const;
+
+	/// Absolute location of a path stored relative to this project's directory.
+	std::filesystem::path ResolveProject(const std::filesystem::path& relative) const;
 
 	/// The scene to open with, absolute. Never empty, and Load() and Create() have both
 	/// guaranteed the file is there.
 	std::filesystem::path StartupScenePath() const;
-
-	/// Writes the startup scene if it is not on disk. This is what makes "a project
-	/// always has at least one scene" true of the files, not just of the settings.
-	void EnsureStartupScene() const;
 
 	ProjectSettings& Settings() { return settings_; }
 	const ProjectSettings& Settings() const { return settings_; }
@@ -64,6 +75,12 @@ public:
 private:
 	// Only the factories above make a Project, so an instance always has a valid root.
 	Project() = default;
+
+	/// Writes the startup scene if it is not on disk. This is what makes "a project always
+	/// has at least one scene" true of the files, not just of the settings.
+	void EnsureStartupScene() const;
+
+	Scope<Scene> active_scene_;
 
 	std::filesystem::path file_; // The .brn.
 	std::filesystem::path directory_; // The directory holding the .brn.

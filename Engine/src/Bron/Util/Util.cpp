@@ -5,6 +5,8 @@
 #include "Bron/Core/Core.h"
 #include "glm/ext/scalar_constants.hpp"
 
+#include <algorithm>
+
 namespace bron {
 bool CompareFloat(float x, float y, float epsilon) {
 	if (fabs(x - y) < epsilon)
@@ -96,4 +98,10 @@ std::tuple<glm::vec3*, glm::vec3*, uint32_t*, u32, u32> GenSphereSmoothVertices(
 
 	return std::make_tuple(vertices, normals, indices, num_vertices, num_indices);
 }
+std::string ToLowerCase(const std::string& str) {
+	std::string result(str);
+	std::ranges::transform(result, result.begin(), tolower);
+	return result;
+}
+
 } // namespace bron

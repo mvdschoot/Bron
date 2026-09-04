@@ -17,6 +17,8 @@ add_executable(BronEditor
 	src/Panels/StatisticsPanel.cpp
 	src/Panels/PreferencesPanel.cpp
 	src/Panels/ComponentRegistry.cpp
+        src/Panels/FileExplorerPanel.cpp
+        src/Panels/FileExplorerPanel.h
 )
 
 target_include_directories(BronEditor PUBLIC src)

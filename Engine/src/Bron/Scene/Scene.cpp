@@ -88,9 +88,9 @@ entt::entity Scene::CreatePhongModel(const char* name, const char* location) {
 	reg.get<TagComponent>(model).name = name;
 
 	// Recorded relative to the asset root so a save file survives the project
-	// being moved. paths::Relative keeps a location outside the root as it is;
+	// being moved. paths::RelativeToAsset keeps a location outside the root as it is;
 	// joining an absolute path back onto the root is a no-op, so loading still works.
-	reg.emplace<ModelSourceComponent>(model, paths::Relative(location).generic_string(), MaterialWorkflow::kPhong);
+	reg.emplace<ModelSourceComponent>(model, paths::RelativeToAsset(location).generic_string(), MaterialWorkflow::kPhong);
 
 	AddChild(root, model);
 

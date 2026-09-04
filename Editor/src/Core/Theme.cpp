@@ -93,7 +93,7 @@ void theme::Apply() {
 	}
 
 	if (std::strcmp(palette->name, prefs.theme.c_str()) != 0)
-		BR_CORE_WARN("Unknown theme '{}', using '{}'.", prefs.theme, palette->name);
+		BR_APP_WARN("Unknown theme '{}', using '{}'.", prefs.theme, palette->name);
 
 	palette->apply(style.Colors);
 

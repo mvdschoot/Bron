@@ -23,7 +23,7 @@ void PropertiesPanel::OnImGuiRender() {
 }
 
 void PropertiesPanel::DrawComponents(const entt::entity entity) {
-	Scene& scene = context_.scene;
+	Scene& scene = *context_.active_scene;
 
 	for (const ComponentMeta& component: component_registry::All()) {
 		if (!component.has(scene, entity))
@@ -58,7 +58,7 @@ void PropertiesPanel::DrawAddComponentMenu(const entt::entity entity) {
 	if (!BeginPopup("AddComponent"))
 		return;
 
-	Scene& scene = context_.scene;
+	Scene& scene = *context_.active_scene;
 
 	bool any_offered = false;
 	for (const ComponentMeta& component: component_registry::All()) {

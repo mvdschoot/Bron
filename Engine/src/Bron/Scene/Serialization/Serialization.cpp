@@ -156,7 +156,7 @@ void Serialization::DeserializeScene(Scene& scene, const std::filesystem::path& 
 		}
 
 		const ModelSourceComponent& source = scene.reg.get<ModelSourceComponent>(created[i]);
-		const std::filesystem::path path = paths::Resolve(source.path);
+		const std::filesystem::path path = paths::ResolveAsset(source.path);
 
 		const entt::entity imported = ModelLoader::LoadModel(scene, source.workflow, path.string().c_str());
 

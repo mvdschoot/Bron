@@ -37,7 +37,7 @@ std::filesystem::path ConfigDirectory() {
 
 	// No home directory to speak of - keep the editor working out of the working
 	// directory rather than failing to start.
-	BR_CORE_WARN("No user config directory found; preferences will be kept next to the executable.");
+	BR_APP_WARN("No user config directory found; preferences will be kept next to the executable.");
 	return std::filesystem::current_path();
 }
 
@@ -52,7 +52,7 @@ void ReadInto(const json& object, const char* key, T& out) {
 	try {
 		out = it->get<T>();
 	} catch (const json::exception& e) {
-		BR_CORE_WARN("Preference '{}' has the wrong type, keeping the default: {}", key, e.what());
+		BR_APP_WARN("Preference '{}' has the wrong type, keeping the default: {}", key, e.what());
 	}
 }
 } // namespace
@@ -73,7 +73,7 @@ void Preferences::Load() {
 	std::ifstream stream(File());
 	if (!stream) {
 		// First run: keep the defaults and write them out, so the file is there to be edited.
-		BR_CORE_INFO("No preferences at {}, writing the defaults.", File().string());
+		BR_APP_INFO("No preferences at {}, writing the defaults.", File().string());
 		Save();
 		return;
 	}
@@ -83,7 +83,7 @@ void Preferences::Load() {
 		stream >> root;
 	} catch (const json::exception& e) {
 		// A corrupt file must not stop the editor from starting; the defaults are always usable.
-		BR_CORE_ERROR("Could not parse {}, falling back to the default preferences: {}", File().string(), e.what());
+		BR_APP_ERROR("Could not parse {}, falling back to the default preferences: {}", File().string(), e.what());
 		return;
 	}
 
@@ -127,13 +127,13 @@ void Preferences::Save() {
 	std::error_code error;
 	std::filesystem::create_directories(File().parent_path(), error);
 	if (error) {
-		BR_CORE_ERROR("Could not create {}: {}", File().parent_path().string(), error.message());
+		BR_APP_ERROR("Could not create {}: {}", File().parent_path().string(), error.message());
 		return;
 	}
 
 	std::ofstream stream(File());
 	if (!stream) {
-		BR_CORE_ERROR("Could not write {}", File().string());
+		BR_APP_ERROR("Could not write {}", File().string());
 		return;
 	}
 

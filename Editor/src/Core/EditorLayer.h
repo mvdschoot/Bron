@@ -34,6 +34,9 @@ private:
 	/// recent list and loads its startup scene. Null (a failed load) is ignored.
 	void OpenProject(Scope<Project> project);
 
+	/// Writes the open project and its scenes. Nothing to do with no project open.
+	void Save();
+
 	/// Ask for a .brn and open it, or create one. No-ops when the dialog is cancelled.
 	void OpenProjectDialog();
 	void NewProjectDialog();

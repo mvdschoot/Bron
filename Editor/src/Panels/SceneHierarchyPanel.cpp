@@ -8,14 +8,20 @@ using namespace ImGui;
 void SceneHierarchyPanel::OnImGuiRender() {
 	Begin("Scene Hierarchy");
 
-	DrawNode(context_.scene.root);
+	if (!context_.HasScene()) {
+		TextDisabled("No scene open.");
+		End();
+		return;
+	}
+
+	DrawNode(context_.active_scene->root);
 	DrawRenamePopup();
 
 	End();
 }
 
 void SceneHierarchyPanel::DrawNode(const entt::entity entity) {
-	entt::registry& reg = context_.scene.reg;
+	entt::registry& reg = context_.active_scene->reg;
 
 	ImGuiTreeNodeFlags flags = ImGuiTreeNodeFlags_OpenOnDoubleClick;
 	if (context_.selection == entity)
@@ -44,7 +50,7 @@ void SceneHierarchyPanel::DrawRenamePopup() {
 	if (!context_.HasSelection())
 		return;
 
-	TagComponent& tag = context_.scene.reg.get<TagComponent>(context_.selection);
+	TagComponent& tag = context_.active_scene->reg.get<TagComponent>(context_.selection);
 
 	const std::string title = "Rename '" + tag.name + "'";
 	if (IsKeyPressed(ImGuiKey_F2, false))

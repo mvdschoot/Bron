@@ -18,4 +18,6 @@ std::string PrintMatrix(glm::mat4& matrix);
 
 std::tuple<glm::vec3*, glm::vec3*, uint32_t*, u32, u32> GenSphereSmoothVertices(glm::vec3 position, float radius,
 																				u32 accuracy);
+
+std::string ToLowerCase(const std::string& str);
 } // namespace bron

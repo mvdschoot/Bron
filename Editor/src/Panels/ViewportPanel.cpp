@@ -26,7 +26,8 @@ void ViewportPanel::OnUpdate(const Timestep ts) {
 	GridRenderer::Draw();
 
 	Command::EnableDepth();
-	SceneRenderer::Draw(context_.scene);
+	if (context_.HasScene())
+		SceneRenderer::Draw(*context_.active_scene);
 
 	framebuffer_->Unbind();
 }
@@ -71,7 +72,7 @@ void ViewportPanel::DrawGizmo() {
 	if (!context_.HasSelection())
 		return;
 
-	Scene& scene = context_.scene;
+	Scene& scene = *context_.active_scene;
 	const entt::entity selected = context_.selection;
 
 	ImGuizmo::SetOrthographic(false);

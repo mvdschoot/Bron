@@ -2,8 +2,6 @@
 
 #include <cstdio>
 
-#include "Bron/Core/Logger.h"
-#include "Bron/Scene/Serialization/Serialization.h"
 
 namespace bron::editor {
 using namespace ImGui;
@@ -30,12 +28,8 @@ void ProjectPanel::OnImGuiRender() {
 
 	Separator();
 
-	if (Button("Save scene"))
-		SaveScene();
-
-	SameLine();
-	if (Button("Load scene"))
-		LoadScene();
+	if (Button("Save"))
+		context_.project->Save();
 
 	End();
 }
@@ -66,22 +60,7 @@ void ProjectPanel::DrawSettings() {
 	InputText("Asset directory", assets, sizeof(assets));
 	EndDisabled();
 
-	if (Button("Save project"))
-		context_.project->Save();
-
 	Unindent();
 }
 
-void ProjectPanel::SaveScene() { Serialization::SerializeScene(context_.scene, context_.project->StartupScenePath()); }
-
-void ProjectPanel::LoadScene() {
-	// A project always has its startup scene on disk - Project::Load and Project::Create
-	// both write one when it is missing - so there is no "nothing to open" case here.
-	const std::filesystem::path file = context_.project->StartupScenePath();
-
-	// The load replaces every entity, so nothing may still be holding a handle into the old scene.
-	context_.ClearSelection();
-
-	Serialization::DeserializeScene(context_.scene, file);
-}
 } // namespace bron::editor

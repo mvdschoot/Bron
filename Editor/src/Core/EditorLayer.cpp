@@ -12,6 +12,7 @@
 
 #include "Bron/Util/Paths.h"
 #include "nfd.hpp"
+#include "Panels/FileExplorerPanel.h"
 
 namespace bron::editor {
 namespace {
@@ -25,7 +26,7 @@ Scope<Project> MostRecentProject() {
 
 		// Load has already logged why; a project that has been moved or deleted
 		// should not stop the editor from starting.
-		BR_CORE_WARN("Skipping {} from the recent projects.", path.string());
+		BR_APP_WARN("Skipping {} from the recent projects.", path.string());
 	}
 
 	return nullptr;
@@ -48,6 +49,7 @@ EditorLayer::EditorLayer() {
 	project_panel_ = AddPanel<ProjectPanel>();
 	AddPanel<StatisticsPanel>();
 	preferences_panel_ = AddPanel<PreferencesPanel>();
+	AddPanel<FileExplorerPanel>();
 }
 
 void EditorLayer::OnAttach() {
@@ -102,7 +104,7 @@ void EditorLayer::PollShortcuts() {
 
 	// Frame the selection.
 	if (Input::IsKeyPressed(key::F) && context_.HasSelection())
-		context_.camera.Focus(context_.scene.reg.get<TransformComponent>(context_.selection).Position);
+		context_.camera.Focus(context_.active_scene->reg.get<TransformComponent>(context_.selection).Position);
 }
 
 void EditorLayer::OpenProject(Scope<Project> project) {
@@ -118,7 +120,13 @@ void EditorLayer::OpenProject(Scope<Project> project) {
 	Preferences::Save();
 
 	// Always succeeds: a project is guaranteed to have its startup scene on disk.
-	project_panel_->LoadScene();
+	context_.project->OpenStartupScene();
+	context_.SetActiveScene(context_.project->ActiveScene());
+}
+
+void EditorLayer::Save() {
+	if (context_.HasProject())
+		context_.project->Save();
 }
 
 void EditorLayer::OpenProjectDialog() {
@@ -148,6 +156,10 @@ void EditorLayer::NewProjectDialog() {
 }
 
 void EditorLayer::OnImGuiRender() {
+	// Edge triggered, unlike the polled shortcuts: a held Ctrl+S must not save every frame.
+	if (ImGui::IsKeyChordPressed(ImGuiMod_Ctrl | ImGuiKey_S))
+		Save();
+
 	BeginDockspace();
 	DrawMenuBar();
 
@@ -215,15 +227,9 @@ void EditorLayer::DrawMenuBar() {
 		// Everything below needs somewhere to read and write, so it waits for a project.
 		ImGui::BeginDisabled(!context_.HasProject());
 
-		if (ImGui::MenuItem("Save project"))
-			context_.project->Save();
-
-		ImGui::Separator();
-
-		if (ImGui::MenuItem("Save scene"))
-			project_panel_->SaveScene();
-		if (ImGui::MenuItem("Load scene"))
-			project_panel_->LoadScene();
+		// One save for the project and its scenes; they are only ever meaningful together.
+		if (ImGui::MenuItem("Save", "Ctrl+S"))
+			Save();
 
 		ImGui::EndDisabled();
 

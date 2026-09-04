@@ -11,13 +11,6 @@ public:
 
 	void OnImGuiRender() override;
 
-	/// Writes the scene to the project's startup scene.
-	void SaveScene();
-
-	/// Replaces the scene with the project's startup scene. The project guarantees the
-	/// file is there, so this has no "nothing to open" case.
-	void LoadScene();
-
 private:
 	void DrawSettings();
 };
