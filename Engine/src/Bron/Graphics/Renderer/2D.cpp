@@ -276,8 +276,8 @@ void R2D::AddVAO(Ref<Shader> shader, BufferLayout buffer_layout) {
 		quad_index_buffer[x - 1] = offset + 0;
 		offset += 4;
 	}
-	const Ref<IndexBuffer> IBuffer = IndexBuffer::Create(quad_index_buffer, Renderer2DData::kMaxIndices);
-	vao.quad_vertex_array->SetIndexBuffer(IBuffer);
+	const Ref<IndexBuffer> index_buffer = IndexBuffer::Create(quad_index_buffer, Renderer2DData::kMaxIndices);
+	vao.quad_vertex_array->SetIndexBuffer(index_buffer);
 	delete[] quad_index_buffer;
 
 	vao.shader = shader;

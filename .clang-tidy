@@ -9,7 +9,7 @@ Checks: >
   -*,
   readability-identifier-naming
 
-HeaderFilterRegex: '.*[/\](Engine|Editor)[/\]src[/\](?!.*vendor).*'
+HeaderFilterRegex: '(Engine|Editor)[/\\]src[/\\]'
 
 CheckOptions:
   # --- namespaces ------------------------------------------------------------

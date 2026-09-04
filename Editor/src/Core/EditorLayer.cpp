@@ -176,8 +176,8 @@ void EditorLayer::BeginDockspace() {
 
 	// Proceed even if Begin() returns false (the window is collapsed): the DockSpace() call
 	// has to keep happening, or every window docked into it loses its parent.
-	static bool dockspaceOpen = true;
-	ImGui::Begin("Dockspace", &dockspaceOpen, window_flags);
+	static bool dockspace_open = true;
+	ImGui::Begin("Dockspace", &dockspace_open, window_flags);
 
 	ImGui::PopStyleVar(3);
 
