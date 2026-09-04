@@ -165,6 +165,15 @@ FetchContent_Declare(
 )
 FetchContent_MakeAvailable(nlohmann_json)
 
+# --------------------
+# File picker
+# --------------------
+FetchContent_Declare(
+        nfd
+        GIT_REPOSITORY https://github.com/btzy/nativefiledialog-extended.git
+        GIT_TAG v1.3.0
+)
+FetchContent_MakeAvailable(nfd)
 
 # --------------------
 # Vendor library
@@ -182,4 +191,5 @@ target_link_libraries(VendorLibrary INTERFACE
         magic_enum
         EnTT::EnTT
         nlohmann_json
+        nfd
 )

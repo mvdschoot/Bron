@@ -1,0 +1,116 @@
+{
+	"entities": [
+		{
+			"id": "0t83klcbhl225benxfptevhv4t37",
+			"name": "Root node",
+			"parent": null,
+			"transform": {
+				"Position": [
+					0.0,
+					0.0,
+					0.0
+				],
+				"RotationQuat": [
+					1.0,
+					0.0,
+					0.0,
+					0.0
+				],
+				"Scaling": [
+					1.0,
+					1.0,
+					1.0
+				]
+			}
+		},
+		{
+			"id": "u0npxpqqs0n3q1htesrnuy7hkg2k",
+			"model": {
+				"path": "mymodel/untitled.glb",
+				"workflow": "phong"
+			},
+			"name": "The model",
+			"parent": "0t83klcbhl225benxfptevhv4t37",
+			"transform": {
+				"Position": [
+					0.6548705101013184,
+					1.7934848070144653,
+					0.181819885969162
+				],
+				"RotationQuat": [
+					1.0,
+					0.0,
+					0.0,
+					0.0
+				],
+				"Scaling": [
+					1.0,
+					1.0,
+					1.0
+				]
+			}
+		},
+		{
+			"id": "hw68ub5ivl0o3s4yfolx37euxu57",
+			"name": "Point light 8266",
+			"parent": "0t83klcbhl225benxfptevhv4t37",
+			"pointLight": {
+				"color": [
+					1.0,
+					1.0,
+					1.0
+				]
+			},
+			"transform": {
+				"Position": [
+					4.0,
+					2.0,
+					4.0
+				],
+				"RotationQuat": [
+					1.0,
+					0.0,
+					0.0,
+					0.0
+				],
+				"Scaling": [
+					1.0,
+					1.0,
+					1.0
+				]
+			}
+		},
+		{
+			"id": "kihlsljbqfyyc5m18hiychkoydb2",
+			"name": "Point light 16729",
+			"parent": "0t83klcbhl225benxfptevhv4t37",
+			"pointLight": {
+				"color": [
+					1.0,
+					1.0,
+					1.0
+				]
+			},
+			"transform": {
+				"Position": [
+					-2.0,
+					2.0,
+					-2.0
+				],
+				"RotationQuat": [
+					1.0,
+					0.0,
+					0.0,
+					0.0
+				],
+				"Scaling": [
+					1.0,
+					1.0,
+					1.0
+				]
+			}
+		}
+	],
+	"root": "0t83klcbhl225benxfptevhv4t37",
+	"version": 1
+}

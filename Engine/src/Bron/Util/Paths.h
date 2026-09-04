@@ -25,5 +25,7 @@ namespace Bron
 
 		// Convenience wrapper for the many APIs that still take a std::string.
 		std::string ProjectAssetString(const std::filesystem::path& relative);
+
+
 	}
 }

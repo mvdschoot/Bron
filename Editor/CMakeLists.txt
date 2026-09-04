@@ -2,13 +2,19 @@ cmake_minimum_required(VERSION 3.21)
 
 # Bron Editor - the application built on top of the engine.
 add_executable(BronEditor
-	src/Core/App.cpp
-	src/Core/AppLayer.cpp
-	src/Core/EditorLayer.cpp
-	src/Core/IconManagement.cpp
+	src/App.cpp
 
-	src/Core/Panels/SceneHierarchy.cpp
-	src/Core/Panels/ComponentRegistry.cpp
+	src/Core/EditorLayer.cpp
+	src/Core/EditorCamera.cpp
+	src/Core/Theme.cpp
+	src/Core/Project.cpp
+
+	src/Panels/ViewportPanel.cpp
+	src/Panels/SceneHierarchyPanel.cpp
+	src/Panels/PropertiesPanel.cpp
+	src/Panels/ProjectPanel.cpp
+	src/Panels/StatisticsPanel.cpp
+	src/Panels/ComponentRegistry.cpp
 )
 
 target_include_directories(BronEditor PUBLIC src)

@@ -1,36 +1,46 @@
 #pragma once
 
+#include <memory>
+#include <vector>
+
 #include "Bron.h"
 
-#include "AppLayer.h"
-
-#include "Panels/SceneHierarchy.h"
-
-#include <imgui_spectrum.h>
+#include "Core/EditorContext.h"
+#include "Panels/Panel.h"
+#include "Panels/ProjectPanel.h"
 
 namespace Bron::Editor
 {
+	/// The editor's only layer. It owns the shared state, drives the panels, and provides the
+	/// frame they dock into (the dockspace and the main menu bar). Everything specific to one
+	/// window lives in a Panel instead.
 	class EditorLayer final : public Layer
 	{
 	public:
-		EditorLayer(AppLayer* app) : App(app) {}
+		EditorLayer();
 
 		void OnAttach() override;
 		void OnDetach() override;
 		void OnEvent(Event& event) override;
 		void OnUpdate(Timestep ts) override;
-		void ShowDebug();
-		
 		void OnImGuiRender() override;
 
-		void SetStyle();
-
 	private:
-		AppLayer* App;
-		ImGuiStyle* Style;
+		/// Adds a panel and returns it, so the layer can keep a handle on the ones it drives
+		/// directly (the menu bar calls into the project panel).
+		template<typename T>
+		T* AddPanel();
 
-		ImVec2 DebugWindowSize = { 100, 500 };
-		ImVec2 ViewportWindowSize = { 500, 500 };
-		ImVec2 SceneWindowSize = { 1000, 500 };
+		bool OnMouseScrolled(MouseScrolledEvent& e);
+		void PollShortcuts();
+
+		void BeginDockspace();
+		void EndDockspace();
+		void DrawMenuBar();
+
+		EditorContext mContext;
+		std::vector<std::unique_ptr<Panel>> mPanels;
+
+		ProjectPanel* mProjectPanel = nullptr;
 	};
 }
