@@ -1,6 +1,6 @@
 #include "Layer.h"
 
 
-namespace Bron
+namespace bron
 {
 }

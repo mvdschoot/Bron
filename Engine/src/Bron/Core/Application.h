@@ -20,9 +20,9 @@
 #include <memory>
 #include <random>
 
-namespace Bron
+namespace bron
 {
-#define BIND_EVENT_FN(fn) [this](auto&&... args) -> decltype(auto) { return this->fn(std::forward<decltype(args)>(args)...); }
+#define BR_BIND_EVENT_FN(fn) [this](auto&&... args) -> decltype(auto) { return this->fn(std::forward<decltype(args)>(args)...); }
 
 #define PROFILING_FRAME_COUNT 60
 #define PROFILING_START_FRAME (60*5)
@@ -30,7 +30,7 @@ namespace Bron
 	class BR_API Application
 	{
 	public:
-		Application() : _running(true), _minimized(false), _frame_count(0), _profiling(false) { Init(); }
+		Application() : running_(true), minimized_(false), frame_count_(0), profiling_(false) { Init(); }
 
 		// Virtual because main() owns the application through an Application* and deletes it
 		// there; without this the derived destructor never runs.
@@ -38,33 +38,33 @@ namespace Bron
 		{
 		};
 		void Run();
-		void setWindowProps(const WindowProps& props);
+		void SetWindowProps(const WindowProps& props);
 
-		static Ref<Window> getWindow() { return _window; }
+		static Ref<Window> GetWindow() { return window_; }
 
 	protected:
-		void addOverlay(Overlay* overlay);
+		void AddOverlay(Overlay* overlay);
 
 	private:
-		static Ref<Window> _window;
-		GraphicsContext* _graphics_context;
+		static Ref<Window> window_;
+		GraphicsContext* graphics_context_;
 
-		OverlayStack _overlay_stack;
-		ImGuiLayer* _imgui_layer;
+		OverlayStack overlay_stack_;
+		ImGuiLayer* imgui_layer_;
 
-		bool _running, _minimized;
-		float _last_frame_time;
-		uint64_t _frame_count;
-		bool _profiling;
+		bool running_, minimized_;
+		float last_frame_time_;
+		uint64_t frame_count_;
+		bool profiling_;
 
 		void Init();
 		void OnEvent(Event& event);
 
-		bool onWindowClose(WindowCloseEvent& event);
-		bool onWindowResize(WindowResizeEvent& event);
+		bool OnWindowClose(WindowCloseEvent& event);
+		bool OnWindowResize(WindowResizeEvent& event);
 	};
 
 
 	// To be defined in client app
-	Application* createApplication();
+	Application* CreateApplication();
 }

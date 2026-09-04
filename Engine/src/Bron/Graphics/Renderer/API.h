@@ -11,7 +11,7 @@
 
 #include <memory>
 
-namespace Bron
+namespace bron
 {
 	class API
 	{
@@ -23,16 +23,16 @@ namespace Bron
 		};
 
 		virtual void Init() = 0;
-		virtual void setClearColor(const glm::vec4& color) = 0;
-		virtual void clear() = 0;
-		virtual void onResize(float x, float y, float width, float height) = 0;
+		virtual void SetClearColor(const glm::vec4& color) = 0;
+		virtual void Clear() = 0;
+		virtual void OnResize(float x, float y, float width, float height) = 0;
 
 		virtual void EnableBlend() = 0;
 		virtual void EnableDepth() = 0;
 
-		virtual void drawIndexed(const Ref<VertexArray>& v_array, u32 count) = 0;
-		virtual void drawIndexedLines(const Ref<VertexArray>& v_array, u32 count) = 0;
-		virtual void drawIndexedStripLines(const Ref<VertexArray>& v_array, u32 count) = 0;
+		virtual void DrawIndexed(const Ref<VertexArray>& v_array, u32 count) = 0;
+		virtual void DrawIndexedLines(const Ref<VertexArray>& v_array, u32 count) = 0;
+		virtual void DrawIndexedStripLines(const Ref<VertexArray>& v_array, u32 count) = 0;
 
 	private:
 	};

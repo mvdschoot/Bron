@@ -9,7 +9,7 @@
 #include "Bron/Scene/Serialization/Serialization.h"
 #include "Bron/Util/Paths.h"
 
-namespace Bron::Editor
+namespace bron::editor
 {
 	namespace
 	{
@@ -27,7 +27,7 @@ namespace Bron::Editor
 		std::ifstream stream(file);
 		if (!stream)
 		{
-			CORE_ERROR("Could not open project {}", file.string());
+			BR_CORE_ERROR("Could not open project {}", file.string());
 			return nullptr;
 		}
 
@@ -38,33 +38,33 @@ namespace Bron::Editor
 		}
 		catch (const json::exception& e)
 		{
-			CORE_ERROR("{} is not a valid project file: {}", file.string(), e.what());
+			BR_CORE_ERROR("{} is not a valid project file: {}", file.string(), e.what());
 			return nullptr;
 		}
 
 		const int version = document.value("version", 0);
 		if (version != kProjectVersion)
 		{
-			CORE_ERROR("{} is a version {} project, this build reads version {}",
+			BR_CORE_ERROR("{} is a version {} project, this build reads version {}",
 					   file.string(), version, kProjectVersion);
 			return nullptr;
 		}
 
 		auto project = std::unique_ptr<Project>(new Project());
-		project->mFile = file;
-		project->mDirectory = file.parent_path();
+		project->file_ = file;
+		project->directory_ = file.parent_path();
 
 		const json& settings = document.value("project", json::object());
-		project->mSettings.name = settings.value("name", file.stem().string());
-		project->mSettings.assetDirectory = settings.value("assetDirectory", std::string("Assets"));
-		project->mSettings.startupScene = settings.value("startupScene", std::string(kDefaultScene));
+		project->settings_.name = settings.value("name", file.stem().string());
+		project->settings_.assetDirectory = settings.value("assetDirectory", std::string("Assets"));
+		project->settings_.startupScene = settings.value("startupScene", std::string(kDefaultScene));
 
-		if (project->mSettings.startupScene.empty())
+		if (project->settings_.startupScene.empty())
 		{
 			// Older or hand-edited files can name no scene. The invariant is worth more than
 			// the file's word, so one is put back and written out.
-			CORE_WARN("{} names no scene; adding {}.", file.string(), kDefaultScene);
-			project->mSettings.startupScene = kDefaultScene;
+			BR_CORE_WARN("{} names no scene; adding {}.", file.string(), kDefaultScene);
+			project->settings_.startupScene = kDefaultScene;
 			project->Save();
 		}
 
@@ -76,15 +76,15 @@ namespace Bron::Editor
 	std::unique_ptr<Project> Project::Create(const std::filesystem::path& file, const std::string& name)
 	{
 		auto project = std::unique_ptr<Project>(new Project());
-		project->mFile = file;
-		project->mDirectory = file.parent_path();
-		project->mSettings.name = name;
+		project->file_ = file;
+		project->directory_ = file.parent_path();
+		project->settings_.name = name;
 
 		std::error_code error;
 		std::filesystem::create_directories(project->AssetRoot(), error);
 		if (error)
 		{
-			CORE_ERROR("Could not create {}: {}", project->AssetRoot().string(), error.message());
+			BR_CORE_ERROR("Could not create {}: {}", project->AssetRoot().string(), error.message());
 			return nullptr;
 		}
 
@@ -101,16 +101,16 @@ namespace Bron::Editor
 	{
 		json document;
 		document["version"] = kProjectVersion;
-		document["project"]["name"] = mSettings.name;
+		document["project"]["name"] = settings_.name;
 
 		// generic_string keeps the file readable and portable across platforms.
-		document["project"]["assetDirectory"] = mSettings.assetDirectory.generic_string();
-		document["project"]["startupScene"] = mSettings.startupScene.generic_string();
+		document["project"]["assetDirectory"] = settings_.assetDirectory.generic_string();
+		document["project"]["startupScene"] = settings_.startupScene.generic_string();
 
-		std::ofstream stream(mFile);
+		std::ofstream stream(file_);
 		if (!stream)
 		{
-			CORE_ERROR("Could not write {}", mFile.string());
+			BR_CORE_ERROR("Could not write {}", file_.string());
 			return false;
 		}
 
@@ -120,12 +120,12 @@ namespace Bron::Editor
 
 	void Project::MakeActive() const
 	{
-		Paths::SetAssetRoot(AssetRoot());
+		paths::SetAssetRoot(AssetRoot());
 	}
 
 	std::filesystem::path Project::AssetRoot() const
 	{
-		return (mDirectory / mSettings.assetDirectory).lexically_normal();
+		return (directory_ / settings_.assetDirectory).lexically_normal();
 	}
 
 	std::filesystem::path Project::Resolve(const std::filesystem::path& relative) const
@@ -135,7 +135,7 @@ namespace Bron::Editor
 
 	std::filesystem::path Project::StartupScenePath() const
 	{
-		return Resolve(mSettings.startupScene);
+		return Resolve(settings_.startupScene);
 	}
 
 	void Project::EnsureStartupScene() const
@@ -148,7 +148,7 @@ namespace Bron::Editor
 		std::filesystem::create_directories(file.parent_path(), error);
 		if (error)
 		{
-			CORE_ERROR("Could not create {}: {}", file.parent_path().string(), error.message());
+			BR_CORE_ERROR("Could not create {}: {}", file.parent_path().string(), error.message());
 			return;
 		}
 
@@ -156,6 +156,6 @@ namespace Bron::Editor
 		const Scene initial;
 
 		Serialization::SerializeScene(initial, file);
-		CORE_INFO("Created the initial scene {}", file.string());
+		BR_CORE_INFO("Created the initial scene {}", file.string());
 	}
 }

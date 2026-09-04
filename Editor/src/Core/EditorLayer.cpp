@@ -13,7 +13,7 @@
 #include "Bron/Util/Paths.h"
 #include "nfd.hpp"
 
-namespace Bron::Editor
+namespace bron::editor
 {
 	namespace
 	{
@@ -29,7 +29,7 @@ namespace Bron::Editor
 
 				// Load has already logged why; a project that has been moved or deleted
 				// should not stop the editor from starting.
-				CORE_WARN("Skipping {} from the recent projects.", path.string());
+				BR_CORE_WARN("Skipping {} from the recent projects.", path.string());
 			}
 
 			return nullptr;
@@ -39,9 +39,9 @@ namespace Bron::Editor
 	template<typename T>
 	T* EditorLayer::AddPanel()
 	{
-		auto panel = createScope<T>(mContext);
+		auto panel = CreateScope<T>(context_);
 		T* raw = panel.get();
-		mPanels.push_back(std::move(panel));
+		panels_.push_back(std::move(panel));
 		return raw;
 	}
 
@@ -51,9 +51,9 @@ namespace Bron::Editor
 		AddPanel<ViewportPanel>();
 		AddPanel<SceneHierarchyPanel>();
 		AddPanel<PropertiesPanel>();
-		mProjectPanel = AddPanel<ProjectPanel>();
+		project_panel_ = AddPanel<ProjectPanel>();
 		AddPanel<StatisticsPanel>();
-		mPreferencesPanel = AddPanel<PreferencesPanel>();
+		preferences_panel_ = AddPanel<PreferencesPanel>();
 	}
 
 	void EditorLayer::OnAttach()
@@ -61,62 +61,62 @@ namespace Bron::Editor
 		Command::Init();
 		SceneRenderer::Init();
 		Command::ClearColor({0.0, 0.0, 0.0, 0.5});
-		GridRenderer::Init(&mContext.camera);
+		GridRenderer::Init(&context_.camera);
 
 		// Reopen where the last session left off. Nothing to reopen is fine: the editor
 		// starts with no project, and no asset root, until one is created or opened.
 		OpenProject(MostRecentProject());
 
-		// Preferences were read in createApplication(); this is the first point at which
+		// Preferences were read in CreateApplication(); this is the first point at which
 		// there is an ImGui context to apply them to.
-		Theme::Apply();
+		theme::Apply();
 
-		for (const auto& panel : mPanels)
+		for (const auto& panel : panels_)
 			panel->OnAttach();
 	}
 
 	void EditorLayer::OnDetach()
 	{
-		for (const auto& panel : mPanels)
+		for (const auto& panel : panels_)
 			panel->OnDetach();
 	}
 
 	void EditorLayer::OnEvent(Event& event)
 	{
 		EventDispatcher dispatcher(event);
-		dispatcher.Dispatch<MouseScrolledEvent>(BIND_EVENT_FN(EditorLayer::OnMouseScrolled));
+		dispatcher.Dispatch<MouseScrolledEvent>(BR_BIND_EVENT_FN(EditorLayer::OnMouseScrolled));
 
-		for (const auto& panel : mPanels)
+		for (const auto& panel : panels_)
 			panel->OnEvent(event);
 	}
 
 	bool EditorLayer::OnMouseScrolled(MouseScrolledEvent& e)
 	{
-		return mContext.camera.OnMouseScrolled(e);
+		return context_.camera.OnMouseScrolled(e);
 	}
 
 	void EditorLayer::OnUpdate(const Timestep ts)
 	{
-		mContext.frameTime = ts;
+		context_.frameTime = ts;
 
 		PollShortcuts();
 
-		for (const auto& panel : mPanels)
+		for (const auto& panel : panels_)
 			panel->OnUpdate(ts);
 	}
 
 	void EditorLayer::PollShortcuts()
 	{
-		if (Input::isKeyPressed(Key::T))
-			mContext.gizmoOperation = ImGuizmo::OPERATION::TRANSLATE;
-		if (Input::isKeyPressed(Key::R))
-			mContext.gizmoOperation = ImGuizmo::OPERATION::ROTATE;
-		if (Input::isKeyPressed(Key::H))
-			mContext.gizmoOperation = ImGuizmo::OPERATION::SCALE;
+		if (Input::IsKeyPressed(key::T))
+			context_.gizmoOperation = ImGuizmo::OPERATION::TRANSLATE;
+		if (Input::IsKeyPressed(key::R))
+			context_.gizmoOperation = ImGuizmo::OPERATION::ROTATE;
+		if (Input::IsKeyPressed(key::H))
+			context_.gizmoOperation = ImGuizmo::OPERATION::SCALE;
 
 		// Frame the selection.
-		if (Input::isKeyPressed(Key::F) && mContext.HasSelection())
-			mContext.camera.Focus(mContext.scene.reg.get<TransformComponent>(mContext.selection).Position);
+		if (Input::IsKeyPressed(key::F) && context_.HasSelection())
+			context_.camera.Focus(context_.scene.reg.get<TransformComponent>(context_.selection).Position);
 	}
 
 	void EditorLayer::OpenProject(std::unique_ptr<Project> project)
@@ -126,14 +126,14 @@ namespace Bron::Editor
 		if (!project)
 			return;
 
-		mContext.project = std::move(project);
-		mContext.project->MakeActive();
+		context_.project = std::move(project);
+		context_.project->MakeActive();
 
-		Preferences::AddRecentProject(mContext.project->File());
+		Preferences::AddRecentProject(context_.project->File());
 		Preferences::Save();
 
 		// Always succeeds: a project is guaranteed to have its startup scene on disk.
-		mProjectPanel->LoadScene();
+		project_panel_->LoadScene();
 	}
 
 	void EditorLayer::OpenProjectDialog()
@@ -170,7 +170,7 @@ namespace Bron::Editor
 		BeginDockspace();
 		DrawMenuBar();
 
-		for (const auto& panel : mPanels)
+		for (const auto& panel : panels_)
 			panel->OnImGuiRender();
 
 		EndDockspace();
@@ -239,17 +239,17 @@ namespace Bron::Editor
 			ImGui::Separator();
 
 			// Everything below needs somewhere to read and write, so it waits for a project.
-			ImGui::BeginDisabled(!mContext.HasProject());
+			ImGui::BeginDisabled(!context_.HasProject());
 
 			if (ImGui::MenuItem("Save project"))
-				mContext.project->Save();
+				context_.project->Save();
 
 			ImGui::Separator();
 
 			if (ImGui::MenuItem("Save scene"))
-				mProjectPanel->SaveScene();
+				project_panel_->SaveScene();
 			if (ImGui::MenuItem("Load scene"))
-				mProjectPanel->LoadScene();
+				project_panel_->LoadScene();
 
 			ImGui::EndDisabled();
 
@@ -259,7 +259,7 @@ namespace Bron::Editor
 		if (ImGui::BeginMenu("Edit"))
 		{
 			if (ImGui::MenuItem("Preferences..."))
-				mPreferencesPanel->Open();
+				preferences_panel_->Open();
 
 			ImGui::EndMenu();
 		}

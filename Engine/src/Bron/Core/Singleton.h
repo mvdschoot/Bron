@@ -1,11 +1,11 @@
 #pragma once
 
-namespace Bron
+namespace bron
 {
     template<typename T>
     class Singleton {
     public:
-        static T& getInstance() {
+        static T& GetInstance() {
             static T instance;
             return instance;
         }

@@ -1,5 +1,5 @@
 #include "API.h"
 
-namespace Bron
+namespace bron
 {
 }

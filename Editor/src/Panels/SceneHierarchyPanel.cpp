@@ -2,7 +2,7 @@
 
 #include <imgui_internal.h>
 
-namespace Bron::Editor
+namespace bron::editor
 {
 	using namespace ImGui;
 

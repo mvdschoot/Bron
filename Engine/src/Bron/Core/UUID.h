@@ -6,7 +6,7 @@
 #include <cstdlib>
 #include <ostream>
 
-namespace Bron
+namespace bron
 {
 	class UUID
 	{
@@ -18,71 +18,71 @@ namespace Bron
 				{
 					int num = (float)rand() / (float)RAND_MAX * 35.0;
 					if (num <= 9)
-						p_UUID[x] = '0' + num;
+						value[x] = '0' + num;
 					else
-						p_UUID[x] = 'a' + num - 10;
+						value[x] = 'a' + num - 10;
 				}
-				p_UUID[28] = 0;
+				value[28] = 0;
 			} 
 
 			UUID(const UUID* other)
 			{
-				strcpy(p_UUID, other->p_UUID);
+				strcpy(value, other->value);
 			}
 
 			UUID(const UUID& other)
 			{
-				strcpy(p_UUID, other.p_UUID);
+				strcpy(value, other.value);
 			}
 
 			~UUID() = default;
 
 			bool operator==(UUID& o) const
 			{
-				return strcmp(p_UUID, o.p_UUID) == 0;
+				return strcmp(value, o.value) == 0;
 			}
 
 			bool operator==(const UUID& o) const
 			{
-				return strcmp(p_UUID, o.p_UUID) == 0;
+				return strcmp(value, o.value) == 0;
 			}
 
 			bool operator<(const UUID& o) const
 			{
-				return strcmp(p_UUID, o.p_UUID) < 0;
+				return strcmp(value, o.value) < 0;
 			}
 
 			bool operator<(UUID& o) const
 			{
-				return strcmp(p_UUID, o.p_UUID) < 0;
+				return strcmp(value, o.value) < 0;
 			}
 
-			operator const std::string() const { return std::string(p_UUID); }
-			operator const char*() const { return p_UUID; }
+			operator const std::string() const { return std::string(value); }
+			operator const char*() const { return value; }
 
 			friend std::ostream& operator<<(std::ostream & output, const UUID& D) {
-				output << D.p_UUID;
+				output << D.value;
 				return output;
 			}
 			
-			char p_UUID[29];
+			char value[29];
 	};
 }
 
 template<>
-struct std::hash<Bron::UUID>
+struct std::hash<bron::UUID>
 {
-	std::size_t operator()(const Bron::UUID& k) const noexcept
+	std::size_t operator()(const bron::UUID& k) const noexcept
 	{
-		return std::hash<std::string>()(std::string(k.p_UUID));
+		return std::hash<std::string>()(std::string(k.value));
 	}
 };
 
 template<>
-struct std::hash<const Bron::UUID>
+struct std::hash<const bron::UUID>
 {
-	std::size_t operator()(const Bron::UUID& k) const noexcept
+	std::size_t operator()(const bron::UUID& k) const noexcept
 	{
-		return std::hash<std::string>()(std::string(k.p_UUID));
+		return std::hash<std::string>()(std::string(k.value));
 	}
 };

@@ -8,7 +8,7 @@
 
 #include "Bron/Scene/Scene.h"
 
-namespace Bron
+namespace bron
 {
 	struct RenderStatistics
 	{

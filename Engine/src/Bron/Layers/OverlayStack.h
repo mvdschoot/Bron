@@ -7,7 +7,7 @@
 #include <vector>
 #include <memory>
 
-namespace Bron
+namespace bron
 {
 	class BR_API OverlayStack
 	{
@@ -15,14 +15,14 @@ namespace Bron
 		OverlayStack();
 		~OverlayStack();
 
-		void instertOverlay(Overlay* overlay);
-		void instertOverlay(Overlay* overlay, u32 pos);
+		void InsertOverlay(Overlay* overlay);
+		void InsertOverlay(Overlay* overlay, u32 pos);
 
-		std::vector<Overlay*> getOverlays() { return _overlay_stack; };
-		std::vector<Overlay*>::iterator getBegin() { return _overlay_stack.begin(); };
-		std::vector<Overlay*>::iterator getEnd() { return _overlay_stack.end(); };
+		std::vector<Overlay*> GetOverlays() { return overlay_stack_; };
+		std::vector<Overlay*>::iterator GetBegin() { return overlay_stack_.begin(); };
+		std::vector<Overlay*>::iterator GetEnd() { return overlay_stack_.end(); };
 
 	private:
-		std::vector<Overlay*> _overlay_stack;
+		std::vector<Overlay*> overlay_stack_;
 	};
 }

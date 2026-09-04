@@ -7,7 +7,7 @@
 
 #include "glad/glad.h"
 
-namespace Bron
+namespace bron
 {
 	class OpenGLFramebuffer : public Framebuffer
 	{
@@ -15,22 +15,22 @@ namespace Bron
 		OpenGLFramebuffer(FramebufferSpecification& spec);
 		~OpenGLFramebuffer() override;
 
-		void bind() override;
-		void unbind() override;
-		void invalidate() override;
-		u32 getColorAttachID() override;
-		u32 getDepthStencilAttachID() override;
+		void Bind() override;
+		void Unbind() override;
+		void Invalidate() override;
+		u32 GetColorAttachId() override;
+		u32 GetDepthStencilAttachId() override;
 
 	private:
 		// Deletes the framebuffer and its attachments. Safe to call on a half-built or
 		// already-destroyed framebuffer.
-		void destroy();
+		void Destroy();
 
-		// Zero-initialised so the first invalidate() can delete unconditionally - GL
+		// Zero-initialised so the first Invalidate() can delete unconditionally - GL
 		// silently ignores name 0.
-		u32 _renderer_id = 0;
-		u32 _color_attachment = 0;
-		u32 _depth_stencil_attachment = 0;
-		FramebufferSpecification& _spec;
+		u32 renderer_id_ = 0;
+		u32 color_attachment_ = 0;
+		u32 depth_stencil_attachment_ = 0;
+		FramebufferSpecification& spec_;
 	};
 }

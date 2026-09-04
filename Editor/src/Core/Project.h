@@ -4,7 +4,7 @@
 #include <memory>
 #include <string>
 
-namespace Bron::Editor
+namespace bron::editor
 {
 	/// Project scope: the settings everyone working on a project shares, written into the
 	/// .brn file and meant to be version controlled. Anything that describes the person
@@ -23,7 +23,7 @@ namespace Bron::Editor
 		std::filesystem::path startupScene = "Scenes/Main.json";
 	};
 
-	/// An open project. It owns the asset root - Bron::Paths only knows how to resolve a
+	/// An open project. It owns the asset root - bron::Paths only knows how to resolve a
 	/// path against whatever root it was last given, and this is what gives it one. There is
 	/// no default or built-in project: with none open the editor simply has no asset root.
 	class Project
@@ -39,13 +39,13 @@ namespace Bron::Editor
 		/// Writes the .brn file.
 		bool Save() const;
 
-		/// Points Bron::Paths at this project's asset root. Call when it becomes the open one.
+		/// Points bron::Paths at this project's asset root. Call when it becomes the open one.
 		void MakeActive() const;
 
-		const std::filesystem::path& File() const { return mFile; }
+		const std::filesystem::path& File() const { return file_; }
 
 		/// What assetDirectory and the .brn file are relative to.
-		const std::filesystem::path& Directory() const { return mDirectory; }
+		const std::filesystem::path& Directory() const { return directory_; }
 
 		std::filesystem::path AssetRoot() const;
 
@@ -60,16 +60,16 @@ namespace Bron::Editor
 		/// always has at least one scene" true of the files, not just of the settings.
 		void EnsureStartupScene() const;
 
-		ProjectSettings& Settings() { return mSettings; }
-		const ProjectSettings& Settings() const { return mSettings; }
+		ProjectSettings& Settings() { return settings_; }
+		const ProjectSettings& Settings() const { return settings_; }
 
 	private:
 		// Only the factories above make a Project, so an instance always has a valid root.
 		Project() = default;
 
-		std::filesystem::path mFile;       // The .brn.
-		std::filesystem::path mDirectory;  // The directory holding the .brn.
+		std::filesystem::path file_;       // The .brn.
+		std::filesystem::path directory_;  // The directory holding the .brn.
 
-		ProjectSettings mSettings;
+		ProjectSettings settings_;
 	};
 }

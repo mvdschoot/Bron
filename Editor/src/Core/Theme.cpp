@@ -7,7 +7,7 @@
 #include "Core/Preferences.h"
 #include "Bron/Core/Logger.h"
 
-namespace Bron::Editor
+namespace bron::editor
 {
 	namespace
 	{
@@ -79,7 +79,7 @@ namespace Bron::Editor
 		};
 	}
 
-	void Theme::Apply()
+	void theme::Apply()
 	{
 		const Preferences& prefs = Preferences::Get();
 
@@ -101,7 +101,7 @@ namespace Bron::Editor
 		}
 
 		if (std::strcmp(palette->name, prefs.theme.c_str()) != 0)
-			CORE_WARN("Unknown theme '{}', using '{}'.", prefs.theme, palette->name);
+			BR_CORE_WARN("Unknown theme '{}', using '{}'.", prefs.theme, palette->name);
 
 		palette->apply(style.Colors);
 
@@ -109,7 +109,7 @@ namespace Bron::Editor
 		ImGui::GetIO().FontGlobalScale = prefs.uiScale;
 	}
 
-	const std::vector<const char*>& Theme::Names()
+	const std::vector<const char*>& theme::Names()
 	{
 		static const std::vector<const char*> names = []
 		{

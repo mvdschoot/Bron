@@ -4,7 +4,7 @@
 #include <string>
 #include <vector>
 
-namespace Bron::Editor
+namespace bron::editor
 {
 	/// Settings that belong to the person using the editor rather than to anything they
 	/// are editing: they follow the install, not the project, and are stored in the user's

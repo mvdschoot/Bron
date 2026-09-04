@@ -9,7 +9,7 @@
 #include "Bron/Core/Core.h"
 #include "Bron/Core/Logger.h"
 
-namespace Bron::Editor
+namespace bron::editor
 {
 	namespace
 	{
@@ -18,7 +18,7 @@ namespace Bron::Editor
 		std::filesystem::path EnvPath(const char* name)
 		{
 			// std::getenv is deprecated-but-portable; getenv_s/secure_getenv are not, so we
-			// keep the standard one and silence MSVC in CMake (same as Bron::Paths).
+			// keep the standard one and silence MSVC in CMake (same as bron::Paths).
 			const char* value = std::getenv(name);
 			return value && *value != '\0' ? std::filesystem::path(value) : std::filesystem::path();
 		}
@@ -41,7 +41,7 @@ namespace Bron::Editor
 
 			// No home directory to speak of - keep the editor working out of the working
 			// directory rather than failing to start.
-			CORE_WARN("No user config directory found; preferences will be kept next to the executable.");
+			BR_CORE_WARN("No user config directory found; preferences will be kept next to the executable.");
 			return std::filesystem::current_path();
 		}
 
@@ -60,7 +60,7 @@ namespace Bron::Editor
 			}
 			catch (const json::exception& e)
 			{
-				CORE_WARN("Preference '{}' has the wrong type, keeping the default: {}", key, e.what());
+				BR_CORE_WARN("Preference '{}' has the wrong type, keeping the default: {}", key, e.what());
 			}
 		}
 	}
@@ -85,7 +85,7 @@ namespace Bron::Editor
 		if (!stream)
 		{
 			// First run: keep the defaults and write them out, so the file is there to be edited.
-			CORE_INFO("No preferences at {}, writing the defaults.", File().string());
+			BR_CORE_INFO("No preferences at {}, writing the defaults.", File().string());
 			Save();
 			return;
 		}
@@ -98,7 +98,7 @@ namespace Bron::Editor
 		catch (const json::exception& e)
 		{
 			// A corrupt file must not stop the editor from starting; the defaults are always usable.
-			CORE_ERROR("Could not parse {}, falling back to the default preferences: {}",
+			BR_CORE_ERROR("Could not parse {}, falling back to the default preferences: {}",
 					   File().string(), e.what());
 			return;
 		}
@@ -148,14 +148,14 @@ namespace Bron::Editor
 		std::filesystem::create_directories(File().parent_path(), error);
 		if (error)
 		{
-			CORE_ERROR("Could not create {}: {}", File().parent_path().string(), error.message());
+			BR_CORE_ERROR("Could not create {}: {}", File().parent_path().string(), error.message());
 			return;
 		}
 
 		std::ofstream stream(File());
 		if (!stream)
 		{
-			CORE_ERROR("Could not write {}", File().string());
+			BR_CORE_ERROR("Could not write {}", File().string());
 			return;
 		}
 

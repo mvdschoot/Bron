@@ -13,7 +13,7 @@
 
 #include "glm/glm.hpp"
 
-namespace Bron
+namespace bron
 {
 
 	/*

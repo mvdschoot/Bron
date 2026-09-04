@@ -1,34 +1,34 @@
 #include "FrustumCamera.h"
 
-namespace Bron
+namespace bron
 {
 	FrustumCamera::FrustumCamera(float fovy, float aspect_ratio, float near, float far, glm::vec3 position, glm::vec3 target, glm::vec3 up)
-		: mProjectionMat(glm::perspective(fovy, aspect_ratio, near, far)), mFovY(fovy), mAspectRatio(aspect_ratio), mNear(near), mFar(far), mPosition(position), mTarget(target), mUp(up)
+		: projection_mat_(glm::perspective(fovy, aspect_ratio, near, far)), fov_y_(fovy), aspect_ratio_(aspect_ratio), near_(near), far_(far), position_(position), target_(target), up_(up)
 	{
 	}
 
 	void FrustumCamera::SetAspectRatio(const float aspect_ratio)
 	{
-		if (aspect_ratio <= 0.0f || aspect_ratio == mAspectRatio)
+		if (aspect_ratio <= 0.0f || aspect_ratio == aspect_ratio_)
 			return;
 
-		mAspectRatio = aspect_ratio;
-		mProjectionMat = glm::perspective(mFovY, mAspectRatio, mNear, mFar);
+		aspect_ratio_ = aspect_ratio;
+		projection_mat_ = glm::perspective(fov_y_, aspect_ratio_, near_, far_);
 	}
 
 	void FrustumCamera::SetPosition(glm::vec3 pos)
 	{
-		mPosition = pos;
+		position_ = pos;
 	}
 
 	void FrustumCamera::SetTarget(glm::vec3 target)
 	{
-		mTarget = target;
+		target_ = target;
 	}
 
 	void FrustumCamera::SetUpvector(glm::vec3 up)
 	{
-		mUp = up;
+		up_ = up;
 	}
 }
 

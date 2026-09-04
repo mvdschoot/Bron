@@ -4,42 +4,42 @@
 #include "Bron/Core/KeyCodes.h"
 #include "Bron/Core/MouseCodes.h"
 
-namespace Bron
+namespace bron
 {
 	class BR_API MouseMovedEvent : public Event
 	{
 	public:
 		MouseMovedEvent(const float x, const float y):
-			_mouseX(x), _mouseY(y)
+			mouse_x_(x), mouse_y_(y)
 		{
 		};
 
-		EVENT_CLASS_CATEGORY(EventCategory::EventCategoryMouse | EventCategory::EventCategoryInput);
-		EVENT_CLASS_TYPE(MouseMoved);
+		BR_EVENT_CLASS_CATEGORY(EventCategory::EventCategoryMouse | EventCategory::EventCategoryInput);
+		BR_EVENT_CLASS_TYPE(MouseMoved);
 
 	private:
-		float _mouseX, _mouseY;
+		float mouse_x_, mouse_y_;
 	};
 
 	class BR_API MouseButtonEvent : public Event
 	{
 	public:
 		MouseButtonEvent(int key):
-			_key(static_cast<MouseCode>(key))
+			key_(static_cast<MouseCode>(key))
 		{
 		};
 
-		EVENT_CLASS_CATEGORY(EventCategory::EventCategoryMouseButton | EventCategory::EventCategoryInput);
+		BR_EVENT_CLASS_CATEGORY(EventCategory::EventCategoryMouseButton | EventCategory::EventCategoryInput);
 
 	private:
-		MouseCode _key;
+		MouseCode key_;
 	};
 
 	class BR_API MouseButtonPressedEvent : public MouseButtonEvent
 	{
 	public:
 		using MouseButtonEvent::MouseButtonEvent;
-		EVENT_CLASS_TYPE(MouseButtonPressed);
+		BR_EVENT_CLASS_TYPE(MouseButtonPressed);
 
 	private:
 	};
@@ -48,7 +48,7 @@ namespace Bron
 	{
 	public:
 		using MouseButtonEvent::MouseButtonEvent;
-		EVENT_CLASS_TYPE(MouseButtonReleased);
+		BR_EVENT_CLASS_TYPE(MouseButtonReleased);
 
 	private:
 	};
@@ -57,25 +57,25 @@ namespace Bron
 	{
 	public:
 		MouseScrolledEvent(const float offx, const float offy) :
-			_offx(offx), _offy(offy)
+			offx_(offx), offy_(offy)
 		{
 		};
 
 
-		EVENT_CLASS_CATEGORY(EventCategory::EventCategoryMouse || EventCategory::EventCategoryInput);
-		EVENT_CLASS_TYPE(MouseScrolled);
+		BR_EVENT_CLASS_CATEGORY(EventCategory::EventCategoryMouse || EventCategory::EventCategoryInput);
+		BR_EVENT_CLASS_TYPE(MouseScrolled);
 
-		float getOffsetX()
+		float GetOffsetX()
 		{
-			return _offx;
+			return offx_;
 		}
 
-		float getOffsetY()
+		float GetOffsetY()
 		{
-			return _offy;
+			return offy_;
 		}
 
 	private:
-		float _offx, _offy;
+		float offx_, offy_;
 	};
 }

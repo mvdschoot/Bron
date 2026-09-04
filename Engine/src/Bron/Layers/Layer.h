@@ -6,7 +6,7 @@
 
 #include <string>
 
-namespace Bron
+namespace bron
 {
 	class BR_API Layer
 	{
@@ -23,6 +23,6 @@ namespace Bron
 		virtual void OnUpdate(Timestep ts) = 0;
 		virtual void OnImGuiRender() = 0;
 
-		//inline const std::string& GetName() {return _debug_name;};
+		//inline const std::string& GetName() {return debug_name_;};
 	};
 }

@@ -5,49 +5,49 @@
 #include "Bron/Core/Core.h"
 #include "glm/ext/scalar_constants.hpp"
 
-namespace Bron
+namespace bron
 {
-	bool compare_float(float x, float y, float epsilon)
+	bool CompareFloat(float x, float y, float epsilon)
 	{
 		if (fabs(x - y) < epsilon)
 			return true; //they are same
 		return false; //they are not same
 	}
 
-	bool compare_floats(glm::vec3 a, glm::vec3 b, float epsilon)
+	bool CompareFloats(glm::vec3 a, glm::vec3 b, float epsilon)
 	{
-		return compare_float(a.x, b.x, epsilon)
-			&& compare_float(a.y, b.y, epsilon)
-			&& compare_float(a.z, b.z, epsilon);
+		return CompareFloat(a.x, b.x, epsilon)
+			&& CompareFloat(a.y, b.y, epsilon)
+			&& CompareFloat(a.z, b.z, epsilon);
 	}
 
-	bool compare_float_bits(float x, float y)
+	bool CompareFloatBits(float x, float y)
 	{
 		return *reinterpret_cast<u32*>(&x) == *reinterpret_cast<u32*>(&y);
 	}
 
-	bool compare_floats_bits(const glm::vec3 &a, const glm::vec3 &b) {
-		return compare_float_bits(a.x, b.x)
-			&& compare_float_bits(a.y, b.y)
-			&& compare_float_bits(a.z, b.z);
+	bool CompareFloatsBits(const glm::vec3 &a, const glm::vec3 &b) {
+		return CompareFloatBits(a.x, b.x)
+			&& CompareFloatBits(a.y, b.y)
+			&& CompareFloatBits(a.z, b.z);
 	}
 
-	bool compare_floats_bits(glm::vec3* a, glm::vec3* b)
+	bool CompareFloatsBits(glm::vec3* a, glm::vec3* b)
 	{
-		return compare_float_bits(a->x, b->x)
-			&& compare_float_bits(a->y, b->y)
-			&& compare_float_bits(a->z, b->z);
+		return CompareFloatBits(a->x, b->x)
+			&& CompareFloatBits(a->y, b->y)
+			&& CompareFloatBits(a->z, b->z);
 	}
 
-	bool compare_floats_bits(glm::vec4* a, glm::vec4* b)
+	bool CompareFloatsBits(glm::vec4* a, glm::vec4* b)
 	{
-		return compare_float_bits(a->x, b->x)
-			&& compare_float_bits(a->y, b->y)
-			&& compare_float_bits(a->z, b->z)
-			&& compare_float_bits(a->w, b->w);
+		return CompareFloatBits(a->x, b->x)
+			&& CompareFloatBits(a->y, b->y)
+			&& CompareFloatBits(a->z, b->z)
+			&& CompareFloatBits(a->w, b->w);
 	}
 
-	std::string print_matrix(glm::mat4 &matrix) {
+	std::string PrintMatrix(glm::mat4 &matrix) {
 		return "" + std::to_string(matrix[0][0]) + "\t" + std::to_string(matrix[1][0]) + " \t" + std::to_string(matrix[2][0]) + "\t" + std::to_string(matrix[3][0]) + "\n" +
 					std::to_string(matrix[0][1]) + "\t" + std::to_string(matrix[1][1]) + " \t" + std::to_string(matrix[2][1]) + "\t" + std::to_string(matrix[3][1]) + "\n" +
 					std::to_string(matrix[0][2]) + "\t" + std::to_string(matrix[1][2]) + " \t" + std::to_string(matrix[2][2]) + "\t" + std::to_string(matrix[3][2]) + "\n" +

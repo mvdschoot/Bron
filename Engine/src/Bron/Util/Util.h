@@ -5,17 +5,17 @@
 
 #include "Bron/Core/Core.h"
 
-namespace Bron
+namespace bron
 {
-    bool compare_float(float x, float y, float epsilon = 0.01f);
-    bool compare_floats(glm::vec3 a, glm::vec3 b, float epsilon = 0.01f);
+    bool CompareFloat(float x, float y, float epsilon = 0.01f);
+    bool CompareFloats(glm::vec3 a, glm::vec3 b, float epsilon = 0.01f);
 
-    bool compare_float_bits(float x, float y);
-    bool compare_floats_bits(const glm::vec3& a, const glm::vec3& b);
-    bool compare_floats_bits(glm::vec3* a, glm::vec3* b);
-    bool compare_floats_bits(glm::vec4* a, glm::vec4* b);
+    bool CompareFloatBits(float x, float y);
+    bool CompareFloatsBits(const glm::vec3& a, const glm::vec3& b);
+    bool CompareFloatsBits(glm::vec3* a, glm::vec3* b);
+    bool CompareFloatsBits(glm::vec4* a, glm::vec4* b);
 
-    std::string print_matrix(glm::mat4& matrix);
+    std::string PrintMatrix(glm::mat4& matrix);
 
 	std::tuple<glm::vec3*, glm::vec3*, uint32_t*, u32, u32> GenSphereSmoothVertices(glm::vec3 position, float radius, u32 accuracy);
 }

@@ -5,8 +5,8 @@
 #include "Components.h"
 #include "Math.h"
 
-namespace Bron {
+namespace bron {
 
-    std::optional<vec3> collides(Pt<RigidBody> a, Pt<RigidBody> b);
+    std::optional<vec3> Collides(Pt<RigidBody> a, Pt<RigidBody> b);
 
 }

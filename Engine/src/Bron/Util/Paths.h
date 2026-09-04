@@ -5,7 +5,7 @@
 
 #include "Bron/Core/Core.h"
 
-namespace Bron
+namespace bron
 {
 	// Asset locations must never depend on the process working directory: every
 	// IDE picks a different one (CLion uses the build dir, Visual Studio the
@@ -19,7 +19,7 @@ namespace Bron
 	// There is deliberately no engine asset root: the engine's own shaders are
 	// compiled into the binary (see Bron/Graphics/BuiltinShaders.h), so assets
 	// belong to the application alone.
-	namespace Paths
+	namespace paths
 	{
 		// The directory every asset path stored in a scene file is relative to.
 		// Empty until the application sets one.

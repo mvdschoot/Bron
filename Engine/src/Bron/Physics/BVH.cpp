@@ -3,16 +3,16 @@
 
 #include <optional>
 
-namespace Bron
+namespace bron
 {
 	BVH::BVH()
 	{
 		root = createPt<BvhNode>(AABB {{-1,-1,-1}, {1,1,1}}, nullptr, nullptr, std::vector<Pt<RigidBody>>() );
 	}
 
-	void BVH::addObject(Pt<RigidBody> obj)
+	void BVH::AddObject(Pt<RigidBody> obj)
 	{
-		insertPrimitive(root, obj);
+		InsertPrimitive(root, obj);
 	}
 
 	std::vector<Pt<RigidBody>>& BVH::get(Pt<RigidBody>& object) 
@@ -20,17 +20,17 @@ namespace Bron
 		return find(object)->primitives;
 	}
 
-	void BVH::insertPrimitive(Pt<BvhNode> current, Pt<RigidBody> n)
+	void BVH::InsertPrimitive(Pt<BvhNode> current, Pt<RigidBody> n)
 	{
 		BvhNode& c = *current;
 		if (c.left != nullptr) {
-			CORE_ASSERT(c.right != nullptr, "Right child cannot be null when left child is not.");
+			BR_CORE_ASSERT(c.right != nullptr, "Right child cannot be null when left child is not.");
 			if (c.left->box.contains(c.box))
 			{
-				insertPrimitive(c.left, n);
+				InsertPrimitive(c.left, n);
 			}
 			else if (c.right->box.contains(c.box)) {
-				insertPrimitive(c.right, n);
+				InsertPrimitive(c.right, n);
 			}
 			else {
 				c.primitives.push_back(n);
@@ -54,16 +54,16 @@ namespace Bron
 				} else if (current->right->box.contains(toFind->boundingBox)) {
 					current = current->right;
 				} else {
-					CORE_ASSERT(false, "Problem with algorithm");
+					BR_CORE_ASSERT(false, "Problem with algorithm");
 				}
 			} else {
-				CORE_ASSERT(current->left == nullptr && current->right == nullptr, "Current functionality requires mutual exclusivity of left,right and primitives");
-				CORE_ASSERT(std::find(current->primitives.begin(), current->primitives.end(), toFind) != current->primitives.end(), "Cannot find the object");
+				BR_CORE_ASSERT(current->left == nullptr && current->right == nullptr, "Current functionality requires mutual exclusivity of left,right and primitives");
+				BR_CORE_ASSERT(std::find(current->primitives.begin(), current->primitives.end(), toFind) != current->primitives.end(), "Cannot find the object");
 
 				return current;
 			}
 		}
-		CORE_ASSERT(false, "Unreachable");
+		BR_CORE_ASSERT(false, "Unreachable");
 		return {};
 	}
 }

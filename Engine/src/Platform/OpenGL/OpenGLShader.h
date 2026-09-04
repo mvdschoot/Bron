@@ -12,7 +12,7 @@
 #include <regex>
 #include <fstream>
 
-namespace Bron
+namespace bron
 {
 	class OpenGLShader : public Shader
 	{
@@ -20,32 +20,32 @@ namespace Bron
 		OpenGLShader(std::string& shader);
 		~OpenGLShader();
 
-		void bind() override;
-		void unbind() override;
-		bool isBound() override;
-		bool isSet(std::string name) override;
+		void Bind() override;
+		void Unbind() override;
+		bool IsBound() override;
+		bool IsSet(std::string name) override;
 
-		void setUniformMat3(std::string name, const glm::mat3& matrix) override;
-		void setUniformMat4(std::string name, const glm::mat4& matrix) override;
-		void setUniform1i(std::string name, u32 a) override;
-		void setUniform2i(std::string name, u32 a, u32 b) override;
-		void setUniform3i(std::string name, u32 a, u32 b, u32 c) override;
-		void setUniform4i(std::string name, u32 a, u32 b, u32 c, u32 d) override;
-		void setUniform1f(std::string name, float a) override;
-		void setUniform2f(std::string name, float a, float b) override;
-		void setUniform3f(std::string name, float a, float b, float c) override;
-		void setUniform4f(std::string name, float a, float b, float c, float d) override;
+		void SetUniformMat3(std::string name, const glm::mat3& matrix) override;
+		void SetUniformMat4(std::string name, const glm::mat4& matrix) override;
+		void SetUniform1i(std::string name, u32 a) override;
+		void SetUniform2i(std::string name, u32 a, u32 b) override;
+		void SetUniform3i(std::string name, u32 a, u32 b, u32 c) override;
+		void SetUniform4i(std::string name, u32 a, u32 b, u32 c, u32 d) override;
+		void SetUniform1f(std::string name, float a) override;
+		void SetUniform2f(std::string name, float a, float b) override;
+		void SetUniform3f(std::string name, float a, float b, float c) override;
+		void SetUniform4f(std::string name, float a, float b, float c, float d) override;
 
-		void setUniform1iv(std::string name, int* array, int count) override;
+		void SetUniform1iv(std::string name, int* array, int count) override;
 
 	private:
-		void compile();
+		void Compile();
 		void parse(std::string& shader);
 
-		std::string _v_shader, _g_shader, _f_shader;
-		u32 _renderer_id;
+		std::string v_shader_, g_shader_, f_shader_;
+		u32 renderer_id_;
 
-		bool _binded;
-		std::unordered_map<std::string, u32> _uniform_locations;
+		bool binded_;
+		std::unordered_map<std::string, u32> uniform_locations_;
 	};
 }

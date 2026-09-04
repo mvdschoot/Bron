@@ -2,14 +2,14 @@
 
 #include <string>
 
-namespace Bron
+namespace bron
 {
 	// The shaders behind the engine's built-in renderers. They are not assets:
 	// each one has a hard contract with the C++ that drives it (vertex layout,
 	// uniform names, texture slots), so the engine owns them and keeps them in
 	// its own translation unit. Nothing is read from disk, and there is no
 	// engine asset folder to ship or copy next to the executable.
-	namespace BuiltinShaders
+	namespace builtin_shaders
 	{
 		enum class Id
 		{

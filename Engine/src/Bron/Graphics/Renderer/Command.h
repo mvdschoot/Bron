@@ -7,14 +7,14 @@
 
 #include "glm/glm.hpp"
 
-namespace Bron
+namespace bron
 {
 	class BR_API Command
 	{
 	public:
 		static void Init();
 		static void ClearColor(const glm::vec4& color);
-		static void clear();
+		static void Clear();
 
 		static void EnableBlend();
 		static void EnableDepth();
@@ -22,9 +22,9 @@ namespace Bron
 		static void DrawIndexed(const Ref<VertexArray>& v_array, u32 count);
 		static void DrawIndexedLines(const Ref<VertexArray>& v_array, u32 count);
 		static void DrawIndexedStripLines(const Ref<VertexArray>& v_array, u32 count);
-		static void onResize(float x, float y, float width, float height);
+		static void OnResize(float x, float y, float width, float height);
 
 	private:
-		static API* _renderer_api;
+		static API* renderer_api_;
 	};
 }

@@ -2,7 +2,7 @@
 
 #include "Bron/Graphics/Buffer.h"
 
-namespace Bron
+namespace bron
 {
 	template<typename T>
 	struct NamedBufferLayout : public BufferLayout
@@ -25,7 +25,7 @@ namespace Bron
 			{
 				if (Data[x] == data_type)
 				{
-					_buffer_elements[x].name = new_name;
+					buffer_elements_[x].name = new_name;
 				}
 			}
 		}
@@ -39,7 +39,7 @@ namespace Bron
 					return GetElements()[x];
 				}
 			}
-			CORE_ASSERT(false, "Cannot find the uniform data type type you are looking for.")
+			BR_CORE_ASSERT(false, "Cannot find the uniform data type type you are looking for.");
 		}
 
 		std::vector<T> Data;
@@ -62,8 +62,8 @@ namespace Bron
 			const BufferElement& el = Layout->GetElementData(type);
 			// The element size decides how much is copied, so a value of a different size would either
 			// read past the end of 'value' or only partially fill the element.
-			CORE_ASSERT(sizeof(S) == el.size, "Value of {} bytes does not match the {} byte element it is written to.",
-						sizeof(S), el.size)
+			BR_CORE_ASSERT(sizeof(S) == el.size, "Value of {} bytes does not match the {} byte element it is written to.",
+						sizeof(S), el.size);
 			memcpy(Data + el.offset, &value, el.size);
 		}
 

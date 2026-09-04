@@ -2,9 +2,9 @@
 
 #include "Bron/Core/Logger.h"
 
-namespace Bron
+namespace bron
 {
-	namespace Paths
+	namespace paths
 	{
 		namespace
 		{
@@ -27,7 +27,7 @@ namespace Bron
 
 		void SetAssetRoot(const std::filesystem::path& root)
 		{
-			CORE_INFO("Asset root is now {}", root.string());
+			BR_CORE_INFO("Asset root is now {}", root.string());
 			Root() = root;
 		}
 
@@ -35,7 +35,7 @@ namespace Bron
 		{
 			// Reachable only through a loaded scene, which needs a project, which sets the
 			// root - so this means something resolved an asset path without one.
-			CORE_ASSERT(HasAssetRoot(), "No asset root: resolving an asset with no project open")
+			BR_CORE_ASSERT(HasAssetRoot(), "No asset root: resolving an asset with no project open");
 
 			return AssetRoot() / relative;
 		}
@@ -47,7 +47,7 @@ namespace Bron
 
 		std::filesystem::path Relative(const std::filesystem::path& absolute)
 		{
-			CORE_ASSERT(HasAssetRoot(), "No asset root: storing an asset path with no project open")
+			BR_CORE_ASSERT(HasAssetRoot(), "No asset root: storing an asset path with no project open");
 
 			std::error_code ec;
 			const std::filesystem::path relative = std::filesystem::relative(absolute, AssetRoot(), ec);

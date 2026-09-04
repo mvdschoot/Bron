@@ -5,29 +5,14 @@
 
 #include "Config.h"
 
-#define PI 3.14159265358979323846
-#define BIT(x) (1 << x)
-
-#define u8 uint8_t
-#define u16 uint16_t
-#define u32 uint32_t
-#define u64 uint64_t
-#define usize uint64_t
-
-#define i8 int8_t
-#define i16 int16_t
-#define i32 int32_t
-#define i64 int64_t
-#define isize int64_t
-
-
-#define GLFW_INCLUDE_NONE
+#define BR_BIT(x) (1 << (x))
 
 #define BR_EXPAND_MACRO(x) x
 #define BR_STRINGIFY_MACRO(x) #x
 
-#define FOLD_LAMBDA_WITH_REFERENCE(expr) ([&, this]() expr, ...);
+#define BR_FOLD_LAMBDA_WITH_REFERENCE(expr) ([&, this]() expr, ...);
 
+#define GLFW_INCLUDE_NONE
 
 #if defined(_WIN32)
 	#define BR_PLATFORM_WINDOWS
@@ -40,15 +25,15 @@
 #endif
 
 #if defined(BR_PLATFORM_WINDOWS)
-	#define DLL_EXPORT __declspec(dllexport)
-	#define DLL_IMPORT __declspec(dllimport)
+	#define BR_DLL_EXPORT __declspec(dllexport)
+	#define BR_DLL_IMPORT __declspec(dllimport)
 #elif defined(__GNUC__) || defined(__clang__)
-	#define DLL_EXPORT __attribute__((visibility("default")))
-	#define DLL_IMPORT
+	#define BR_DLL_EXPORT __attribute__((visibility("default")))
+	#define BR_DLL_IMPORT
 #else
 	// Unknown dynamic-link semantics; static linking still works.
-	#define DLL_EXPORT
-	#define DLL_IMPORT
+	#define BR_DLL_EXPORT
+	#define BR_DLL_IMPORT
 #endif
 
 #if defined(BR_DEBUG)
@@ -68,57 +53,76 @@
 // wrong. BR_SHARED is defined by CMake only for a shared build.
 #if defined(BR_SHARED)
 	#if defined(BR_COMPILE)
-		#define BR_API DLL_EXPORT
+		#define BR_API BR_DLL_EXPORT
 	#else
-		#define BR_API DLL_IMPORT
+		#define BR_API BR_DLL_IMPORT
 	#endif
 #else
 	#define BR_API
 #endif
 
-namespace Bron
+namespace bron {
+
+// Short integer names used throughout the engine. These are type aliases rather
+// than macros so they obey scope and cannot rewrite tokens inside third-party
+// headers.
+using u8 = std::uint8_t;
+using u16 = std::uint16_t;
+using u32 = std::uint32_t;
+using u64 = std::uint64_t;
+using usize = std::uint64_t;
+
+using i8 = std::int8_t;
+using i16 = std::int16_t;
+using i32 = std::int32_t;
+using i64 = std::int64_t;
+using isize = std::int64_t;
+
+inline constexpr double kPi = 3.14159265358979323846;
+
+template <typename T>
+using Ref = std::shared_ptr<T>;
+
+template <typename T, typename... Args>
+constexpr Ref<T> CreateRef(Args&&... args)
 {
-	template <typename T>
-	using Ref = std::shared_ptr<T>;
-
-	template <typename T, typename ... Args>
-	constexpr Ref<T> createRef(Args&& ... args)
-	{
-		return std::make_shared<T>(std::forward<Args>(args)...);
-	}
-
-	template <typename T>
-	using Scope = std::unique_ptr<T>;
-
-	template <typename T, typename ... Args>
-	constexpr Scope<T> createScope(Args&& ... args)
-	{
-		return std::make_unique<T>(std::forward<Args>(args)...);
-	}
-
-
-	// Tuple folding stuff
-	template <std::size_t... Idx>
-	auto make_index_dispatcher(std::index_sequence<Idx...>) {
-		return [](auto&& f) { (f(std::integral_constant<std::size_t, Idx>{}), ...); };
-	}
-
-	template <std::size_t N>
-	auto make_index_dispatcher() {
-		return make_index_dispatcher(std::make_index_sequence<N>{});
-	}
-
-	template <typename Tuple, typename Func>
-	void for_each(Tuple&& t, Func&& f) {
-		constexpr auto n = std::tuple_size_v<std::decay_t<Tuple>>;
-		auto dispatcher = make_index_dispatcher<n>();
-		dispatcher([&f, &t](auto idx) { f(std::get<idx>(std::forward<Tuple>(t))); });
-	}
-
-	template<typename Tuple, typename F>
-	void ApplyToTuple(const Tuple& t, F func) {
-		std::apply([&](const auto&... args) {
-			(func(args), ...);
-		}, t);
-	}
+	return std::make_shared<T>(std::forward<Args>(args)...);
 }
+
+template <typename T>
+using Scope = std::unique_ptr<T>;
+
+template <typename T, typename... Args>
+constexpr Scope<T> CreateScope(Args&&... args)
+{
+	return std::make_unique<T>(std::forward<Args>(args)...);
+}
+
+// Tuple folding helpers.
+template <std::size_t... Idx>
+auto MakeIndexDispatcher(std::index_sequence<Idx...>)
+{
+	return [](auto&& f) { (f(std::integral_constant<std::size_t, Idx>{}), ...); };
+}
+
+template <std::size_t N>
+auto MakeIndexDispatcher()
+{
+	return MakeIndexDispatcher(std::make_index_sequence<N>{});
+}
+
+template <typename Tuple, typename Func>
+void ForEachInTuple(Tuple&& t, Func&& f)
+{
+	constexpr auto n = std::tuple_size_v<std::decay_t<Tuple>>;
+	auto dispatcher = MakeIndexDispatcher<n>();
+	dispatcher([&f, &t](auto idx) { f(std::get<idx>(std::forward<Tuple>(t))); });
+}
+
+template <typename Tuple, typename F>
+void ApplyToTuple(const Tuple& t, F func)
+{
+	std::apply([&](const auto&... args) { (func(args), ...); }, t);
+}
+
+}  // namespace bron

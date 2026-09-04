@@ -2,10 +2,10 @@
 
 #include <iostream>
 
-namespace Bron
+namespace bron
 {
 	OpenGLContext::OpenGLContext(GLFWwindow* window)
-		: _graphics_window(window)
+		: graphics_window_(window)
 	{
 		BR_PROFILE_FUNCTION();
 		Init();
@@ -14,22 +14,22 @@ namespace Bron
 	void OpenGLContext::Init()
 	{
 		BR_PROFILE_FUNCTION();
-		glfwMakeContextCurrent(_graphics_window);
-		CORE_ASSERT(gladLoadGLLoader((GLADloadproc)glfwGetProcAddress) != 0, "Cant init glad.");
+		glfwMakeContextCurrent(graphics_window_);
+		BR_CORE_ASSERT(gladLoadGLLoader((GLADloadproc)glfwGetProcAddress) != 0, "Cant init glad.");
 
 		glClearColor(1.0, 0.0, 1.0, 0.0);
 
 
 		auto vendor = std::string(reinterpret_cast<const char*>(glGetString(GL_VENDOR)));
 		auto gpu = std::string(reinterpret_cast<const char*>(glGetString(GL_RENDERER)));
-		CORE_INFO("Using following GPU:");
-		CORE_INFO("	{}", vendor);
-		CORE_INFO("	{}", gpu);
+		BR_CORE_INFO("Using following GPU:");
+		BR_CORE_INFO("	{}", vendor);
+		BR_CORE_INFO("	{}", gpu);
 	}
 
 	void OpenGLContext::SwapBuffers()
 	{
 		BR_PROFILE_FUNCTION();
-		glfwSwapBuffers(_graphics_window);
+		glfwSwapBuffers(graphics_window_);
 	}
 }

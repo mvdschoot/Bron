@@ -4,7 +4,7 @@
 
 #include "Core/EditorContext.h"
 
-namespace Bron::Editor
+namespace bron::editor
 {
 	/// One dockable editor window. The editor layer owns the panels, forwards the frame to
 	/// them in order and knows nothing else about them.

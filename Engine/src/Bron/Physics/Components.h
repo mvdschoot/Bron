@@ -8,7 +8,7 @@
 
 #include <vector>
 
-namespace Bron
+namespace bron
 {
 	/* Internally used by physics engine */
 	struct AABB
@@ -20,7 +20,7 @@ namespace Bron
 		vec3 max;
 
 		bool contains(AABB& other);
-		void resizeTo(AABB& other);
+		void ResizeTo(AABB& other);
 	};
 
 	enum RigidBodyType {

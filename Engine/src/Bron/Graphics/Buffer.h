@@ -9,7 +9,7 @@
 #include <vector>
 
 
-namespace Bron
+namespace bron
 {
 
 	struct BR_API BufferElement
@@ -29,7 +29,7 @@ namespace Bron
 
 		~BufferElement() = default;
 
-		u32 getComponentCount() const
+		u32 GetComponentCount() const
 		{
 			switch (type)
 			{
@@ -53,42 +53,42 @@ namespace Bron
 	class BR_API BufferLayout
 	{
 	public:
-		BufferLayout(): _stride(0)
+		BufferLayout(): stride_(0)
 		{
 		};
 
 		BufferLayout(std::initializer_list<BufferElement> elements) :
-			_stride(0), _buffer_elements(elements)
+			stride_(0), buffer_elements_(elements)
 		{
 			CalculateInfo();
 		}
 
 		//~_BufferLayout() = default;
 		
-		const std::vector<BufferElement>& GetElements() const { return _buffer_elements; }
-		u32 GetStride() const { return _stride; }
+		const std::vector<BufferElement>& GetElements() const { return buffer_elements_; }
+		u32 GetStride() const { return stride_; }
 
 		void CalculateInfo()
 		{
 			u32 offset = 0;
-			_stride = 0;
-			for (auto& it : _buffer_elements)
+			stride_ = 0;
+			for (auto& it : buffer_elements_)
 			{
 				it.offset = offset;
 				offset += it.size;
-				_stride += it.size;
+				stride_ += it.size;
 			}
 		}
 	protected:
 		void SetElements(std::vector<BufferElement>&& buffer)
 		{
-			_buffer_elements = buffer;
+			buffer_elements_ = buffer;
 			CalculateInfo();
 		}
 
 
-		u32 _stride;
-		std::vector<BufferElement> _buffer_elements;
+		u32 stride_;
+		std::vector<BufferElement> buffer_elements_;
 	};
 
 	class BR_API VertexBuffer
@@ -102,13 +102,13 @@ namespace Bron
 		{
 		};
 
-		virtual void bind() = 0;
-		virtual void unbind() = 0;
+		virtual void Bind() = 0;
+		virtual void Unbind() = 0;
 
-		virtual const BufferLayout& getBufferLayout() const = 0;
-		virtual void setBufferLayout(const BufferLayout& layout) = 0;
-		virtual void setBufferData(const void* data, usize size) = 0;
-		virtual void resizeAndSetBuffer(const void* data, usize size) = 0;
+		virtual const BufferLayout& GetBufferLayout() const = 0;
+		virtual void SetBufferLayout(const BufferLayout& layout) = 0;
+		virtual void SetBufferData(const void* data, usize size) = 0;
+		virtual void ResizeAndSetBuffer(const void* data, usize size) = 0;
 
 		static Ref<VertexBuffer> Create(usize size);
 		static Ref<VertexBuffer> Create(float* vertices, usize size);
@@ -126,12 +126,12 @@ namespace Bron
 		{
 		};
 
-		virtual void bind() = 0;
-		virtual void unbind() = 0;
+		virtual void Bind() = 0;
+		virtual void Unbind() = 0;
 
-		[[nodiscard]] virtual u32 getCount() const = 0;
-		virtual void setBufferData(u32* data, u32 count) = 0;
-		virtual void resizeAndSetBuffer(u32* data, u32 count) = 0;
+		[[nodiscard]] virtual u32 GetCount() const = 0;
+		virtual void SetBufferData(u32* data, u32 count) = 0;
+		virtual void ResizeAndSetBuffer(u32* data, u32 count) = 0;
 
 		static Ref<IndexBuffer> Create(u32* indices, u32 count);
 		static Ref<IndexBuffer> Create(usize size);
@@ -143,12 +143,12 @@ namespace Bron
 		UniformBuffer() = default;
 		virtual ~UniformBuffer() = default;
 
-		virtual void bind(u32 binding) = 0;
-		virtual void unbind() = 0;
-		virtual bool isBound() = 0;
+		virtual void Bind(u32 binding) = 0;
+		virtual void Unbind() = 0;
+		virtual bool IsBound() = 0;
 
-		virtual void setData(const uint8_t *data, uint64_t size, uint64_t offset = 0) = 0;
-		virtual void resizeAndSetData(const uint8_t *data, uint64_t size) = 0;
+		virtual void SetData(const uint8_t *data, uint64_t size, uint64_t offset = 0) = 0;
+		virtual void ResizeAndSetData(const uint8_t *data, uint64_t size) = 0;
 
 		// Factory methods
 		static Ref<UniformBuffer> Create(usize size, u32 binding);

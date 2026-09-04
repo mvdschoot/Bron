@@ -1,16 +1,16 @@
 #include "Overlay.h"
 
-namespace Bron
+namespace bron
 {
-	void Overlay::insertLayer(Layer* layer)
+	void Overlay::InsertLayer(Layer* layer)
 	{
 		layer->OnAttach();
-		_layer_stack.push_back(layer);
+		layer_stack_.push_back(layer);
 	}
 
-	void Overlay::insertLayer(Layer* layer, u32 pos)
+	void Overlay::InsertLayer(Layer* layer, u32 pos)
 	{
 		layer->OnAttach();
-		_layer_stack.insert(_layer_stack.begin() + pos, layer);
+		layer_stack_.insert(layer_stack_.begin() + pos, layer);
 	}
 }

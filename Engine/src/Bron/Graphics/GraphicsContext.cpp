@@ -3,14 +3,14 @@
 #include "Platform/OpenGL/OpenGLContext.h"
 #include "Bron/Core/Platform.h"
 
-namespace Bron
+namespace bron
 {
 	Ref<GraphicsContext> GraphicsContext::Create(GLFWwindow* window)
 	{
-		switch (Platform::getAPI())
+		switch (Platform::GetApi())
 		{
-		case Platform::API::None: CORE_ASSERT(false, "No Rendering API selected!");
-		case Platform::API::OpenGL: return createRef<OpenGLContext>(window);
+		case Platform::API::None: BR_CORE_ASSERT(false, "No Rendering API selected!");
+		case Platform::API::OpenGL: return CreateRef<OpenGLContext>(window);
 		}
 		return nullptr;
 	}

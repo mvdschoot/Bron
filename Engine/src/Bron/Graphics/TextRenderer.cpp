@@ -4,7 +4,7 @@
 
 #include <iostream>
 
-namespace Bron
+namespace bron
 {
 	struct TextRenderData
 	{
@@ -16,10 +16,10 @@ namespace Bron
 
 	void TextRenderer::Init()
 	{
-		if (FT_Init_FreeType(&s_text_data.FT_library)) CORE_ERROR("Could not initialise FreeText library");
+		if (FT_Init_FreeType(&s_text_data.FT_library)) BR_CORE_ERROR("Could not initialise FreeText library");
 
 		s_text_data.ShaderId = R2D::AddShader(
-			Shader::Create(BuiltinShaders::Source(BuiltinShaders::Id::Text)), 
+			Shader::Create(builtin_shaders::Source(builtin_shaders::Id::Text)), 
 			BufferLayout({
 				{"a_Position", ShaderDataType::Float2},
 				{"a_Color", ShaderDataType::Float4},
@@ -34,7 +34,7 @@ namespace Bron
 		s_text_data.Fonts.emplace_back();
 		Font& font = s_text_data.Fonts.back();
 
-		if (FT_New_Face(s_text_data.FT_library, font_location, 0, &font.FT_font))	CORE_ERROR("Failed to load font");
+		if (FT_New_Face(s_text_data.FT_library, font_location, 0, &font.FT_font))	BR_CORE_ERROR("Failed to load font");
 		FT_Set_Pixel_Sizes(font.FT_font, 0, init_font_height);
 
 		FT_Select_Charmap(font.FT_font, ft_encoding_unicode);
@@ -57,11 +57,11 @@ namespace Bron
         {
             // load character glyph
 			FT_UInt glyph = FT_Get_Char_Index(font.FT_font, c);
-			CORE_ASSERT(glyph != 0, "Character not present in font file")
+			BR_CORE_ASSERT(glyph != 0, "Character not present in font file");
 
             if (FT_Load_Glyph(font.FT_font, glyph, FT_LOAD_RENDER))
             {
-				CORE_ERROR("failed to load character.");
+				BR_CORE_ERROR("failed to load character.");
                 continue;
             }
 
@@ -72,7 +72,7 @@ namespace Bron
             };
             font.Characters.emplace(c, character);
 
-			font.Texture->setLetter(g->bitmap.buffer, character.Location.x, character.Location.y, character.Location.z, character.Location.w);
+			font.Texture->SetLetter(g->bitmap.buffer, character.Location.x, character.Location.y, character.Location.z, character.Location.w);
 			x += g->bitmap.width;
 
         }
@@ -82,7 +82,7 @@ namespace Bron
 
 	void TextRenderer::RenderText(const char* text, float x, float y, float scale, glm::vec4 color)
 	{
-		CORE_ASSERT(!s_text_data.Fonts.empty(), "No font loaded!");
+		BR_CORE_ASSERT(!s_text_data.Fonts.empty(), "No font loaded!");
 		RenderText(text, s_text_data.Fonts.front(), x, y, scale, color);
 	}
 
@@ -102,10 +102,10 @@ namespace Bron
             float h = ch.Location.w * scale;
 
 			glm::vec4 txtLoc = {
-				((float)ch.Location.x) / font.Texture->getWidth(),
-				((float)ch.Location.y) / font.Texture->getHeight(),
-				(float)ch.Location.z / font.Texture->getWidth(),
-				(float)ch.Location.w / font.Texture->getHeight()
+				((float)ch.Location.x) / font.Texture->GetWidth(),
+				((float)ch.Location.y) / font.Texture->GetHeight(),
+				(float)ch.Location.z / font.Texture->GetWidth(),
+				(float)ch.Location.w / font.Texture->GetHeight()
 			};
 			R2D::DrawQuad({ xpos, ypos }, { w, h }, font.Texture, txtLoc);
 

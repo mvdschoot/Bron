@@ -5,25 +5,25 @@
 #include <ImGuizmo.h>
 #include <glm/gtx/matrix_decompose.hpp>
 
-namespace Bron::Editor
+namespace bron::editor
 {
 	void ViewportPanel::OnAttach()
 	{
-		mSpec.width = Application::getWindow()->getWindowWidth();
-		mSpec.height = Application::getWindow()->getWindowHeight();
+		spec_.width = Application::GetWindow()->GetWindowWidth();
+		spec_.height = Application::GetWindow()->GetWindowHeight();
 
-		mFramebuffer = Framebuffer::Create(mSpec);
-		mFramebuffer->unbind();
+		framebuffer_ = Framebuffer::Create(spec_);
+		framebuffer_->Unbind();
 
-		mSize = {static_cast<float>(mSpec.width), static_cast<float>(mSpec.height)};
+		size_ = {static_cast<float>(spec_.width), static_cast<float>(spec_.height)};
 	}
 
 	void ViewportPanel::OnUpdate(const Timestep ts)
 	{
 		Context.camera.OnUpdate(ts);
 
-		mFramebuffer->bind();
-		Command::clear();
+		framebuffer_->Bind();
+		Command::Clear();
 
 		Command::EnableBlend();
 		GridRenderer::Draw();
@@ -31,7 +31,7 @@ namespace Bron::Editor
 		Command::EnableDepth();
 		SceneRenderer::Draw(Context.scene);
 
-		mFramebuffer->unbind();
+		framebuffer_->Unbind();
 	}
 
 	void ViewportPanel::Resize(const ImVec2 size)
@@ -42,13 +42,13 @@ namespace Bron::Editor
 		if (size.x <= 0.0f || size.y <= 0.0f)
 			return;
 
-		if (compare_float(size.x, mSize.x) && compare_float(size.y, mSize.y))
+		if (CompareFloat(size.x, size_.x) && CompareFloat(size.y, size_.y))
 			return;
 
-		mSize = size;
-		mSpec.width = static_cast<uint32_t>(size.x);
-		mSpec.height = static_cast<uint32_t>(size.y);
-		mFramebuffer->invalidate();
+		size_ = size;
+		spec_.width = static_cast<uint32_t>(size.x);
+		spec_.height = static_cast<uint32_t>(size.y);
+		framebuffer_->Invalidate();
 
 		// The projection has to follow the panel, otherwise the scene is stretched to fit it.
 		Context.camera.SetAspectRatio(size.x / size.y);
@@ -64,7 +64,7 @@ namespace Bron::Editor
 		const ImVec2 available = ImGui::GetContentRegionAvail();
 		Resize(available);
 
-		const uint64_t textureID = mFramebuffer->getColorAttachID();
+		const uint64_t textureID = framebuffer_->GetColorAttachId();
 		ImGui::Image(textureID, available, ImVec2{0, 1}, ImVec2{1, 0});
 
 		DrawGizmo();
@@ -87,7 +87,7 @@ namespace Bron::Editor
 		const ImVec2 viewportOffset = ImGui::GetWindowPos();
 		ImGuizmo::SetRect(viewportMinRegion.x + viewportOffset.x,
 						  viewportMinRegion.y + viewportOffset.y,
-						  mSize.x, mSize.y);
+						  size_.x, size_.y);
 
 		glm::mat4 proj = scene.camera->GetProjectionMatrix();
 		glm::mat4 view = scene.camera->GetViewMatrix();
@@ -121,6 +121,6 @@ namespace Bron::Editor
 		comp.RotationQuat = newQuat;
 
 		// The properties panel caches euler angles; the gizmo just changed the quaternion under it.
-		ComponentRegistry::InvalidateEulerCache();
+		component_registry::InvalidateEulerCache();
 	}
 }

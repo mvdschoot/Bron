@@ -16,7 +16,7 @@
 
 #include <memory>
 
-namespace Bron
+namespace bron
 {
 	class ImGuiLayer : public Layer
 	{
@@ -36,10 +36,10 @@ namespace Bron
 		{
 		};
 
-		void begin();
-		void end();
+		void Begin();
+		void End();
 
 	private:
-		Ref<Window> _window;
+		Ref<Window> window_;
 	};
 }

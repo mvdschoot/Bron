@@ -2,53 +2,53 @@
 
 #include "Platform/OpenGL/OpenGLRendererAPI.h"
 
-namespace Bron
+namespace bron
 {
 	void Command::Init()
 	{
-		_renderer_api->Init();
+		renderer_api_->Init();
 	}
 
-	API* Command::_renderer_api = new OpenGLRendererAPI();
+	API* Command::renderer_api_ = new OpenGLRendererAPI();
 
 
 	void Command::ClearColor(const glm::vec4& color)
 	{
-		_renderer_api->setClearColor(color);
+		renderer_api_->SetClearColor(color);
 	}
 
-	void Command::clear()
+	void Command::Clear()
 	{
-		_renderer_api->clear();
+		renderer_api_->Clear();
 	}
 
 	void Command::EnableBlend()
 	{
-		_renderer_api->EnableBlend();
+		renderer_api_->EnableBlend();
 	}
 
 	void Command::EnableDepth()
 	{
-		_renderer_api->EnableDepth();
+		renderer_api_->EnableDepth();
 	}
 
 	void Command::DrawIndexed(const Ref<VertexArray>& v_array, u32 count)
 	{
-		_renderer_api->drawIndexed(v_array, count);
+		renderer_api_->DrawIndexed(v_array, count);
 	}
 
 	void Command::DrawIndexedLines(const Ref<VertexArray>& v_array, u32 count)
 	{
-		_renderer_api->drawIndexedLines(v_array, count);
+		renderer_api_->DrawIndexedLines(v_array, count);
 	}
 
 	void Command::DrawIndexedStripLines(const Ref<VertexArray>& v_array, u32 count)
 	{
-		_renderer_api->drawIndexedStripLines(v_array, count);
+		renderer_api_->DrawIndexedStripLines(v_array, count);
 	}
 
-	void Command::onResize(float x, float y, float width, float height)
+	void Command::OnResize(float x, float y, float width, float height)
 	{
-		_renderer_api->onResize(x, y, width, height);
+		renderer_api_->OnResize(x, y, width, height);
 	}
 }

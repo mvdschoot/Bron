@@ -9,7 +9,7 @@
 
 #include <vector>
 
-namespace Bron
+namespace bron
 {
 	struct PhysicsData;
 
@@ -27,11 +27,11 @@ namespace Bron
 	public:
 		BVH();
 
-		void addObject(Pt<RigidBody> obj);
+		void AddObject(Pt<RigidBody> obj);
 		std::vector<Pt<RigidBody>>& get(Pt<RigidBody>& object);
 
 	private:
-		void insertPrimitive(Pt<BvhNode> current, Pt<RigidBody> n);
+		void InsertPrimitive(Pt<BvhNode> current, Pt<RigidBody> n);
 		Pt<BvhNode> find(Pt<RigidBody> toFind);
 
 		Pt<BvhNode> root;

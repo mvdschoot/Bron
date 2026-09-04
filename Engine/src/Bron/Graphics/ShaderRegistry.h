@@ -10,7 +10,7 @@
 #define PHONG_SHADER "phong_shader"
 #define PBR_SHADER "pbr_shader"
 
-namespace Bron {
+namespace bron {
 
 class ShaderRegistry {
 public:

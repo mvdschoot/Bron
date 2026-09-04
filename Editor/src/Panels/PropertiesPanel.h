@@ -2,7 +2,7 @@
 
 #include "Panels/Panel.h"
 
-namespace Bron::Editor
+namespace bron::editor
 {
 	/// The inspector for the selected entity. It knows nothing about individual component
 	/// types - the list comes from ComponentRegistry.

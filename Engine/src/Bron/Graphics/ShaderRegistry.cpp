@@ -6,15 +6,15 @@
 
 #include "BuiltinShaders.h"
 
-namespace Bron {
+namespace bron {
 	std::map<std::string, Ref<Shader>> ShaderRegistry::shaders = std::map<std::string, Ref<Shader>>();
 
 	void ShaderRegistry::Init() {
-		ShaderRegistry::CreateShaderFromSource(PHONG_SHADER, BuiltinShaders::Source(BuiltinShaders::Id::Phong3D));
+		ShaderRegistry::CreateShaderFromSource(PHONG_SHADER, builtin_shaders::Source(builtin_shaders::Id::Phong3D));
 	}
 
 	Ref<Shader> ShaderRegistry::GetShader(const char *name) {
-        CORE_ASSERT(shaders.contains(name), "Shader by the name '{}', is not present in the shader registry", name);
+        BR_CORE_ASSERT(shaders.contains(name), "Shader by the name '{}', is not present in the shader registry", name);
         return shaders[name];
     }
 

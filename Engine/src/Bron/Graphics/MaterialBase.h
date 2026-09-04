@@ -7,7 +7,7 @@
 #include "Components/BufferExtentions.h"
 #include "Shader.h"
 
-namespace Bron {
+namespace bron {
 
 	enum MaterialWorkflow {
 		PHONG,

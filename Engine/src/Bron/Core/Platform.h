@@ -3,7 +3,7 @@
 #include "Bron/Core/Core.h"
 #include "Bron/Core/Logger.h"
 
-namespace Bron
+namespace bron
 {
 	class Platform
 	{
@@ -23,7 +23,7 @@ namespace Bron
 		};
 
 	public:
-		static OS getOS()
+		static OS GetOs()
 		{
 #if defined(BR_PLATFORM_WINDOWS)
 			return OS::Windows;
@@ -32,17 +32,17 @@ namespace Bron
 #elif defined(BR_PLATFORM_MACOS)
 			return OS::MacOS;
 #else
-			CORE_ERROR("No Platform detected");
+			BR_CORE_ERROR("No Platform detected");
 			return OS::None;
 #endif
 		}
 
-		static API getAPI()
+		static API GetApi()
 		{
 #if defined(BR_RENDERER_OPENGL)
 			return API::OpenGL;
 #else
-			CORE_ERROR("No rendering API selected");
+			BR_CORE_ERROR("No rendering API selected");
 			return API::None;
 #endif
 		}

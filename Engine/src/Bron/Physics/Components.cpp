@@ -1,6 +1,6 @@
 #include "Components.h"
 
-namespace Bron
+namespace bron
 {
 	AABB::AABB(vec3 A, vec3 B)
 	{
@@ -15,7 +15,7 @@ namespace Bron
 			other.min.z >= min.z && other.max.z <= max.z);
 	}
 
-	void AABB::resizeTo(AABB& to)
+	void AABB::ResizeTo(AABB& to)
 	{
 		min = glm::min(min, to.min);
 		max = glm::max(max, to.max);

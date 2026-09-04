@@ -1,47 +1,47 @@
 #include "OrthographicCamera.h"
 
-namespace Bron
+namespace bron
 {
 	OrthographicCamera::OrthographicCamera(float left, float right, float bottom, float top, float aspectRatio)
-		: AspectRatio(aspectRatio), mViewMat(glm::mat4(1.0f)), mProjectionMat(glm::ortho(left, right, bottom, top, -1.0f, 1.0f)), mZoomLevel(1.0f)
+		: AspectRatio(aspectRatio), view_mat_(glm::mat4(1.0f)), projection_mat_(glm::ortho(left, right, bottom, top, -1.0f, 1.0f)), zoom_level_(1.0f)
 	{
 	}
 
 	OrthographicCamera::OrthographicCamera(float left, float right, float bottom, float top, float aspectRatio,
 	                                       glm::vec3 position, float rotation)
-		: AspectRatio(aspectRatio), mProjectionMat(glm::mat4(1.0f)), mViewMat(glm::ortho(left, right, bottom, top, -1.0f, 1.0f)), mPosition(position), mTarget({0.0f, 0.0f, 0.0f}), mRotation(rotation),
-		  mZoomLevel(1.0f)
+		: AspectRatio(aspectRatio), projection_mat_(glm::mat4(1.0f)), view_mat_(glm::ortho(left, right, bottom, top, -1.0f, 1.0f)), position_(position), target_({0.0f, 0.0f, 0.0f}), rotation_(rotation),
+		  zoom_level_(1.0f)
 	{
-		recalculate();
+		Recalculate();
 	}
 
 	void OrthographicCamera::SetProjection(float left, float right, float top, float bottom)
 	{
-		mProjectionMat = glm::ortho(left, right, bottom, top, -1.0f, 1.0f);
+		projection_mat_ = glm::ortho(left, right, bottom, top, -1.0f, 1.0f);
 	}
 
 	void OrthographicCamera::SetPosition(glm::vec3 pos)
 	{
-		mPosition = pos;
-		recalculate();
+		position_ = pos;
+		Recalculate();
 	}
 
 	void OrthographicCamera::SetRotation(const float angle)
 	{
-		mRotation = angle;
-		recalculate();
+		rotation_ = angle;
+		Recalculate();
 	}
 
 	void OrthographicCamera::SetZoom(const float zoom)
 	{
-		mZoomLevel = zoom;
-		SetProjection(-AspectRatio * mZoomLevel, AspectRatio * mZoomLevel, mZoomLevel, -mZoomLevel);
+		zoom_level_ = zoom;
+		SetProjection(-AspectRatio * zoom_level_, AspectRatio * zoom_level_, zoom_level_, -zoom_level_);
 	}
 
-	void OrthographicCamera::recalculate()
+	void OrthographicCamera::Recalculate()
 	{
-		glm::mat4 transform = translate(glm::mat4(1.0f), mPosition) *
-			rotate(glm::mat4(1.0f), mRotation, glm::vec3(0.0f, 0.0f, 1.0f));
-		mViewMat = inverse(transform);
+		glm::mat4 transform = translate(glm::mat4(1.0f), position_) *
+			rotate(glm::mat4(1.0f), rotation_, glm::vec3(0.0f, 0.0f, 1.0f));
+		view_mat_ = inverse(transform);
 	}
 }

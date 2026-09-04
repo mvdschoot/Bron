@@ -2,11 +2,11 @@
 
 #include <vector>
 
-namespace Bron::Editor
+namespace bron::editor
 {
 	/// The editor's ImGui look. Kept apart from the layer so that the colour constants do
 	/// not sit in the middle of the frame logic.
-	namespace Theme
+	namespace theme
 	{
 		/// Applies the palette named by Preferences::theme, scaled by Preferences::uiScale.
 		/// Falls back to the default palette when the name is not registered.

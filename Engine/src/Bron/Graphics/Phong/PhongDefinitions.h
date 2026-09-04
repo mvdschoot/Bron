@@ -9,7 +9,7 @@
 #include "Bron/Graphics/ShaderDataFunctions.h"
 #include "Bron/Scene/Components.h"
 
-namespace Bron {
+namespace bron {
 
 	inline const auto PhongVertexLayout = NamedBufferLayout<VertexVariables>({
 			{VertexVariables::POSITIONS, {"a_Position", ShaderDataType::Float3}},

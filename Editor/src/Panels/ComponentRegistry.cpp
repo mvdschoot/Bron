@@ -4,7 +4,7 @@
 
 #include "imgui.h"
 
-namespace Bron::Editor
+namespace bron::editor
 {
 	using namespace ImGui;
 
@@ -119,13 +119,13 @@ namespace Bron::Editor
 		}
 	}
 
-	const std::vector<ComponentMeta>& ComponentRegistry::All()
+	const std::vector<ComponentMeta>& component_registry::All()
 	{
 		static const std::vector<ComponentMeta> components = Build();
 		return components;
 	}
 
-	void ComponentRegistry::InvalidateEulerCache()
+	void component_registry::InvalidateEulerCache()
 	{
 		sEulerCacheOwner = entt::null;
 	}

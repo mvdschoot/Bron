@@ -4,12 +4,12 @@
 #include "Bron/Core/KeyCodes.h"
 #include "Bron/Core/MouseCodes.h"
 
-namespace Bron
+namespace bron
 {
 	class Input
 	{
 	public:
-		static bool isKeyPressed(KeyCode key);
-		static bool isMousePressed(MouseCode code);
+		static bool IsKeyPressed(KeyCode key);
+		static bool IsMousePressed(MouseCode code);
 	};
-} // namespace Bron
+} // namespace bron

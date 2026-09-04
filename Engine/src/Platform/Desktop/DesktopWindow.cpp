@@ -1,65 +1,65 @@
 #include "DesktopWindow.h"
 #include "GLFW/glfw3.h"
 
-namespace Bron
+namespace bron
 {
 
-	DesktopWindow::DesktopWindow(const WindowProps& w_props) : _is_glfw_initialised(false)
+	DesktopWindow::DesktopWindow(const WindowProps& w_props) : is_glfw_initialised_(false)
 	{
 		BR_PROFILE_FUNCTION();
-		_window_data._title = w_props._title;
-		_window_data._width = w_props._width;
-		_window_data._height = w_props._height;
+		window_data_.title = w_props.title;
+		window_data_.width = w_props.width;
+		window_data_.height = w_props.height;
 
-		CORE_INFO("Creating winder {} (w:{} h:{})", _window_data._title, _window_data._width, _window_data._height);
+		BR_CORE_INFO("Creating winder {} (w:{} h:{})", window_data_.title, window_data_.width, window_data_.height);
 
-		if (!_is_glfw_initialised)
+		if (!is_glfw_initialised_)
 		{
 			int succes = glfwInit();
-			CORE_ASSERT(succes, "GLFW could not be initialised");
-			_is_glfw_initialised = true;
+			BR_CORE_ASSERT(succes, "GLFW could not be initialised");
+			is_glfw_initialised_ = true;
 		}
 
-		_window = glfwCreateWindow(_window_data._width,
-		                           _window_data._height,
-		                           _window_data._title.c_str(),
+		window_ = glfwCreateWindow(window_data_.width,
+		                           window_data_.height,
+		                           window_data_.title.c_str(),
 		                           nullptr,
 		                           nullptr
 		);
 
-		CORE_ASSERT(_window, "GLFW could not create a new window");
+		BR_CORE_ASSERT(window_, "GLFW could not create a new window");
 
-		glfwSetWindowUserPointer(_window, &_window_data);
+		glfwSetWindowUserPointer(window_, &window_data_);
 
-		_graphics_context = GraphicsContext::Create(_window);
+		graphics_context_ = GraphicsContext::Create(window_);
 
-		setVSync(true);
+		SetVSync(true);
 
 		// Setting up callbacks 
-		glfwSetWindowSizeCallback(_window, [](GLFWwindow* window, int width, int height)
+		glfwSetWindowSizeCallback(window_, [](GLFWwindow* window, int width, int height)
 		{
 			WindowData& data = *static_cast<WindowData*>(glfwGetWindowUserPointer(window));
 
 			WindowResizeEvent evt(width, height);
-			data._event_callback(evt);
-			data._width = width;
-			data._height = height;
+			data.event_callback(evt);
+			data.width = width;
+			data.height = height;
 		});
-		glfwSetWindowCloseCallback(_window, [](GLFWwindow* window)
+		glfwSetWindowCloseCallback(window_, [](GLFWwindow* window)
 		{
 			WindowData& data = *static_cast<WindowData*>(glfwGetWindowUserPointer(window));
 
 			WindowCloseEvent event;
-			data._event_callback(event);
+			data.event_callback(event);
 		});
-		glfwSetCursorPosCallback(_window, [](GLFWwindow* window, double newx, double newy)
+		glfwSetCursorPosCallback(window_, [](GLFWwindow* window, double newx, double newy)
 		{
 			WindowData& data = *static_cast<WindowData*>(glfwGetWindowUserPointer(window));
 
 			MouseMovedEvent event((newx), (newy));
-			data._event_callback(event);
+			data.event_callback(event);
 		});
-		glfwSetMouseButtonCallback(_window, [](GLFWwindow* window, int button, int action, int mods)
+		glfwSetMouseButtonCallback(window_, [](GLFWwindow* window, int button, int action, int mods)
 		{
 			WindowData& data = *static_cast<WindowData*>(glfwGetWindowUserPointer(window));
 
@@ -68,13 +68,13 @@ namespace Bron
 			case GLFW_PRESS:
 				{
 					MouseButtonPressedEvent event(button);
-					data._event_callback(event);
+					data.event_callback(event);
 					break;
 				}
 			case GLFW_RELEASE:
 				{
 					MouseButtonReleasedEvent event(button);
-					data._event_callback(event);
+					data.event_callback(event);
 					break;
 				}
 			default:
@@ -83,7 +83,7 @@ namespace Bron
 				}
 			}
 		});
-		glfwSetKeyCallback(_window, [](GLFWwindow* window, int key, int scancode, int action, int mods)
+		glfwSetKeyCallback(window_, [](GLFWwindow* window, int key, int scancode, int action, int mods)
 		{
 			WindowData& data = *static_cast<WindowData*>(glfwGetWindowUserPointer(window));
 
@@ -92,13 +92,13 @@ namespace Bron
 			case GLFW_PRESS:
 				{
 					KeyPressedEvent event(key);
-					data._event_callback(event);
+					data.event_callback(event);
 					break;
 				}
 			case GLFW_RELEASE:
 				{
 					KeyReleasedEvent event(key);
-					data._event_callback(event);
+					data.event_callback(event);
 					break;
 				}
 			default:
@@ -107,24 +107,24 @@ namespace Bron
 				}
 			}
 		});
-		glfwSetScrollCallback(_window, [](GLFWwindow* window, double offx, double offy)
+		glfwSetScrollCallback(window_, [](GLFWwindow* window, double offx, double offy)
 		{
 			WindowData& data = *static_cast<WindowData*>(glfwGetWindowUserPointer(window));
 
 			MouseScrolledEvent event((offx), (offy));
-			data._event_callback(event);
+			data.event_callback(event);
 		});
 	}
 
-	void DesktopWindow::onUpdate()
+	void DesktopWindow::OnUpdate()
 	{
 		BR_PROFILE_FUNCTION();
-		// glViewport(0, 0, _width, _height);
-		_graphics_context->SwapBuffers();
+		// glViewport(0, 0, width_, height_);
+		graphics_context_->SwapBuffers();
 		glfwPollEvents();
 	}
 
-	void DesktopWindow::setVSync(bool enabled)
+	void DesktopWindow::SetVSync(bool enabled)
 	{
 		if (enabled)
 			glfwSwapInterval(1);
@@ -132,16 +132,16 @@ namespace Bron
 			glfwSwapInterval(0);
 	}
 	
-	float DesktopWindow::getMonitorScale() {
+	float DesktopWindow::GetMonitorScale() {
 		float xScale, yScale;
-		glfwGetWindowContentScale(this->_window, &xScale, &yScale);
+		glfwGetWindowContentScale(this->window_, &xScale, &yScale);
 
-		CORE_INFO("Monitor scale x: {} y: {}", xScale, yScale);
+		BR_CORE_INFO("Monitor scale x: {} y: {}", xScale, yScale);
 
 		if (xScale == yScale) {
 			return xScale;
 		} else {
-			CORE_WARN("The OS's scaling for the primary monitor differs between the x scaling factor and y scaling factor: x: {}, y: {}", xScale, yScale);
+			BR_CORE_WARN("The OS's scaling for the primary monitor differs between the x scaling factor and y scaling factor: x: {}, y: {}", xScale, yScale);
 			return xScale;
 		}
 	}

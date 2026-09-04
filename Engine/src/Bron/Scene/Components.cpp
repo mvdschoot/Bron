@@ -3,7 +3,7 @@
 #include "Bron/Graphics/Buffer.h"
 #include "Bron/Graphics/Components/BufferExtentions.h"
 
-namespace Bron
+namespace bron
 {
 	glm::vec3 FindCentroid(const glm::vec3* vertices, const uint64_t n)
 	{
@@ -32,25 +32,25 @@ namespace Bron
 					break;
 
 				case NORMALS:
-					CORE_ASSERT(vertexData.normals.has_value(),
+					BR_CORE_ASSERT(vertexData.normals.has_value(),
 						"Shader requires the normal coordinates of the vertices, but they have not been given");
 					vertexBuffers.Set(VertexVariables::NORMALS, reinterpret_cast<u8*>(&vertexData.normals.value()[0]));
 					break;
 
 				case UVS:
-					CORE_ASSERT(vertexData.uvs.has_value(),
+					BR_CORE_ASSERT(vertexData.uvs.has_value(),
 						"Shader requires the UV coordinates of the vertices, but they have not been given");
 					vertexBuffers.Set(VertexVariables::UVS, reinterpret_cast<u8*>(&vertexData.uvs.value()[0]));
 					break;
 
 				case TANGENTS:
-					CORE_ASSERT(vertexData.tangents.has_value(),
+					BR_CORE_ASSERT(vertexData.tangents.has_value(),
 						"Shader requires the tangents of the vertices, but they have not been given");
 					vertexBuffers.Set(VertexVariables::TANGENTS, reinterpret_cast<u8*>(&vertexData.tangents.value()[0]));
 					break;
 
 				default:
-					CORE_ASSERT(false, "Unknown vertex variable type provided to vertexBuffers.Set()");
+					BR_CORE_ASSERT(false, "Unknown vertex variable type provided to vertexBuffers.Set()");
 					break;
 			}
 		}
@@ -60,12 +60,12 @@ namespace Bron
 		// Add the vertex buffer to the vao
 		const Ref<VertexBuffer> b =
 			VertexBuffer::Create(reinterpret_cast<float*>(vertexBuffers.Data), vertexBuffers.GetTotalSize());
-		b->setBufferLayout(bufferLayout);
-		mesh.vao->addVertexBuffer(b);
+		b->SetBufferLayout(bufferLayout);
+		mesh.vao->AddVertexBuffer(b);
 
 		// Add the index buffer to the vao
 		const Ref<IndexBuffer> indexBuffer = IndexBuffer::Create(&vertexData.indices[0], vertexData.indices.size());
-		mesh.vao->setIndexBuffer(indexBuffer);
+		mesh.vao->SetIndexBuffer(indexBuffer);
 	}
 
 	Ref<VertexArray> GetVao(MeshComponent& mesh, const NamedBufferLayout<VertexVariables>& bufferLayout)
@@ -76,4 +76,4 @@ namespace Bron
 
 		return mesh.vao;
 	}
-} // namespace Bron
+} // namespace bron

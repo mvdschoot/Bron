@@ -2,7 +2,7 @@
 
 #include <limits>
 
-namespace Bron
+namespace bron
 {
 	void SAH::Split(Pt<BvhNode> node)
 	{
@@ -11,7 +11,7 @@ namespace Bron
 		const float splitStepZ = (node->box.max.z - node->box.min.z) / (float)(SplitPerAxis + 1);
 
 		float minCost = std::numeric_limits<float>::max();
-		glm::vec3 minSplit(1.0f);
+		glm::vec3 min_split(1.0f);
 
 		for (u8 x = 1; x < SplitPerAxis + 1; x++)
 		{
@@ -19,7 +19,7 @@ namespace Bron
 			float cost = Cost(node, AABB(node->box.min, s), AABB(s, node->box.max));
 			if (cost < minCost)
 			{
-				minSplit = s;
+				min_split = s;
 				minCost = cost;
 			}
 		}
@@ -29,7 +29,7 @@ namespace Bron
 			float cost = Cost(node, AABB(node->box.min, s), AABB(s, node->box.max));
 			if (cost < minCost)
 			{
-				minSplit = s;
+				min_split = s;
 				minCost = cost;
 			}
 		}
@@ -39,13 +39,13 @@ namespace Bron
 			float cost = Cost(node, AABB(node->box.min, s), AABB(s, node->box.max));
 			if (cost < minCost)
 			{
-				minSplit = s;
+				min_split = s;
 				minCost = cost;
 			}
 		}
 
-		AABB a = AABB(node->box.min, minSplit);
-		AABB b = AABB(minSplit, node->box.max);
+		AABB a = AABB(node->box.min, min_split);
+		AABB b = AABB(min_split, node->box.max);
 		
 		node->left = createPt<BvhNode>(BvhNode {a, nullptr, nullptr});
 		node->right = createPt<BvhNode>(BvhNode {a, nullptr, nullptr});
@@ -63,7 +63,7 @@ namespace Bron
 				node->primitives.erase(node->primitives.begin() + x);
 				x--;
 			} else {
-				CORE_ASSERT(false, "Node does not fit in either box, algorithm is faulty.");
+				BR_CORE_ASSERT(false, "Node does not fit in either box, algorithm is faulty.");
 			}
 		}
 	}
@@ -88,7 +88,7 @@ namespace Bron
 			} else if (b.contains(n->boundingBox)) {
 				r++;
 			} else {
-				CORE_ASSERT(false, "Node does not fit in either box, algorithm is faulty.");
+				BR_CORE_ASSERT(false, "Node does not fit in either box, algorithm is faulty.");
 			}
 		}
 

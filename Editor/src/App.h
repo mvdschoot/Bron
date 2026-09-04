@@ -4,7 +4,7 @@
 
 #include "Core/EditorLayer.h"
 
-namespace Bron::Editor
+namespace bron::editor
 {
 	/// The editor executable. It exists to stand one layer up; all of the editor lives there.
 	class App final : public Application

@@ -10,12 +10,12 @@
 #include "Bron/Scene/Components.h"
 #include "Bron/Scene/Scene.h"
 
-namespace Bron {
-	u8 LightManagement::numberPointLights() const {
+namespace bron {
+	u8 LightManagement::NumberPointLights() const {
 		return static_cast<u8>(std::min<usize>(scene.reg.view<PointLightComponent>().size(), POINTLIGHT_MAX));
 	}
 
-	void LightManagement::bind() {
+	void LightManagement::Bind() {
 		BR_PROFILE_FUNCTION();
 
 		// Zero filled, so slots past the last light read as black lights at the origin.
@@ -24,7 +24,7 @@ namespace Bron {
 		usize i = 0;
 		for (auto [entity, transform, light] : scene.reg.view<TransformComponent, PointLightComponent>().each()) {
 			if (i >= POINTLIGHT_MAX) {
-				CORE_WARN("Scene has more than {} point lights; the rest are ignored.", POINTLIGHT_MAX);
+				BR_CORE_WARN("Scene has more than {} point lights; the rest are ignored.", POINTLIGHT_MAX);
 				break;
 			}
 
@@ -40,8 +40,8 @@ namespace Bron {
 		if (ubo == nullptr)
 			ubo = UniformBuffer::Create(lights.data(), totalSize, POINTLIGHT_UBO_INDEX);
 		else
-			ubo->setData(reinterpret_cast<const u8*>(lights.data()), totalSize);
+			ubo->SetData(reinterpret_cast<const u8*>(lights.data()), totalSize);
 
-		ubo->bind(POINTLIGHT_UBO_INDEX);
+		ubo->Bind(POINTLIGHT_UBO_INDEX);
 	}
 } // Bron

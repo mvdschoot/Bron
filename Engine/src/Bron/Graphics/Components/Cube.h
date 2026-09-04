@@ -9,7 +9,7 @@
 #include "Bron/Graphics/MaterialBase.h"
 #include "Bron/Scene/Components.h"
 
-namespace Bron {
+namespace bron {
 	class Scene;
 
 	/// Creates a unit cube entity with the given material. Unparented; the caller decides where it goes.

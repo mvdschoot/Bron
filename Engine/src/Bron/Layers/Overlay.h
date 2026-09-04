@@ -8,12 +8,12 @@
 #include <vector>
 #include <memory>
 
-namespace Bron
+namespace bron
 {
 	class BR_API Overlay
 	{
 	public:
-		Overlay(): _visible(true)
+		Overlay(): visible_(true)
 		{
 		};
 
@@ -21,16 +21,16 @@ namespace Bron
 		{
 		};
 
-		void insertLayer(Layer* layer);
-		void insertLayer(Layer* layer, u32 pos);
+		void InsertLayer(Layer* layer);
+		void InsertLayer(Layer* layer, u32 pos);
 
-		void setVisibility(bool vis) { _visible = vis; }
-		std::vector<Layer*> getLayers() { return _layer_stack; }
-		std::vector<Layer*>::iterator getBegin() { return _layer_stack.begin(); }
-		std::vector<Layer*>::iterator getEnd() { return _layer_stack.end(); }
+		void SetVisibility(bool vis) { visible_ = vis; }
+		std::vector<Layer*> GetLayers() { return layer_stack_; }
+		std::vector<Layer*>::iterator GetBegin() { return layer_stack_.begin(); }
+		std::vector<Layer*>::iterator GetEnd() { return layer_stack_.end(); }
 
 	private:
-		std::vector<Layer*> _layer_stack;
-		bool _visible;
+		std::vector<Layer*> layer_stack_;
+		bool visible_;
 	};
 }

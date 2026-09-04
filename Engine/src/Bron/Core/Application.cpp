@@ -2,31 +2,31 @@
 
 #include "Bron/Graphics/ShaderRegistry.h"
 
-namespace Bron
+namespace bron
 {
-	Ref<Window> Application::_window = nullptr;
+	Ref<Window> Application::window_ = nullptr;
 
 	void Application::Run()
 	{
-		CORE_ASSERT(_window != nullptr, "Window has to be initialised");
-		while (_running)
+		BR_CORE_ASSERT(window_ != nullptr, "Window has to be initialised");
+		while (running_)
 		{
-			_frame_count++;
-			if (_frame_count == 300)
+			frame_count_++;
+			if (frame_count_ == 300)
 			{
 				BR_PROFILE_BEGIN_SESSION("sesh", "loop.json");
 			}
 
 			BR_PROFILE_SCOPE("MAIN_LOOP");
 			float time = glfwGetTime();
-			Timestep ts(time - _last_frame_time);
-			_last_frame_time = time;
+			Timestep ts(time - last_frame_time_);
+			last_frame_time_ = time;
 
-			if (!_minimized)
+			if (!minimized_)
 			{
-				for (Overlay* overlay : _overlay_stack.getOverlays())
+				for (Overlay* overlay : overlay_stack_.GetOverlays())
 				{
-					for (Layer* layer : overlay->getLayers())
+					for (Layer* layer : overlay->GetLayers())
 					{
 						layer->OnUpdate(ts);
 					}
@@ -35,20 +35,20 @@ namespace Bron
 
 			{
 				BR_PROFILE_SCOPE("IMGUI_LAYER");
-				_imgui_layer->begin();
-				for (Overlay* overlay : _overlay_stack.getOverlays())
+				imgui_layer_->Begin();
+				for (Overlay* overlay : overlay_stack_.GetOverlays())
 				{
-					for (Layer* layer : overlay->getLayers())
+					for (Layer* layer : overlay->GetLayers())
 					{
 						layer->OnImGuiRender();
 					}
 				}
-				_imgui_layer->end();
+				imgui_layer_->End();
 			}
 
-			_window->onUpdate();
+			window_->OnUpdate();
 
-			if (_frame_count == PROFILING_FRAME_COUNT + PROFILING_START_FRAME)
+			if (frame_count_ == PROFILING_FRAME_COUNT + PROFILING_START_FRAME)
 			{
 				BR_PROFILE_END_SESSION();
 			}
@@ -60,59 +60,59 @@ namespace Bron
 		srand(time(nullptr));
 
 		WindowProps props;
-		props._width = 1280 * 2;
-		props._height = 720 * 2;
-		_window = Window::Create(props);
-		_window->setEventCallback(BIND_EVENT_FN(Application::OnEvent));
+		props.width = 1280 * 2;
+		props.height = 720 * 2;
+		window_ = Window::Create(props);
+		window_->SetEventCallback(BR_BIND_EVENT_FN(Application::OnEvent));
 
 		ShaderRegistry::Init();
 
 		auto imgui_overlay = new Overlay;
 		auto profiling_overlay = new Overlay;
 
-		_imgui_layer = new ImGuiLayer(_window);
-		imgui_overlay->insertLayer(_imgui_layer);
+		imgui_layer_ = new ImGuiLayer(window_);
+		imgui_overlay->InsertLayer(imgui_layer_);
 
-		_overlay_stack.instertOverlay(imgui_overlay);
-		_overlay_stack.instertOverlay(profiling_overlay);
+		overlay_stack_.InsertOverlay(imgui_overlay);
+		overlay_stack_.InsertOverlay(profiling_overlay);
 
-		CORE_INFO("Is initialised");
+		BR_CORE_INFO("Is initialised");
 	}
 
-	bool Application::onWindowClose(WindowCloseEvent& event)
+	bool Application::OnWindowClose(WindowCloseEvent& event)
 	{
-		_running = false;
+		running_ = false;
 		return true;
 	}
 
-	bool Application::onWindowResize(WindowResizeEvent& event)
+	bool Application::OnWindowResize(WindowResizeEvent& event)
 	{
-		if (event.getWidth() == 0 || event.getHeight() == 0)
+		if (event.GetWidth() == 0 || event.GetHeight() == 0)
 		{
-			_minimized = true;
-			CORE_INFO("Window is minimized");
+			minimized_ = true;
+			BR_CORE_INFO("Window is minimized");
 		} else
 		{
-			_minimized = false;
-			CORE_INFO("Window size: {}, {}", event.getWidth(), event.getHeight());
+			minimized_ = false;
+			BR_CORE_INFO("Window size: {}, {}", event.GetWidth(), event.GetHeight());
 		}
 		return true;
 	}
 
-	void Application::addOverlay(Overlay* overlay)
+	void Application::AddOverlay(Overlay* overlay)
 	{
-		_overlay_stack.instertOverlay(overlay);
+		overlay_stack_.InsertOverlay(overlay);
 	}
 
 	void Application::OnEvent(Event& event)
 	{
 		EventDispatcher disp(event);
-		disp.Dispatch<WindowCloseEvent>(BIND_EVENT_FN(Application::onWindowClose));
-		disp.Dispatch<WindowResizeEvent>(BIND_EVENT_FN(Application::onWindowResize));
+		disp.Dispatch<WindowCloseEvent>(BR_BIND_EVENT_FN(Application::OnWindowClose));
+		disp.Dispatch<WindowResizeEvent>(BR_BIND_EVENT_FN(Application::OnWindowResize));
 
-		for (auto x = _overlay_stack.getBegin(); x != _overlay_stack.getEnd(); ++x)
+		for (auto x = overlay_stack_.GetBegin(); x != overlay_stack_.GetEnd(); ++x)
 		{
-			for (auto y = (*x)->getBegin(); y != (*x)->getEnd(); ++y)
+			for (auto y = (*x)->GetBegin(); y != (*x)->GetEnd(); ++y)
 			{
 				if (event.is_handled)
 					return;

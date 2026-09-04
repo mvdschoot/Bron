@@ -2,7 +2,7 @@
 
 #include "Panels/ComponentRegistry.h"
 
-namespace Bron::Editor
+namespace bron::editor
 {
 	using namespace ImGui;
 
@@ -29,7 +29,7 @@ namespace Bron::Editor
 	{
 		Scene& scene = Context.scene;
 
-		for (const ComponentMeta& component : ComponentRegistry::All())
+		for (const ComponentMeta& component : component_registry::All())
 		{
 			if (!component.has(scene, entity))
 				continue;
@@ -68,7 +68,7 @@ namespace Bron::Editor
 		Scene& scene = Context.scene;
 
 		bool anyOffered = false;
-		for (const ComponentMeta& component : ComponentRegistry::All())
+		for (const ComponentMeta& component : component_registry::All())
 		{
 			if (!component.add || component.has(scene, entity))
 				continue;

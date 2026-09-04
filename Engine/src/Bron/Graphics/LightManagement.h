@@ -17,7 +17,7 @@
 
 #define POINTLIGHT_MAX 32
 
-namespace Bron {
+namespace bron {
 
 class Scene;
 
@@ -39,11 +39,11 @@ public:
 	// Uploads every point light and binds the UBO. Call once per frame, before the draw loop.
 	// The buffer is a fixed POINTLIGHT_MAX entries, so re-uploading it unconditionally is cheaper
 	// than tracking what changed.
-	void bind();
+	void Bind();
 
-	// Clamped to POINTLIGHT_MAX: the shader indexes a fixed size array with this count, and bind()
+	// Clamped to POINTLIGHT_MAX: the shader indexes a fixed size array with this count, and Bind()
 	// only fills that many slots.
-	[[nodiscard]] u8 numberPointLights() const;
+	[[nodiscard]] u8 NumberPointLights() const;
 
 private:
 	Scene& scene;

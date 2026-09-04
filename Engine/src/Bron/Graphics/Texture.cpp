@@ -4,14 +4,14 @@
 #include "Platform/OpenGL/OpenGLTextTexture.h"
 #include "Platform/OpenGL/OpenGLTexture.h"
 
-namespace Bron
+namespace bron
 {
 	Ref<Texture> Texture2D::Create(u32 width, u32 height)
 	{
-		switch (Platform::getAPI())
+		switch (Platform::GetApi())
 		{
-		case Platform::API::None: CORE_ASSERT(false, "No rendering API detected!");
-		case Platform::API::OpenGL: return createRef<OpenGLTexture2D>(width, height);
+		case Platform::API::None: BR_CORE_ASSERT(false, "No rendering API detected!");
+		case Platform::API::OpenGL: return CreateRef<OpenGLTexture2D>(width, height);
 		}
 
 		return nullptr;
@@ -19,10 +19,10 @@ namespace Bron
 
 	Ref<Texture> Texture2D::Create(const char* path)
 	{
-		switch (Platform::getAPI())
+		switch (Platform::GetApi())
 		{
-		case Platform::API::None: CORE_ASSERT(false, "No rendering API detected!");
-		case Platform::API::OpenGL: return createRef<OpenGLTexture2D>(path);
+		case Platform::API::None: BR_CORE_ASSERT(false, "No rendering API detected!");
+		case Platform::API::OpenGL: return CreateRef<OpenGLTexture2D>(path);
 		}
 
 		return nullptr;
@@ -30,10 +30,10 @@ namespace Bron
 
 	Ref<Texture> Texture2D::CreateFromMemory(const void* data, u32 size)
 	{
-		switch (Platform::getAPI())
+		switch (Platform::GetApi())
 		{
-		case Platform::API::None: CORE_ASSERT(false, "No rendering API detected!");
-		case Platform::API::OpenGL: return createRef<OpenGLTexture2D>(data, size);
+		case Platform::API::None: BR_CORE_ASSERT(false, "No rendering API detected!");
+		case Platform::API::OpenGL: return CreateRef<OpenGLTexture2D>(data, size);
 		}
 
 		return nullptr;
@@ -41,10 +41,10 @@ namespace Bron
 
 	Ref<TextTexture> TextTexture::Create(u32 width, u32 height)
 	{
-		switch (Platform::getAPI())
+		switch (Platform::GetApi())
 		{
-		case Platform::API::None: CORE_ASSERT(false, "No rendering API detected!");
-		case Platform::API::OpenGL: return createRef<OpenGLTextTexture>(width, height);
+		case Platform::API::None: BR_CORE_ASSERT(false, "No rendering API detected!");
+		case Platform::API::OpenGL: return CreateRef<OpenGLTextTexture>(width, height);
 		}
 
 		return nullptr;

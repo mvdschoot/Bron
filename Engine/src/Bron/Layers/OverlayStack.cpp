@@ -1,6 +1,6 @@
 #include "OverlayStack.h"
 
-namespace Bron
+namespace bron
 {
 	OverlayStack::OverlayStack()
 	{
@@ -10,13 +10,13 @@ namespace Bron
 	{
 	}
 
-	void OverlayStack::instertOverlay(Overlay* overlay)
+	void OverlayStack::InsertOverlay(Overlay* overlay)
 	{
-		_overlay_stack.push_back(overlay);
+		overlay_stack_.push_back(overlay);
 	}
 
-	void OverlayStack::instertOverlay(Overlay* overlay, u32 pos)
+	void OverlayStack::InsertOverlay(Overlay* overlay, u32 pos)
 	{
-		_overlay_stack.insert(_overlay_stack.begin() + pos, overlay);
+		overlay_stack_.insert(overlay_stack_.begin() + pos, overlay);
 	}
 }

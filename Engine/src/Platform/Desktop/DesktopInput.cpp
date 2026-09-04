@@ -3,18 +3,18 @@
 #include "Bron/Core/Application.h"
 #include "GLFW/glfw3.h"
 
-namespace Bron
+namespace bron
 {
-	bool Input::isKeyPressed(KeyCode key)
+	bool Input::IsKeyPressed(KeyCode key)
 	{
-		GLFWwindow* winder = Application::getWindow()->getWindowPointer();
+		GLFWwindow* winder = Application::GetWindow()->GetWindowPointer();
 		int state = glfwGetKey(winder, key);
 		return state == GLFW_PRESS || state == GLFW_REPEAT;
 	}
 
-	bool Input::isMousePressed(MouseCode code)
+	bool Input::IsMousePressed(MouseCode code)
 	{
-		GLFWwindow* winder = Application::getWindow()->getWindowPointer();
+		GLFWwindow* winder = Application::GetWindow()->GetWindowPointer();
 		int state = glfwGetMouseButton(winder, code);
 		return state == GLFW_PRESS;
 	}

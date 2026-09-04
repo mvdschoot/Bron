@@ -8,7 +8,7 @@
 #include "Core/EditorCamera.h"
 #include "Core/Project.h"
 
-namespace Bron::Editor
+namespace bron::editor
 {
 	/// The state every panel shares: what is being edited, what is selected, and how the
 	/// viewport looks at it. Panels hold a reference to this instead of reaching into each

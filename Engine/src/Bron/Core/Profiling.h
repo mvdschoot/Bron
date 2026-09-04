@@ -12,7 +12,7 @@
 #include "Bron/Core/Core.h"
 #include "Bron/Core/Logger.h"
 
-namespace Bron
+namespace bron
 {
 	using FloatingPointMicroseconds = std::chrono::duration<double, std::micro>;
 
@@ -45,9 +45,9 @@ namespace Bron
 				// Subsequent profiling output meant for the original session will end up in the
 				// newly opened session instead.  That's better than having badly formatted
 				// profiling output.
-				if (Logger::getCoreLogger()) // Edge case: BeginSession() might be before Log::Init()
+				if (Logger::GetCoreLogger()) // Edge case: BeginSession() might be before Log::Init()
 				{
-					CORE_INFO("Instrumentor::BeginSession('{}') when session '{}' already open.", name,
+					BR_CORE_INFO("Instrumentor::BeginSession('{}') when session '{}' already open.", name,
 					          m_CurrentSession->Name);
 				}
 				InternalEndSession();
@@ -61,19 +61,19 @@ namespace Bron
 			}
 			else
 			{
-				if (Logger::getCoreLogger()) // Edge case: BeginSession() might be before Log::Init()
+				if (Logger::GetCoreLogger()) // Edge case: BeginSession() might be before Log::Init()
 				{
-					CORE_ERROR("Instrumentor could not open results file '{}'.", filepath);
+					BR_CORE_ERROR("Instrumentor could not open results file '{}'.", filepath);
 				}
 			}
-			CORE_TRACE("Trace session has begun...");
+			BR_CORE_TRACE("Trace session has begun...");
 		}
 
 		void EndSession()
 		{
 			std::lock_guard<std::mutex> lock(m_Mutex);
 			InternalEndSession();
-			CORE_TRACE("Trace session has ended...");
+			BR_CORE_TRACE("Trace session has ended...");
 		}
 
 		void WriteProfile(const ProfileResult& result)
@@ -187,7 +187,7 @@ namespace Bron
 		bool m_Stopped;
 	};
 
-	namespace InstrumentorUtils
+	namespace instrumentor_utils
 	{
 		template <size_t N>
 		struct ChangeResult
@@ -240,10 +240,10 @@ namespace Bron
 		#define BR_FUNC_SIG "BR_FUNC_SIG unknown!"
 #endif
 
-	#define BR_PROFILE_BEGIN_SESSION(name, filepath) ::Bron::Instrumentor::Get().BeginSession(name, filepath)
-	#define BR_PROFILE_END_SESSION() ::Bron::Instrumentor::Get().EndSession()
-	#define BR_PROFILE_SCOPE_LINE2(name, line) constexpr auto fixedName##line = ::Bron::InstrumentorUtils::CleanupOutputString(name, "__cdecl ");\
-											   ::Bron::InstrumentationTimer timer##line(fixedName##line.Data)
+	#define BR_PROFILE_BEGIN_SESSION(name, filepath) ::bron::Instrumentor::Get().BeginSession(name, filepath)
+	#define BR_PROFILE_END_SESSION() ::bron::Instrumentor::Get().EndSession()
+	#define BR_PROFILE_SCOPE_LINE2(name, line) constexpr auto fixedName##line = ::bron::instrumentor_utils::CleanupOutputString(name, "__cdecl ");\
+											   ::bron::InstrumentationTimer timer##line(fixedName##line.Data)
 	#define BR_PROFILE_SCOPE_LINE(name, line) BR_PROFILE_SCOPE_LINE2(name, line)
 	#define BR_PROFILE_SCOPE(name) BR_PROFILE_SCOPE_LINE(name, __LINE__)
 	#define BR_PROFILE_FUNCTION() BR_PROFILE_SCOPE(BR_FUNC_SIG)

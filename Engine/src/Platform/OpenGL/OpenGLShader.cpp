@@ -1,39 +1,39 @@
 #include "OpenGLShader.h"
 
-namespace Bron
+namespace bron
 {
-	void OpenGLShader::bind()
+	void OpenGLShader::Bind()
 	{
-		glUseProgram(_renderer_id);
-		_binded = true;
+		glUseProgram(renderer_id_);
+		binded_ = true;
 	}
 
-	void OpenGLShader::unbind()
+	void OpenGLShader::Unbind()
 	{
 		glUseProgram(0);
-		_binded = false;
+		binded_ = false;
 	}
 
-	bool OpenGLShader::isBound()
+	bool OpenGLShader::IsBound()
 	{
-		return _binded;
+		return binded_;
 	}
 
-	bool OpenGLShader::isSet(std::string name)
+	bool OpenGLShader::IsSet(std::string name)
 	{
-		return _uniform_locations.find(name) != _uniform_locations.end();
+		return uniform_locations_.find(name) != uniform_locations_.end();
 	}
 
 
 	OpenGLShader::OpenGLShader(std::string& shader)
 	{
 		parse(shader);
-		compile();
+		Compile();
 	}
 
 	OpenGLShader::~OpenGLShader()
 	{
-		glDeleteProgram(_renderer_id);
+		glDeleteProgram(renderer_id_);
 	}
 
 	void OpenGLShader::parse(std::string& shader)
@@ -47,29 +47,29 @@ namespace Bron
 		usize f = shader.find(f_word);
 		usize g = shader.find(g_word);
 
-		CORE_ASSERT(v != -1 && f != -1, "Both vertex and fragment shader should be present.");
+		BR_CORE_ASSERT(v != -1 && f != -1, "Both vertex and fragment shader should be present.");
 
 		if (g == -1)
 		{
-			_v_shader = shader.substr(v + v_word.size(), f - v_word.size());
-			_f_shader = shader.substr(f + f_word.size(), std::string::npos);
+			v_shader_ = shader.substr(v + v_word.size(), f - v_word.size());
+			f_shader_ = shader.substr(f + f_word.size(), std::string::npos);
 		}
 		else
 		{
-			_v_shader = shader.substr(v + v_word.size(), g - v_word.size());
-			_g_shader = shader.substr(g + g_word.size(), f - g - g_word.size());
-			_f_shader = shader.substr(f + f_word.size(), std::string::npos);
+			v_shader_ = shader.substr(v + v_word.size(), g - v_word.size());
+			g_shader_ = shader.substr(g + g_word.size(), f - g - g_word.size());
+			f_shader_ = shader.substr(f + f_word.size(), std::string::npos);
 		}
 	}
 
-	void OpenGLShader::compile()
+	void OpenGLShader::Compile()
 	{
 		BR_PROFILE_FUNCTION();
 
 		// Vertex shader
 		const GLuint vertexShader = glCreateShader(GL_VERTEX_SHADER);
 
-		auto source = _v_shader.c_str();
+		auto source = v_shader_.c_str();
 		glShaderSource(vertexShader, 1, &source, nullptr);
 
 		glCompileShader(vertexShader);
@@ -80,13 +80,13 @@ namespace Bron
 			GLint maxLength = 0;
 			glGetShaderiv(vertexShader, GL_INFO_LOG_LENGTH, &maxLength);
 
-			std::vector<GLchar> infoLog(maxLength);
-			glGetShaderInfoLog(vertexShader, maxLength, &maxLength, &infoLog[0]);
+			std::vector<GLchar> info_log(maxLength);
+			glGetShaderInfoLog(vertexShader, maxLength, &maxLength, &info_log[0]);
 
 
 			glDeleteShader(vertexShader);
 
-			CORE_ERROR("Failed to compile vertex shader: {}", infoLog.data());
+			BR_CORE_ERROR("Failed to compile vertex shader: {}", info_log.data());
 
 			return;
 		}
@@ -95,7 +95,7 @@ namespace Bron
 		// Fragment shader
 		const GLuint fragmentShader = glCreateShader(GL_FRAGMENT_SHADER);
 
-		source = _f_shader.c_str();
+		source = f_shader_.c_str();
 		glShaderSource(fragmentShader, 1, &source, nullptr);
 
 		glCompileShader(fragmentShader);
@@ -105,14 +105,14 @@ namespace Bron
 			GLint maxLength = 0;
 			glGetShaderiv(fragmentShader, GL_INFO_LOG_LENGTH, &maxLength);
 
-			std::vector<GLchar> infoLog(maxLength);
-			glGetShaderInfoLog(fragmentShader, maxLength, &maxLength, &infoLog[0]);
+			std::vector<GLchar> info_log(maxLength);
+			glGetShaderInfoLog(fragmentShader, maxLength, &maxLength, &info_log[0]);
 
 
 			glDeleteShader(fragmentShader);
 			glDeleteShader(vertexShader);
 
-			CORE_ERROR("Failed to compile fragment shader: {}", infoLog.data());
+			BR_CORE_ERROR("Failed to compile fragment shader: {}", info_log.data());
 
 			return;
 		}
@@ -120,11 +120,11 @@ namespace Bron
 
 		// (Optional) geometry shader
 		GLuint geometryShader = -1;
-		if (!_g_shader.empty())
+		if (!g_shader_.empty())
 		{
 			geometryShader = glCreateShader(GL_GEOMETRY_SHADER);
 
-			source = _g_shader.c_str();
+			source = g_shader_.c_str();
 			glShaderSource(geometryShader, 1, &source, nullptr);
 
 			glCompileShader(geometryShader);
@@ -134,147 +134,147 @@ namespace Bron
 				GLint maxLength = 0;
 				glGetShaderiv(geometryShader, GL_INFO_LOG_LENGTH, &maxLength);
 
-				std::vector<GLchar> infoLog(maxLength);
-				glGetShaderInfoLog(geometryShader, maxLength, &maxLength, &infoLog[0]);
+				std::vector<GLchar> info_log(maxLength);
+				glGetShaderInfoLog(geometryShader, maxLength, &maxLength, &info_log[0]);
 
 				glDeleteShader(geometryShader);
 				glDeleteShader(fragmentShader);
 				glDeleteShader(vertexShader);
 
-				CORE_ERROR("Failed to compile geometry shader: {}", infoLog.data());
+				BR_CORE_ERROR("Failed to compile geometry shader: {}", info_log.data());
 
 				return;
 			}
 		}
 
 
-		_renderer_id = glCreateProgram();
+		renderer_id_ = glCreateProgram();
 
-		glAttachShader(_renderer_id, vertexShader);
-		glAttachShader(_renderer_id, fragmentShader);
-		if (!_g_shader.empty())
-			glAttachShader(_renderer_id, geometryShader);
+		glAttachShader(renderer_id_, vertexShader);
+		glAttachShader(renderer_id_, fragmentShader);
+		if (!g_shader_.empty())
+			glAttachShader(renderer_id_, geometryShader);
 
 
-		glLinkProgram(_renderer_id);
+		glLinkProgram(renderer_id_);
 
 		GLint isLinked = 0;
-		glGetProgramiv(_renderer_id, GL_LINK_STATUS, &isLinked);
+		glGetProgramiv(renderer_id_, GL_LINK_STATUS, &isLinked);
 		if (isLinked == GL_FALSE)
 		{
 			GLint maxLength = 0;
-			glGetProgramiv(_renderer_id, GL_INFO_LOG_LENGTH, &maxLength);
+			glGetProgramiv(renderer_id_, GL_INFO_LOG_LENGTH, &maxLength);
 
-			std::vector<GLchar> infoLog(maxLength);
-			glGetProgramInfoLog(_renderer_id, maxLength, &maxLength, &infoLog[0]);
+			std::vector<GLchar> info_log(maxLength);
+			glGetProgramInfoLog(renderer_id_, maxLength, &maxLength, &info_log[0]);
 
 
-			glDeleteProgram(_renderer_id);
+			glDeleteProgram(renderer_id_);
 
 			glDeleteShader(vertexShader);
 			glDeleteShader(fragmentShader);
 			glDeleteShader(geometryShader);
 
-			CORE_ERROR("Failed to link shaders into _renderer_id: {}", infoLog.data());
+			BR_CORE_ERROR("Failed to link shaders into renderer_id_: {}", info_log.data());
 
 
 			return;
 		}
 
-		CORE_INFO("Loaded shader {} into program!", _renderer_id);
+		BR_CORE_INFO("Loaded shader {} into program!", renderer_id_);
 
-		glDetachShader(_renderer_id, vertexShader);
-		glDetachShader(_renderer_id, fragmentShader);
+		glDetachShader(renderer_id_, vertexShader);
+		glDetachShader(renderer_id_, fragmentShader);
 
-		if (!_g_shader.empty())
-			glDetachShader(_renderer_id, geometryShader);
+		if (!g_shader_.empty())
+			glDetachShader(renderer_id_, geometryShader);
 	}
 
-	void OpenGLShader::setUniformMat3(std::string name, const glm::mat3& matrix)
+	void OpenGLShader::SetUniformMat3(std::string name, const glm::mat3& matrix)
 	{
-		u32 loc = _uniform_locations.contains(name) ? _uniform_locations[name] : glGetUniformLocation(_renderer_id, name.c_str());
-		CORE_ASSERT(loc != -1, "Cant find uniform ({}) or uniform not used in shader", name)
+		u32 loc = uniform_locations_.contains(name) ? uniform_locations_[name] : glGetUniformLocation(renderer_id_, name.c_str());
+		BR_CORE_ASSERT(loc != -1, "Cant find uniform ({}) or uniform not used in shader", name);
 		glUniformMatrix3fv(loc, 1, GL_FALSE, value_ptr(matrix));
-		_uniform_locations.emplace(name, loc);
+		uniform_locations_.emplace(name, loc);
 	}
 
-	void OpenGLShader::setUniformMat4(std::string name, const glm::mat4& matrix)
+	void OpenGLShader::SetUniformMat4(std::string name, const glm::mat4& matrix)
 	{
-		u32 loc = _uniform_locations.contains(name) ? _uniform_locations[name] : glGetUniformLocation(_renderer_id, name.c_str());
-		CORE_ASSERT(loc != -1, "Cant find uniform ({}) or uniform not used in shader", name)
+		u32 loc = uniform_locations_.contains(name) ? uniform_locations_[name] : glGetUniformLocation(renderer_id_, name.c_str());
+		BR_CORE_ASSERT(loc != -1, "Cant find uniform ({}) or uniform not used in shader", name);
 		glUniformMatrix4fv(loc, 1, GL_FALSE, value_ptr(matrix));
-		_uniform_locations.emplace(name, loc);
+		uniform_locations_.emplace(name, loc);
 	}
 
-	void OpenGLShader::setUniform1i(std::string name, u32 a)
+	void OpenGLShader::SetUniform1i(std::string name, u32 a)
 	{
-		u32 loc = _uniform_locations.contains(name) ? _uniform_locations[name] : glGetUniformLocation(_renderer_id, name.c_str());
-		CORE_ASSERT(loc != -1, "Cant find uniform ({}) or uniform not used in shader", name)
+		u32 loc = uniform_locations_.contains(name) ? uniform_locations_[name] : glGetUniformLocation(renderer_id_, name.c_str());
+		BR_CORE_ASSERT(loc != -1, "Cant find uniform ({}) or uniform not used in shader", name);
 		glUniform1i(loc, a);
-		_uniform_locations.emplace(name, loc);
+		uniform_locations_.emplace(name, loc);
 	}
 
-	void OpenGLShader::setUniform2i(std::string name, u32 a, u32 b)
+	void OpenGLShader::SetUniform2i(std::string name, u32 a, u32 b)
 	{
-		u32 loc = _uniform_locations.contains(name) ? _uniform_locations[name] : glGetUniformLocation(_renderer_id, name.c_str());
-		CORE_ASSERT(loc != -1, "Cant find uniform ({}) or uniform not used in shader", name)
+		u32 loc = uniform_locations_.contains(name) ? uniform_locations_[name] : glGetUniformLocation(renderer_id_, name.c_str());
+		BR_CORE_ASSERT(loc != -1, "Cant find uniform ({}) or uniform not used in shader", name);
 		glUniform2i(loc, a, b);
-		_uniform_locations.emplace(name, loc);
+		uniform_locations_.emplace(name, loc);
 	}
 
-	void OpenGLShader::setUniform3i(std::string name, u32 a, u32 b, u32 c)
+	void OpenGLShader::SetUniform3i(std::string name, u32 a, u32 b, u32 c)
 	{
-		u32 loc = _uniform_locations.contains(name) ? _uniform_locations[name] : glGetUniformLocation(_renderer_id, name.c_str());
-		CORE_ASSERT(loc != -1, "Cant find uniform ({}) or uniform not used in shader", name)
+		u32 loc = uniform_locations_.contains(name) ? uniform_locations_[name] : glGetUniformLocation(renderer_id_, name.c_str());
+		BR_CORE_ASSERT(loc != -1, "Cant find uniform ({}) or uniform not used in shader", name);
 		glUniform3i(loc, a, b, c);
-		_uniform_locations.emplace(name, loc);
+		uniform_locations_.emplace(name, loc);
 	}
 
-	void OpenGLShader::setUniform4i(std::string name, u32 a, u32 b, u32 c, u32 d)
+	void OpenGLShader::SetUniform4i(std::string name, u32 a, u32 b, u32 c, u32 d)
 	{
-		u32 loc = _uniform_locations.contains(name) ? _uniform_locations[name] : glGetUniformLocation(_renderer_id, name.c_str());
-		CORE_ASSERT(loc != -1, "Cant find uniform ({}) or uniform not used in shader", name)
+		u32 loc = uniform_locations_.contains(name) ? uniform_locations_[name] : glGetUniformLocation(renderer_id_, name.c_str());
+		BR_CORE_ASSERT(loc != -1, "Cant find uniform ({}) or uniform not used in shader", name);
 		glUniform4i(loc, a, b, c, d);
-		_uniform_locations.emplace(name, loc);
+		uniform_locations_.emplace(name, loc);
 	}
 
-	void OpenGLShader::setUniform1f(std::string name, float a)
+	void OpenGLShader::SetUniform1f(std::string name, float a)
 	{
-		u32 loc = _uniform_locations.contains(name) ? _uniform_locations[name] : glGetUniformLocation(_renderer_id, name.c_str());
-		CORE_ASSERT(loc != -1, "Cant find uniform ({}) or uniform not used in shader", name)
+		u32 loc = uniform_locations_.contains(name) ? uniform_locations_[name] : glGetUniformLocation(renderer_id_, name.c_str());
+		BR_CORE_ASSERT(loc != -1, "Cant find uniform ({}) or uniform not used in shader", name);
 		glUniform1f(loc, a);
-		_uniform_locations.emplace(name, loc);
+		uniform_locations_.emplace(name, loc);
 	}
 
-	void OpenGLShader::setUniform2f(std::string name, float a, float b)
+	void OpenGLShader::SetUniform2f(std::string name, float a, float b)
 	{
-		u32 loc = _uniform_locations.contains(name) ? _uniform_locations[name] : glGetUniformLocation(_renderer_id, name.c_str());
-		CORE_ASSERT(loc != -1, "Cant find uniform ({}) or uniform not used in shader", name)
+		u32 loc = uniform_locations_.contains(name) ? uniform_locations_[name] : glGetUniformLocation(renderer_id_, name.c_str());
+		BR_CORE_ASSERT(loc != -1, "Cant find uniform ({}) or uniform not used in shader", name);
 		glUniform2f(loc, a, b);
-		_uniform_locations.emplace(name, loc);
+		uniform_locations_.emplace(name, loc);
 	}
 
-	void OpenGLShader::setUniform3f(std::string name, float a, float b, float c)
+	void OpenGLShader::SetUniform3f(std::string name, float a, float b, float c)
 	{
-		u32 loc = _uniform_locations.contains(name) ? _uniform_locations[name] : glGetUniformLocation(_renderer_id, name.c_str());
-		CORE_ASSERT(loc != -1, "Cant find uniform ({}) or uniform not used in shader", name)
+		u32 loc = uniform_locations_.contains(name) ? uniform_locations_[name] : glGetUniformLocation(renderer_id_, name.c_str());
+		BR_CORE_ASSERT(loc != -1, "Cant find uniform ({}) or uniform not used in shader", name);
 		glUniform3f(loc, a, b, c);
-		_uniform_locations[name] = loc;
+		uniform_locations_[name] = loc;
 	}
 
-	void OpenGLShader::setUniform4f(std::string name, float a, float b, float c, float d)
+	void OpenGLShader::SetUniform4f(std::string name, float a, float b, float c, float d)
 	{
-		u32 loc = _uniform_locations.contains(name) ? _uniform_locations[name] : glGetUniformLocation(_renderer_id, name.c_str());
-		CORE_ASSERT(loc != -1, "Cant find uniform ({}) or uniform not used in shader", name)
+		u32 loc = uniform_locations_.contains(name) ? uniform_locations_[name] : glGetUniformLocation(renderer_id_, name.c_str());
+		BR_CORE_ASSERT(loc != -1, "Cant find uniform ({}) or uniform not used in shader", name);
 		glUniform4f(loc, a, b, c, d);
-		_uniform_locations.emplace(name, loc);
+		uniform_locations_.emplace(name, loc);
 	}
 
-	void OpenGLShader::setUniform1iv(std::string name, int* array, int count)
+	void OpenGLShader::SetUniform1iv(std::string name, int* array, int count)
 	{
-		u32 loc = _uniform_locations.contains(name) ? _uniform_locations[name] : glGetUniformLocation(_renderer_id, name.c_str());
-		CORE_ASSERT(loc != -1, "Cant find uniform ({}) or uniform not used in shader", name)
+		u32 loc = uniform_locations_.contains(name) ? uniform_locations_[name] : glGetUniformLocation(renderer_id_, name.c_str());
+		BR_CORE_ASSERT(loc != -1, "Cant find uniform ({}) or uniform not used in shader", name);
 		glUniform1iv(loc, count, array);
-		_uniform_locations.emplace(name, loc);
+		uniform_locations_.emplace(name, loc);
 	}
 }

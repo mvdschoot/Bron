@@ -6,7 +6,7 @@
 #include <vector>
 #include <memory>
 
-namespace Bron
+namespace bron
 {
 	class BR_API VertexArray
 	{
@@ -17,15 +17,15 @@ namespace Bron
 		{
 		};
 
-		virtual void bind() = 0;
-		virtual void unbind() = 0;
+		virtual void Bind() = 0;
+		virtual void Unbind() = 0;
 
-		virtual void addVertexBuffer(Ref<VertexBuffer> buffer) = 0;
-		virtual void setIndexBuffer(Ref<IndexBuffer> buffer) = 0;
+		virtual void AddVertexBuffer(Ref<VertexBuffer> buffer) = 0;
+		virtual void SetIndexBuffer(Ref<IndexBuffer> buffer) = 0;
 
-		virtual const std::vector<Ref<VertexBuffer>>& getVertexBuffers() = 0;
-		virtual const Ref<IndexBuffer>& getIndexBuffer() = 0;
+		virtual const std::vector<Ref<VertexBuffer>>& GetVertexBuffers() = 0;
+		virtual const Ref<IndexBuffer>& GetIndexBuffer() = 0;
 
 		static Ref<VertexArray> Create();
 	};
-} // namespace Bron
+} // namespace bron

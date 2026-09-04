@@ -2,7 +2,7 @@
 
 #include "Panels/Panel.h"
 
-namespace Bron::Editor
+namespace bron::editor
 {
 	/// Frame time and renderer counters.
 	class StatisticsPanel final : public Panel

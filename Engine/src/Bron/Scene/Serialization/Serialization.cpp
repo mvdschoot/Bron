@@ -15,7 +15,7 @@
 #include "Bron/Graphics/Components/ModelLoader.h"
 #include "Bron/Util/Paths.h"
 
-namespace Bron {
+namespace bron {
 	namespace {
 		// Bumped whenever the layout below changes in a way older files cannot satisfy.
 		constexpr int kSceneVersion = 1;
@@ -75,29 +75,29 @@ namespace Bron {
 
 		std::ofstream stream(file);
 		if (!stream) {
-			CORE_ERROR("Could not open {} for writing", file.string());
+			BR_CORE_ERROR("Could not open {} for writing", file.string());
 			return;
 		}
 
 		stream << document.dump(1, '	');
-		CORE_INFO("Saved scene to {}", file.string());
+		BR_CORE_INFO("Saved scene to {}", file.string());
 	}
 
 	void Serialization::DeserializeScene(Scene &scene, const std::filesystem::path &file) {
 		std::ifstream stream(file);
 		if (!stream) {
-			CORE_ERROR("Could not open {} for reading", file.string());
+			BR_CORE_ERROR("Could not open {} for reading", file.string());
 			return;
 		}
 
 		const nlohmann::json document = nlohmann::json::parse(stream, nullptr, false);
 		if (document.is_discarded()) {
-			CORE_ERROR("{} is not valid json", file.string());
+			BR_CORE_ERROR("{} is not valid json", file.string());
 			return;
 		}
 
 		if (document.value("version", 0) != kSceneVersion) {
-			CORE_ERROR("{} is a version {} scene, this build reads version {}", file.string(),
+			BR_CORE_ERROR("{} is a version {} scene, this build reads version {}", file.string(),
 					   document.value("version", 0), kSceneVersion);
 			return;
 		}
@@ -141,7 +141,7 @@ namespace Bron {
 
 			const auto it = by_id.find(parent.get<std::string>());
 			if (it == by_id.end()) {
-				CORE_WARN("Entity {} names a parent that is not in the file", entities[i].value("name", ""));
+				BR_CORE_WARN("Entity {} names a parent that is not in the file", entities[i].value("name", ""));
 				continue;
 			}
 
@@ -158,9 +158,9 @@ namespace Bron {
 			}
 
 			const ModelSourceComponent &source = scene.reg.get<ModelSourceComponent>(created[i]);
-			const std::filesystem::path path = Paths::Resolve(source.path);
+			const std::filesystem::path path = paths::Resolve(source.path);
 
-			const entt::entity imported = ModelLoader::loadModel(scene, source.workflow, path.string().c_str());
+			const entt::entity imported = ModelLoader::LoadModel(scene, source.workflow, path.string().c_str());
 
 			// Copied, because AddChild mutates the vector it is read from.
 			const std::vector<entt::entity> meshes = scene.reg.get<HierarchyComponent>(imported).children;
@@ -179,9 +179,9 @@ namespace Bron {
 		}
 
 		if (scene.root == entt::null) {
-			CORE_WARN("{} has no root entity; the scene has no place to parent new entities", file.string());
+			BR_CORE_WARN("{} has no root entity; the scene has no place to parent new entities", file.string());
 		}
 
-		CORE_INFO("Loaded scene from {}", file.string());
+		BR_CORE_INFO("Loaded scene from {}", file.string());
 	}
-} // namespace Bron
+} // namespace bron

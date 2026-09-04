@@ -3,7 +3,7 @@
 #include "Bron/Graphics/BuiltinShaders.h"
 
 
-namespace Bron
+namespace bron
 {
 	struct QuadVertex
 	{
@@ -56,7 +56,7 @@ namespace Bron
 		BR_PROFILE_FUNCTION();
 
 		AddVAO(
-			Shader::Create(BuiltinShaders::Source(BuiltinShaders::Id::Renderer2D)), 
+			Shader::Create(builtin_shaders::Source(builtin_shaders::Id::Renderer2D)), 
 			BufferLayout({
 				{"a_Position", ShaderDataType::Float2},
 				{"a_Color", ShaderDataType::Float4},
@@ -67,7 +67,7 @@ namespace Bron
 
 		sData2D.whiteTexture = Texture2D::Create(1, 1);
 		u32 white_data = 0xffffffff;
-		sData2D.whiteTexture->setData(&white_data, sizeof(u32));
+		sData2D.whiteTexture->SetData(&white_data, sizeof(u32));
 	}
 
 	void R2D::BeginScene(Camera* camera)
@@ -114,7 +114,7 @@ namespace Bron
 
 	void R2D::ActiveShader(uint8_t shader_number)
 	{
-		CORE_ASSERT(shader_number < (sData2D.toRender.size()), "Invalid shader number");
+		BR_CORE_ASSERT(shader_number < (sData2D.toRender.size()), "Invalid shader number");
 		sData2D.renderState = shader_number;
 		NextBatch();
 	}
@@ -292,8 +292,8 @@ namespace Bron
 
 		vao.quadVertexArray = VertexArray::Create();
 		vao.quadBuffer = VertexBuffer::Create(sData2D.maxVertices * sizeof(QuadVertex));
-		vao.quadBuffer->setBufferLayout(buffer_layout);
-		vao.quadVertexArray->addVertexBuffer(vao.quadBuffer);
+		vao.quadBuffer->SetBufferLayout(buffer_layout);
+		vao.quadVertexArray->AddVertexBuffer(vao.quadBuffer);
 
 
 		vao.quadVertexBufferBase = new QuadVertex[Renderer2DData::maxVertices];
@@ -314,7 +314,7 @@ namespace Bron
 			offset += 4;
 		}
 		const Ref<IndexBuffer> IBuffer = IndexBuffer::Create(quadIndexBuffer, Renderer2DData::maxIndices);
-		vao.quadVertexArray->setIndexBuffer(IBuffer);
+		vao.quadVertexArray->SetIndexBuffer(IBuffer);
 		delete[] quadIndexBuffer;
 
 		vao.shader = shader;
@@ -325,8 +325,8 @@ namespace Bron
 			arr[x] = x;
 		}
 
-		vao.shader->bind();
-		vao.shader->setUniform1iv("uTextures", arr, Renderer2DData::maxTexUnits);
+		vao.shader->Bind();
+		vao.shader->SetUniform1iv("uTextures", arr, Renderer2DData::maxTexUnits);
 
 		sData2D.textureSlots[0] = sData2D.whiteTexture;
 	}
@@ -340,16 +340,16 @@ namespace Bron
 			// Quad graphics
 			if (quadCount == 0)
 				continue;
-			quadVertexArray->bind();
-			shader->bind();
+			quadVertexArray->Bind();
+			shader->Bind();
 			for (int x = 0; x < sData2D.currentTexSlot; x++)
 			{
-				sData2D.textureSlots[x]->bind(x);
+				sData2D.textureSlots[x]->Bind(x);
 			}
 
 			const u32 size = static_cast<u32>((uint8_t*)quadVertexBufferPtr - (uint8_t*)quadVertexBufferBase);
-			quadBuffer->setBufferData(quadVertexBufferBase, size);
-			shader->setUniformMat4("uVPmatrix", sData2D.camera->GetVPmatrix());
+			quadBuffer->SetBufferData(quadVertexBufferBase, size);
+			shader->SetUniformMat4("uVPmatrix", sData2D.camera->GetVPmatrix());
 			Command::DrawIndexed(quadVertexArray, quadCount * 6);
 		}
 	}

@@ -24,19 +24,19 @@
 #include "Serialization/GlmJson.h"
 #include "nlohmann/json.hpp"
 
-namespace Bron
+namespace bron
 {
 	// nlohmann has no idea what a UUID is; it round trips as its string form.
 	inline void to_json(nlohmann::json& j, const UUID& uuid)
 	{
-		j = uuid.p_UUID;
+		j = uuid.value;
 	}
 
 	inline void from_json(const nlohmann::json& j, UUID& uuid)
 	{
 		const std::string text = j.get<std::string>();
-		std::strncpy(uuid.p_UUID, text.c_str(), sizeof(uuid.p_UUID) - 1);
-		uuid.p_UUID[sizeof(uuid.p_UUID) - 1] = '\0';
+		std::strncpy(uuid.value, text.c_str(), sizeof(uuid.value) - 1);
+		uuid.value[sizeof(uuid.value) - 1] = '\0';
 	}
 
 	// A save file cannot key entities by entt::entity: those are positions in a
@@ -93,9 +93,9 @@ namespace Bron
 		bool IsDirty() const
 		{
 			BR_PROFILE_FUNCTION();
-			return !(compare_floats_bits(Position, OPosition)
-				&& compare_floats_bits((glm::vec4*)(&RotationQuat), (glm::vec4*)(&ORotationQuat))
-				&& compare_floats_bits(Scaling, OScaling));
+			return !(CompareFloatsBits(Position, OPosition)
+				&& CompareFloatsBits((glm::vec4*)(&RotationQuat), (glm::vec4*)(&ORotationQuat))
+				&& CompareFloatsBits(Scaling, OScaling));
 		}
 
 		TransformComponent() : Position(0.0),
@@ -183,7 +183,7 @@ namespace Bron
 	// everything below this entity is treated as generated output.
 	struct ModelSourceComponent
 	{
-		std::string path; // relative to Paths::AssetRoot()
+		std::string path; // relative to paths::AssetRoot()
 		MaterialWorkflow workflow = PHONG;
 
 		ModelSourceComponent() = default;

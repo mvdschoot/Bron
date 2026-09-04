@@ -4,14 +4,14 @@
 
 #include "Core/Preferences.h"
 
-namespace Bron::Editor
+namespace bron::editor
 {
 	App::App()
 	{
 		BR_PROFILE_FUNCTION();
 
-		overlay.insertLayer(&editorLayer);
-		addOverlay(&overlay);
+		overlay.InsertLayer(&editorLayer);
+		AddOverlay(&overlay);
 	}
 
 	App::~App()
@@ -21,11 +21,11 @@ namespace Bron::Editor
 	}
 }
 
-Bron::Application* Bron::createApplication()
+bron::Application* bron::CreateApplication()
 {
 	// Before the Application constructor, which is what creates the window: the theme and
 	// the UI scale have to be known by the time anything is drawn.
-	Bron::Editor::Preferences::Load();
+	bron::editor::Preferences::Load();
 
-	return new Bron::Editor::App();
+	return new bron::editor::App();
 }

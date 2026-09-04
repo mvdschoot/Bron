@@ -3,9 +3,9 @@
 #include "Bron/Core/Core.h"
 #include "Bron/Core/Logger.h"
 
-namespace Bron
+namespace bron
 {
-	namespace BuiltinShaders
+	namespace builtin_shaders
 	{
 		// The shaders live here, in the translation unit, rather than in files
 		// next to the executable. Editing one is a recompile, which is the same
@@ -116,12 +116,12 @@ vec4 grid(vec3 fragPos3D, float scale, bool drawAxis) {
         color.x = 1.0;
     return color;
 }
-float _computeDepth(vec3 pos) {
+float computeDepthRaw(vec3 pos) {
     vec4 clip_space_pos = uProjection * uView * vec4(pos.xyz, 1.0);
     return (clip_space_pos.z / clip_space_pos.w);
 }
 float computeDepth(vec3 pos) {
-    return ((gl_DepthRange.diff * _computeDepth(pos)) +
+    return ((gl_DepthRange.diff * computeDepthRaw(pos)) +
                 gl_DepthRange.near + gl_DepthRange.far) / 2.0;
 }
 
@@ -306,7 +306,7 @@ void main()
 			case Id::Text:       return Text;
 			}
 
-			CORE_ASSERT(false, "Unknown built-in shader")
+			BR_CORE_ASSERT(false, "Unknown built-in shader");
 			return "";
 		}
 	}

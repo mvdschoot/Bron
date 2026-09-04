@@ -4,7 +4,7 @@
 
 #include "../Scene.h"
 
-namespace Bron {
+namespace bron {
 
 	// The scene is written as a flat list of entities keyed by UUID rather than
 	// as an entt snapshot. entt::entity values are positions in a registry, so a
@@ -22,4 +22,4 @@ namespace Bron {
 		static void DeserializeScene(Scene &scene, const std::filesystem::path &file);
 	};
 
-} // namespace Bron
+} // namespace bron

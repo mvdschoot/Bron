@@ -7,7 +7,7 @@
 #include "Bron/Graphics/Phong/PhongMaterial.h"
 #include "Bron/Scene/Scene.h"
 
-namespace Bron {
+namespace bron {
 	entt::entity CreateCube(Scene &target, const Ref<MaterialBase> &material) {
 		MeshData meshData;
 
@@ -77,7 +77,7 @@ namespace Bron {
 	}
 
 	entt::entity CreatePhongCube(Scene &target, const glm::vec3 color) {
-		const Ref<PhongMaterial> material = createRef<PhongMaterial>();
+		const Ref<PhongMaterial> material = CreateRef<PhongMaterial>();
 		material->Set(PhongMaterialVariables::Diffuse, color);
 		material->Set(PhongMaterialVariables::Specular, color);
 		material->Set(PhongMaterialVariables::Shininess, 5.0f);

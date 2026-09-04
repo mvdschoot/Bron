@@ -1,6 +1,6 @@
 #include "Platform.h"
 
-namespace Bron
+namespace bron
 {
 	
 }

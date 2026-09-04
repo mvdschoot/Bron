@@ -5,12 +5,12 @@
 #include "Bron/Core/Core.h"
 #include "Bron/Core/Profiling.h"
 
-extern Bron::Application* Bron::createApplication();
+extern bron::Application* bron::CreateApplication();
 
 int main(int argc, char** argv)
 {
-	Bron::Logger::Init();
-	Bron::Application* app = Bron::createApplication();
+	bron::Logger::Init();
+	bron::Application* app = bron::CreateApplication();
 	app->Run();
 
 	delete app;

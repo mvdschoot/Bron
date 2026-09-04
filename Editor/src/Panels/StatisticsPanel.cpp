@@ -1,6 +1,6 @@
 #include "Panels/StatisticsPanel.h"
 
-namespace Bron::Editor
+namespace bron::editor
 {
 	void StatisticsPanel::OnImGuiRender()
 	{
@@ -9,7 +9,7 @@ namespace Bron::Editor
 		// called either way or the outer dockspace window loses its End().
 		if (ImGui::Begin("Statistics"))
 		{
-			ImGui::Text("FPS: %f", 1000.0f / Context.frameTime.getMilliseconds());
+			ImGui::Text("FPS: %f", 1000.0f / Context.frameTime.GetMilliseconds());
 
 			ImGui::NewLine();
 			ImGui::Separator();

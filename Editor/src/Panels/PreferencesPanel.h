@@ -2,7 +2,7 @@
 
 #include "Panels/Panel.h"
 
-namespace Bron::Editor
+namespace bron::editor
 {
 	/// Editor for the application-scope Preferences. Closed by default and opened from the
 	/// menu bar, since it is not a window anyone keeps docked.
@@ -13,9 +13,9 @@ namespace Bron::Editor
 
 		void OnImGuiRender() override;
 
-		void Open() { mOpen = true; }
+		void Open() { open_ = true; }
 
 	private:
-		bool mOpen = false;
+		bool open_ = false;
 	};
 }

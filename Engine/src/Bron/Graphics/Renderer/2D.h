@@ -13,7 +13,7 @@
 #include <array>
 
 
-namespace Bron
+namespace bron
 {
 	class BR_API R2D
 	{

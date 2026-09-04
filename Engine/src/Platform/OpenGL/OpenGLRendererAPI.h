@@ -12,7 +12,7 @@
 
 #include <memory>
 
-namespace Bron
+namespace bron
 {
 	class OpenGLRendererAPI : public API
 	{
@@ -27,26 +27,26 @@ namespace Bron
 				return GL_LINES;
 				break;
 			default:
-				CORE_ASSERT(false, "RENDERER: invalid draw type");
+				BR_CORE_ASSERT(false, "RENDERER: invalid draw type");
 			}
 			return 0;
 		}
 	public:
 		OpenGLRendererAPI();
 		void Init() override;
-		void setClearColor(const glm::vec4& color) override;
-		void clear() override;
-		void onResize(float x, float y, float width, float height) override;
+		void SetClearColor(const glm::vec4& color) override;
+		void Clear() override;
+		void OnResize(float x, float y, float width, float height) override;
 
 		void EnableBlend() override;
 		void EnableDepth() override;
 
-		void drawIndexed(const std::shared_ptr<VertexArray>& v_array, u32 count) override;
-		void drawIndexedLines(const std::shared_ptr<VertexArray>& v_array, u32 count) override;
-		void drawIndexedStripLines(const std::shared_ptr<VertexArray>& v_array, u32 count) override;
+		void DrawIndexed(const std::shared_ptr<VertexArray>& v_array, u32 count) override;
+		void DrawIndexedLines(const std::shared_ptr<VertexArray>& v_array, u32 count) override;
+		void DrawIndexedStripLines(const std::shared_ptr<VertexArray>& v_array, u32 count) override;
 
 	private:
 
-		bool _blend_enabled;
+		bool blend_enabled_;
 	};
-} // namespace Bron
+} // namespace bron

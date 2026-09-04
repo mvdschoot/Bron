@@ -2,7 +2,7 @@
 
 #include "Panels/Panel.h"
 
-namespace Bron::Editor
+namespace bron::editor
 {
 	/// Renders the scene into an offscreen framebuffer and shows it as an image, with the
 	/// transform gizmo drawn on top. Owning the framebuffer here keeps the render target
@@ -21,9 +21,9 @@ namespace Bron::Editor
 		void Resize(ImVec2 size);
 		void DrawGizmo();
 
-		Ref<Framebuffer> mFramebuffer;
-		FramebufferSpecification mSpec;
+		Ref<Framebuffer> framebuffer_;
+		FramebufferSpecification spec_;
 
-		ImVec2 mSize{0.0f, 0.0f};
+		ImVec2 size_{0.0f, 0.0f};
 	};
 }

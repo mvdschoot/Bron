@@ -8,7 +8,7 @@
 
 #include "Bron/Core/Profiling.h"
 
-namespace Bron
+namespace bron
 {
 	class BR_API Camera
 	{

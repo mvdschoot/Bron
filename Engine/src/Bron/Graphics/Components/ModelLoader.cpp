@@ -18,7 +18,7 @@
 #include "Bron/Graphics/Texture.h"
 #include "Bron/Scene/Scene.h"
 
-namespace Bron {
+namespace bron {
 
 	// Average of the child mesh positions, i.e. the centroid of the model as a whole.
 	static glm::vec3 ModelCentroid(entt::registry &reg, const std::vector<entt::entity> &meshes) {
@@ -34,14 +34,14 @@ namespace Bron {
 		return res / static_cast<float>(meshes.size());
 	}
 
-	entt::entity ModelLoader::loadModel(Scene &target, MaterialWorkflow type, const char *modelLocation) {
+	entt::entity ModelLoader::LoadModel(Scene &target, MaterialWorkflow type, const char *modelLocation) {
 		// Assimp load model
 		Assimp::Importer importer;
 		const aiScene *scene = importer.ReadFile(modelLocation, aiProcess_Triangulate | aiProcess_GenSmoothNormals);
 
 		std::string error = "ERROR::ASSIMP::";
 		error.append(importer.GetErrorString());
-		CORE_ASSERT(scene && !(scene->mFlags & AI_SCENE_FLAGS_INCOMPLETE) && scene->mRootNode, error)
+		BR_CORE_ASSERT(scene && !(scene->mFlags & AI_SCENE_FLAGS_INCOMPLETE) && scene->mRootNode, error);
 
 		// Get the directory of the model, because it will contain the textures.
 		std::filesystem::path parentDirectory = std::filesystem::path(modelLocation).parent_path();
@@ -50,13 +50,13 @@ namespace Bron {
 		std::vector<Ref<MaterialBase>> materials;
 		switch (type) {
 			case MaterialWorkflow::PHONG:
-				materials = processPhongMaterials(scene, parentDirectory.string().c_str());
+				materials = ProcessPhongMaterials(scene, parentDirectory.string().c_str());
 				break;
 			default:
-				CORE_ASSERT(false, "This MaterialWorkflow does not exist ({}).", magic_enum::enum_name(type));
+				BR_CORE_ASSERT(false, "This MaterialWorkflow does not exist ({}).", magic_enum::enum_name(type));
 		}
 
-		std::vector<entt::entity> meshes = processNode(target, &materials, scene->mRootNode, scene, aiMatrix4x4());
+		std::vector<entt::entity> meshes = ProcessNode(target, &materials, scene->mRootNode, scene, aiMatrix4x4());
 
 		// Create the model root. It stays unparented; the caller decides where it goes in the scene.
 		const entt::entity model = target.CreateEntity(std::filesystem::path(modelLocation).stem().string());
@@ -72,7 +72,7 @@ namespace Bron {
 		return model;
 	}
 
-	std::vector<entt::entity> ModelLoader::processNode(Scene &target, std::vector<Ref<MaterialBase>> *materials,
+	std::vector<entt::entity> ModelLoader::ProcessNode(Scene &target, std::vector<Ref<MaterialBase>> *materials,
 													   const aiNode *node, const aiScene *scene,
 													   const aiMatrix4x4 &parentTransform) {
 		BR_PROFILE_FUNCTION();
@@ -86,17 +86,17 @@ namespace Bron {
 
 		for (unsigned int i = 0; i < node->mNumMeshes; i++) {
 			aiMesh *mesh = scene->mMeshes[node->mMeshes[i]];
-			meshes.push_back(processMesh(target, materials, mesh, scene, transform));
+			meshes.push_back(ProcessMesh(target, materials, mesh, scene, transform));
 		}
 		for (unsigned int i = 0; i < node->mNumChildren; i++) {
-			std::vector<entt::entity> addedMeshes = processNode(target, materials, node->mChildren[i], scene, transform);
+			std::vector<entt::entity> addedMeshes = ProcessNode(target, materials, node->mChildren[i], scene, transform);
 			meshes.insert(meshes.end(), addedMeshes.begin(), addedMeshes.end());
 		}
 
 		return meshes;
 	}
 
-	entt::entity ModelLoader::processMesh(Scene &target, const std::vector<Ref<MaterialBase>> *materials,
+	entt::entity ModelLoader::ProcessMesh(Scene &target, const std::vector<Ref<MaterialBase>> *materials,
 										  const aiMesh *aiMesh, const aiScene *scene, const aiMatrix4x4 &transform) {
 		BR_PROFILE_FUNCTION();
 
@@ -168,14 +168,14 @@ namespace Bron {
 		return mesh;
 	}
 
-	std::vector<Ref<MaterialBase>> ModelLoader::processPhongMaterials(const aiScene *scene,
+	std::vector<Ref<MaterialBase>> ModelLoader::ProcessPhongMaterials(const aiScene *scene,
 																	  const std::filesystem::path &directory) {
 		std::vector<Ref<MaterialBase>> materials(scene->mNumMaterials);
 		std::unordered_map<std::string, Ref<Texture>> textureCache;
 
 		for (int x = 0; x < scene->mNumMaterials; x++) {
 			aiMaterial* material = scene->mMaterials[x];
-			Ref<PhongMaterial> phongMaterial = createRef<PhongMaterial>();
+			Ref<PhongMaterial> phongMaterial = CreateRef<PhongMaterial>();
 
 			// First extract and store the textures
 			aiString dif, spec, norm;
@@ -186,9 +186,9 @@ namespace Bron {
 				material->GetTexture(aiTextureType_BASE_COLOR, 0, &dif);
 			// material->GetTexture(aiTextureType_HEIGHT, 0, &norm);
 
-			if (Ref<Texture> diffuse = loadMaterialTexture(scene, directory, dif, textureCache))
+			if (Ref<Texture> diffuse = LoadMaterialTexture(scene, directory, dif, textureCache))
 				phongMaterial->AddTexture(PhongMaterialTextureTypes::Diffuse, diffuse);
-			if (Ref<Texture> specular = loadMaterialTexture(scene, directory, spec, textureCache))
+			if (Ref<Texture> specular = LoadMaterialTexture(scene, directory, spec, textureCache))
 				phongMaterial->AddTexture(PhongMaterialTextureTypes::Specular, specular);
 			// if (norm.length != 0) {
 			// 	phongMaterial->AddTexture(PhongMaterialTextureTypes::Normal, Texture2D::Create((directory / norm.C_Str()).c_str()));
@@ -230,7 +230,7 @@ namespace Bron {
 	}
 
 
-	Ref<Texture> ModelLoader::loadMaterialTexture(const aiScene *scene, const std::filesystem::path &directory,
+	Ref<Texture> ModelLoader::LoadMaterialTexture(const aiScene *scene, const std::filesystem::path &directory,
 												  const aiString &reference,
 												  std::unordered_map<std::string, Ref<Texture>> &cache) {
 		if (reference.length == 0)
@@ -267,12 +267,12 @@ namespace Bron {
 				}
 
 				texture = Texture2D::Create(width, height);
-				texture->setData(pixels.data(), static_cast<u32>(pixels.size()));
+				texture->SetData(pixels.data(), static_cast<u32>(pixels.size()));
 			}
 		} else {
 			const std::filesystem::path path = directory / reference.C_Str();
 			if (!std::filesystem::exists(path)) {
-				CORE_WARN("Texture '{}' referenced by the model does not exist.", path.string());
+				BR_CORE_WARN("Texture '{}' referenced by the model does not exist.", path.string());
 				return nullptr;
 			}
 

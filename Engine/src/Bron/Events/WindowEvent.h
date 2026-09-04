@@ -2,25 +2,25 @@
 
 #include "Bron/Events/Event.h"
 
-namespace Bron
+namespace bron
 {
 	class BR_API WindowResizeEvent : public Event
 	{
 	public:
 		WindowResizeEvent(unsigned int width, unsigned int height) :
-			_width(width), _height(height)
+			width_(width), height_(height)
 		{
 		};
 
 
-		EVENT_CLASS_CATEGORY(EventCategory::EventCategoryApplication);
-		EVENT_CLASS_TYPE(WindowResize);
+		BR_EVENT_CLASS_CATEGORY(EventCategory::EventCategoryApplication);
+		BR_EVENT_CLASS_TYPE(WindowResize);
 
-		int getWidth() { return _width; }
-		int getHeight() { return _height; }
+		int GetWidth() { return width_; }
+		int GetHeight() { return height_; }
 
 	private:
-		int _width, _height;
+		int width_, height_;
 	};
 
 	class BR_API WindowCloseEvent : public Event
@@ -30,8 +30,8 @@ namespace Bron
 		{
 		};
 
-		EVENT_CLASS_CATEGORY(EventCategory::EventCategoryApplication);
-		EVENT_CLASS_TYPE(WindowClose);
+		BR_EVENT_CLASS_CATEGORY(EventCategory::EventCategoryApplication);
+		BR_EVENT_CLASS_TYPE(WindowClose);
 
 	private:
 	};
@@ -43,8 +43,8 @@ namespace Bron
 		{
 		};
 
-		EVENT_CLASS_CATEGORY(EventCategory::EventCategoryApplication);
-		EVENT_CLASS_TYPE(WindowFocus);
+		BR_EVENT_CLASS_CATEGORY(EventCategory::EventCategoryApplication);
+		BR_EVENT_CLASS_TYPE(WindowFocus);
 
 	private:
 	};
@@ -56,8 +56,8 @@ namespace Bron
 		{
 		};
 
-		EVENT_CLASS_CATEGORY(EventCategory::EventCategoryApplication);
-		EVENT_CLASS_TYPE(WindowUnfocus);
+		BR_EVENT_CLASS_CATEGORY(EventCategory::EventCategoryApplication);
+		BR_EVENT_CLASS_TYPE(WindowUnfocus);
 
 	private:
 	};

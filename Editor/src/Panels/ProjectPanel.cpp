@@ -5,7 +5,7 @@
 #include "Bron/Core/Logger.h"
 #include "Bron/Scene/Serialization/Serialization.h"
 
-namespace Bron::Editor
+namespace bron::editor
 {
 	using namespace ImGui;
 

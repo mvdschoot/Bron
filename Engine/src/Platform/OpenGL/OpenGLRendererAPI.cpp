@@ -1,24 +1,24 @@
 #include "OpenGLRendererAPI.h"
 
-namespace Bron
+namespace bron
 {
 	OpenGLRendererAPI::OpenGLRendererAPI()
 	{
 	}
 
-	void OpenGLRendererAPI::setClearColor(const glm::vec4& color)
+	void OpenGLRendererAPI::SetClearColor(const glm::vec4& color)
 	{
 		BR_PROFILE_FUNCTION();
 		glClearColor(color.r, color.g, color.b, color.a);
 	}
 
-	void OpenGLRendererAPI::clear()
+	void OpenGLRendererAPI::Clear()
 	{
 		BR_PROFILE_FUNCTION();
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 	}
 
-	void OpenGLRendererAPI::onResize(float x, float y, float width, float height)
+	void OpenGLRendererAPI::OnResize(float x, float y, float width, float height)
 	{
 		BR_PROFILE_FUNCTION();
 		glViewport(x, y, width, height);
@@ -26,11 +26,11 @@ namespace Bron
 
 	void OpenGLRendererAPI::EnableBlend()
 	{
-		if (_blend_enabled)
+		if (blend_enabled_)
 		{
 			return;
 		}
-		_blend_enabled = true;
+		blend_enabled_ = true;
 		glDisable(GL_DEPTH_TEST);
 		glEnable(GL_BLEND);
 		glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
@@ -38,39 +38,39 @@ namespace Bron
 
 	void OpenGLRendererAPI::EnableDepth()
 	{
-		if (!_blend_enabled)
+		if (!blend_enabled_)
 			return;
-		_blend_enabled = false;
+		blend_enabled_ = false;
 		glDisable(GL_BLEND);
 		glEnable(GL_DEPTH_TEST);
 		glDepthFunc(GL_LEQUAL);
 	}
 
-	void OpenGLRendererAPI::drawIndexed(const std::shared_ptr<VertexArray>& v_array, u32 count)
+	void OpenGLRendererAPI::DrawIndexed(const std::shared_ptr<VertexArray>& v_array, u32 count)
 	{
 		BR_PROFILE_FUNCTION();
 		
-		v_array->bind();
+		v_array->Bind();
 		glDrawElements(GL_TRIANGLES, count, GL_UNSIGNED_INT, nullptr);
 		glBindTexture(GL_TEXTURE_2D, 0);
 	}
 
-	void OpenGLRendererAPI::drawIndexedLines(const std::shared_ptr<VertexArray>& v_array, u32 count)
+	void OpenGLRendererAPI::DrawIndexedLines(const std::shared_ptr<VertexArray>& v_array, u32 count)
 	{
 		BR_PROFILE_FUNCTION();
 
-		u32 c = count ? count : v_array->getIndexBuffer()->getCount();
-		v_array->bind();
+		u32 c = count ? count : v_array->GetIndexBuffer()->GetCount();
+		v_array->Bind();
 		glDrawElements(GL_LINES, c, GL_UNSIGNED_INT, nullptr);
 		glBindTexture(GL_TEXTURE_2D, 0);
 	}
 
-	void OpenGLRendererAPI::drawIndexedStripLines(const std::shared_ptr<VertexArray>& v_array, u32 count)
+	void OpenGLRendererAPI::DrawIndexedStripLines(const std::shared_ptr<VertexArray>& v_array, u32 count)
 	{
 		BR_PROFILE_FUNCTION();
 
-		u32 c = count ? count : v_array->getIndexBuffer()->getCount();
-		v_array->bind();
+		u32 c = count ? count : v_array->GetIndexBuffer()->GetCount();
+		v_array->Bind();
 		glDrawElements(GL_LINE_STRIP, c, GL_UNSIGNED_INT, nullptr);
 		glBindTexture(GL_TEXTURE_2D, 0);
 	}

@@ -8,7 +8,7 @@
 #include "Bron/Graphics/Texture.h"
 #include "Bron/Graphics/Components/BufferExtentions.h"
 
-namespace Bron {
+namespace bron {
     enum class PhongMaterialTextureTypes
     {
         Diffuse,

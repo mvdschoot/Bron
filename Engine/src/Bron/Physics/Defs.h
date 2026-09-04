@@ -1,6 +1,6 @@
 #pragma once
 
-namespace Bron {
+namespace bron {
 
     #define real float
 
@@ -8,5 +8,5 @@ namespace Bron {
     template<typename T>
     using Pt = Ref<T>;
 
-    #define createPt createRef
+    #define createPt CreateRef
 }

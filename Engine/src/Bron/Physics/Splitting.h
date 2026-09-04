@@ -3,7 +3,7 @@
 #include "Components.h"
 #include "BVH.h"
 
-namespace Bron
+namespace bron
 {
 	class SAH
 	{

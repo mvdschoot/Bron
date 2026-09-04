@@ -2,7 +2,7 @@
 
 #include "Panels/Panel.h"
 
-namespace Bron::Editor
+namespace bron::editor
 {
 	/// The entity tree. Owns the selection: clicking a node selects it, F2 renames it.
 	class SceneHierarchyPanel final : public Panel

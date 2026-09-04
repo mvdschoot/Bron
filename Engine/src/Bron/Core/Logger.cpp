@@ -1,17 +1,18 @@
 #include "Logger.h"
 
-namespace Bron
+namespace bron {
+
+Ref<spdlog::logger> Logger::core_logger_;
+Ref<spdlog::logger> Logger::app_logger_;
+
+void Logger::Init()
 {
-	Ref<spdlog::logger> Logger::_core_logger;
-	Ref<spdlog::logger> Logger::_app_logger;
+	spdlog::set_pattern("%^[%T] %n: %v%$");
+	core_logger_ = spdlog::stdout_color_mt("BRON");
+	app_logger_ = spdlog::stdout_color_mt("APP");
 
-	void Logger::Init()
-	{
-		spdlog::set_pattern("%^[%T] %n: %v%$");
-		_core_logger = spdlog::stdout_color_mt("BRON");
-		_app_logger = spdlog::stdout_color_mt("APP");
-
-		_core_logger->set_level(spdlog::level::trace);
-		_app_logger->set_level(spdlog::level::trace);
-	}
+	core_logger_->set_level(spdlog::level::trace);
+	app_logger_->set_level(spdlog::level::trace);
 }
+
+}  // namespace bron

@@ -2,7 +2,7 @@
 
 #include "Core/Preferences.h"
 
-namespace Bron::Editor
+namespace bron::editor
 {
 	namespace
 	{
@@ -19,45 +19,45 @@ namespace Bron::Editor
 
 	void EditorCamera::OnUpdate(const Timestep ts)
 	{
-		const float dt = ts.getSeconds() * Preferences::Get().cameraOrbitSpeed;
+		const float dt = ts.GetSeconds() * Preferences::Get().cameraOrbitSpeed;
 
-		if (Input::isKeyPressed(Key::A))
-			mAzimuth += dt;
-		if (Input::isKeyPressed(Key::D))
-			mAzimuth -= dt;
+		if (Input::IsKeyPressed(key::A))
+			azimuth_ += dt;
+		if (Input::IsKeyPressed(key::D))
+			azimuth_ -= dt;
 
 		// Stopping just short of the poles keeps the up vector meaningful.
-		if (Input::isKeyPressed(Key::W))
-			mElevation += (mElevation > 0.5f * PI ? 0.0f : dt);
-		if (Input::isKeyPressed(Key::S))
-			mElevation -= (mElevation < -0.5f * PI ? 0.0f : dt);
+		if (Input::IsKeyPressed(key::W))
+			elevation_ += (elevation_ > 0.5f * kPi ? 0.0f : dt);
+		if (Input::IsKeyPressed(key::S))
+			elevation_ -= (elevation_ < -0.5f * kPi ? 0.0f : dt);
 
 		UpdatePosition();
 	}
 
 	bool EditorCamera::OnMouseScrolled(MouseScrolledEvent& e)
 	{
-		mDistance = std::max(mDistance - e.getOffsetY() * Preferences::Get().cameraZoomSpeed, MinDistance);
+		distance_ = std::max(distance_ - e.GetOffsetY() * Preferences::Get().cameraZoomSpeed, MinDistance);
 		UpdatePosition();
 		return true;
 	}
 
 	void EditorCamera::Focus(const glm::vec3& point)
 	{
-		mFocus = point;
-		mAzimuth = 0.0f;
-		mElevation = 0.5f;
+		focus_ = point;
+		azimuth_ = 0.0f;
+		elevation_ = 0.5f;
 
-		SetTarget(mFocus);
+		SetTarget(focus_);
 		UpdatePosition();
 	}
 
 	void EditorCamera::UpdatePosition()
 	{
 		SetPosition({
-			mFocus.x + cos(mAzimuth) * cos(mElevation) * mDistance,
-			mFocus.y + sin(mElevation) * mDistance,
-			mFocus.z + sin(mAzimuth) * cos(mElevation) * mDistance
+			focus_.x + cos(azimuth_) * cos(elevation_) * distance_,
+			focus_.y + sin(elevation_) * distance_,
+			focus_.z + sin(azimuth_) * cos(elevation_) * distance_
 		});
 	}
 }

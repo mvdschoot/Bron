@@ -3,16 +3,16 @@
 #include "Core/Preferences.h"
 #include "Core/Theme.h"
 
-namespace Bron::Editor
+namespace bron::editor
 {
 	using namespace ImGui;
 
 	void PreferencesPanel::OnImGuiRender()
 	{
-		if (!mOpen)
+		if (!open_)
 			return;
 
-		if (!Begin("Preferences", &mOpen))
+		if (!Begin("Preferences", &open_))
 		{
 			End();
 			return;
@@ -30,7 +30,7 @@ namespace Bron::Editor
 
 			if (BeginCombo("Theme", prefs.theme.c_str()))
 			{
-				for (const char* name : Theme::Names())
+				for (const char* name : theme::Names())
 				{
 					if (Selectable(name, prefs.theme == name))
 					{
@@ -65,6 +65,6 @@ namespace Bron::Editor
 		End();
 
 		if (restyle)
-			Theme::Apply();
+			theme::Apply();
 	}
 }

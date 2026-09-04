@@ -5,13 +5,13 @@
 #include <ostream>
 #include <functional>
 
-namespace Bron
+namespace bron
 {
-#define EVENT_CLASS_TYPE(type) static EventType GetStaticType() { return EventType::type; }\
+#define BR_EVENT_CLASS_TYPE(type) static EventType GetStaticType() { return EventType::type; }\
 								virtual EventType GetEventType() const { return GetStaticType(); }\
 								virtual const char* GetName() const { return #type; }
 
-#define EVENT_CLASS_CATEGORY(category) virtual int GetCategoryFlags() const { return category; }
+#define BR_EVENT_CLASS_CATEGORY(category) virtual int GetCategoryFlags() const { return category; }
 
 	enum class EventType
 	{
@@ -31,11 +31,11 @@ namespace Bron
 	enum EventCategory
 	{
 		None = 0,
-		EventCategoryApplication = BIT(0),
-		EventCategoryInput = BIT(1),
-		EventCategoryKeyboard = BIT(2),
-		EventCategoryMouseButton = BIT(3),
-		EventCategoryMouse = BIT(4)
+		EventCategoryApplication = BR_BIT(0),
+		EventCategoryInput = BR_BIT(1),
+		EventCategoryKeyboard = BR_BIT(2),
+		EventCategoryMouseButton = BR_BIT(3),
+		EventCategoryMouse = BR_BIT(4)
 	};
 
 	class BR_API Event
@@ -46,7 +46,7 @@ namespace Bron
 		virtual int GetCategoryFlags() const = 0;
 		virtual const char* GetName() const = 0;
 
-		bool isInCategory(EventCategory cat)
+		bool IsInCategory(EventCategory cat)
 		{
 			return GetCategoryFlags() & cat;
 		}
@@ -64,7 +64,7 @@ namespace Bron
 		using EventFn = std::function<bool(T&)>;
 	public:
 		EventDispatcher(Event& evt) :
-			_event(evt)
+			event_(evt)
 		{
 		};
 
@@ -76,16 +76,16 @@ namespace Bron
 		template <typename T>
 		bool Dispatch(EventFn<T> fn)
 		{
-			if (_event.GetEventType() == T::GetStaticType())
+			if (event_.GetEventType() == T::GetStaticType())
 			{
-				_event.is_handled = fn(*static_cast<T*>(&_event));
+				event_.is_handled = fn(*static_cast<T*>(&event_));
 				return true;
 			}
 			return false;
 		}
 
 	private:
-		Event& _event;
+		Event& event_;
 	};
 
 	// inline std::ostream& operator<<(std::ostream& os, const Event& e)

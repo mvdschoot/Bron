@@ -4,7 +4,7 @@
 
 #include "Bron.h"
 
-namespace Bron::Editor
+namespace bron::editor
 {
 	enum ComponentFlags_
 	{
@@ -12,11 +12,11 @@ namespace Bron::Editor
 
 		// Offered in the "Add Component" menu. Off for components that cannot be usefully
 		// default constructed, and for the ones every entity is guaranteed to have.
-		ComponentFlags_Addable = BIT(0),
+		ComponentFlags_Addable = BR_BIT(0),
 
 		// Gets a remove button in the inspector. Off for the structural components, because
 		// the rest of the engine assumes every entity has them.
-		ComponentFlags_Removable = BIT(1),
+		ComponentFlags_Removable = BR_BIT(1),
 
 		ComponentFlags_Default = ComponentFlags_Addable | ComponentFlags_Removable
 	};
@@ -35,7 +35,7 @@ namespace Bron::Editor
 		void (*remove)(Scene&, entt::entity);
 	};
 
-	namespace ComponentRegistry
+	namespace component_registry
 	{
 		/// Every component the editor knows about, in inspector display order.
 		const std::vector<ComponentMeta>& All();

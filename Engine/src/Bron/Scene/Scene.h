@@ -9,7 +9,7 @@
 #include "Bron/Graphics/Camera.h"
 #include "Bron/Graphics/LightManagement.h"
 
-namespace Bron
+namespace bron
 {
 	class Scene
 	{

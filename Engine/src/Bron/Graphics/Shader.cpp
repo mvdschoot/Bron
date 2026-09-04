@@ -3,12 +3,12 @@
 #include "Platform/OpenGL/OpenGLShader.h"
 #include "Bron/Core/Platform.h"
 
-namespace Bron
+namespace bron
 {
 	Ref<Shader> Shader::CreateShaderFromLocation(const std::string& shader_loc)
 	{
 		std::ifstream a(shader_loc);
-		CORE_ASSERT(!a.fail(), "Shaderloc does not exist!");
+		BR_CORE_ASSERT(!a.fail(), "Shaderloc does not exist!");
 
 		std::stringstream v;
 		v << a.rdbuf();
@@ -18,12 +18,12 @@ namespace Bron
 
 	Ref<Shader> Shader::Create(std::string shader)
 	{
-		switch (Platform::getAPI())
+		switch (Platform::GetApi())
 		{
-		case Platform::API::None: CORE_ASSERT(false, "No Rendering API selected!");
-		case Platform::API::OpenGL: return createRef<OpenGLShader>(shader);
+		case Platform::API::None: BR_CORE_ASSERT(false, "No Rendering API selected!");
+		case Platform::API::OpenGL: return CreateRef<OpenGLShader>(shader);
 		}
-		CORE_ASSERT(false, "No Rendering API detected!")
+		BR_CORE_ASSERT(false, "No Rendering API detected!");
 			return nullptr;
 	}
 

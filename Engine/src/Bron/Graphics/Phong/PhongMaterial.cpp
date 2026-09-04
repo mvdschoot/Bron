@@ -7,10 +7,10 @@
 
 #include <utility>
 
-namespace Bron {
+namespace bron {
     u8 PhongMaterial::Bind(const Ref<Shader> shader, u8 textureSlotStartingIndex) {
-		if (!shader->isBound()) {
-			shader->bind();
+		if (!shader->IsBound()) {
+			shader->Bind();
 		}
 
 		// Reset the textures
@@ -21,22 +21,22 @@ namespace Bron {
 		// Bind the available textures to texture slots
 		int textureSlotIndex = textureSlotStartingIndex;
 		if (textures.contains(PhongMaterialTextureTypes::Diffuse)) {
-			textures.at(PhongMaterialTextureTypes::Diffuse)->bind(textureSlotIndex);
+			textures.at(PhongMaterialTextureTypes::Diffuse)->Bind(textureSlotIndex);
 			Set(PhongMaterialVariables::DiffuseTexture, static_cast<float>(textureSlotIndex));
 			textureSlotIndex += 1;
 		}
 		if (textures.contains(PhongMaterialTextureTypes::Specular)) {
-			textures.at(PhongMaterialTextureTypes::Specular)->bind(textureSlotIndex);
+			textures.at(PhongMaterialTextureTypes::Specular)->Bind(textureSlotIndex);
 			Set(PhongMaterialVariables::SpecularTexture, static_cast<float>(textureSlotIndex));
 			textureSlotIndex += 1;
 		}
 		// if (textures.contains(PhongMaterialTextureTypes::Normal)) {
-		// 	textures.at(PhongMaterialTextureTypes::Normal)->bind(textureSlotIndex);
+		// 	textures.at(PhongMaterialTextureTypes::Normal)->Bind(textureSlotIndex);
 		// 	Set(PhongMaterialVariables::NormalTexture, static_cast<float>(textureSlotIndex));
 		// 	textureSlotIndex += 1;
 		// }
 
-		shader->setUniforms(*Layout, Data);
+		shader->SetUniforms(*Layout, Data);
 
 		return textureSlotIndex;
 	}
@@ -46,4 +46,4 @@ namespace Bron {
 	void PhongMaterial::AddTexture(PhongMaterialTextureTypes textureType, Ref<Texture> texture) {
 	    textures[textureType] = std::move(texture);
     }
-} // namespace Bron
+} // namespace bron

@@ -3,7 +3,7 @@
 #include "Bron/Core/Core.h"
 #include "Bron/Core/Logger.h"
 
-namespace Bron
+namespace bron
 {
 	struct FramebufferSpecification
 	{
@@ -23,12 +23,12 @@ namespace Bron
 		virtual ~Framebuffer()
 		{
 		};
-		virtual void bind() = 0;
-		virtual void unbind() = 0;
+		virtual void Bind() = 0;
+		virtual void Unbind() = 0;
 
-		virtual void invalidate() = 0;
-		virtual u32 getColorAttachID() = 0;
-		virtual u32 getDepthStencilAttachID() = 0;
+		virtual void Invalidate() = 0;
+		virtual u32 GetColorAttachId() = 0;
+		virtual u32 GetDepthStencilAttachId() = 0;
 
 		static Ref<Framebuffer> Create(FramebufferSpecification& spec);
 	};

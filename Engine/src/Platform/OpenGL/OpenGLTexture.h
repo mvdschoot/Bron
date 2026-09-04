@@ -13,7 +13,7 @@
 
 #include <string>
 
-namespace Bron
+namespace bron
 {
 	class OpenGLTexture2D : public Texture2D
 	{
@@ -25,18 +25,18 @@ namespace Bron
 		OpenGLTexture2D(const void* buffer, u32 size);
 
 		virtual ~OpenGLTexture2D() override;
-		void setData(void* data, u32 size) override;
-		void bind(u32 slot) override;
+		void SetData(void* data, u32 size) override;
+		void Bind(u32 slot) override;
 
-		static GLenum toGLEnum(u32 slot);
+		static GLenum ToGlEnum(u32 slot);
 
 	private:
 		// Shared upload path for both the file and the in-memory constructor.
-		void uploadPixels(const void* pixels, int width, int height, int channels);
+		void UploadPixels(const void* pixels, int width, int height, int channels);
 
 	protected:
-		const std::string _path;
-		u32 _channels;
-		GLenum _internalFormat, _dataFormat;
+		const std::string path_;
+		u32 channels_;
+		GLenum internal_format_, data_format_;
 	};
 }

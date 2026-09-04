@@ -3,7 +3,7 @@
 #include <glm/glm.hpp>
 #include <glad/glad.h>
 
-namespace Bron
+namespace bron
 {
 	enum class BR_API ShaderDataType : u32
 	{
@@ -40,7 +40,7 @@ namespace Bron
 		case ShaderDataType::Bool: return 1;
 		}
 
-		CORE_ASSERT(false, "Invalid shader data type")
+		BR_CORE_ASSERT(false, "Invalid shader data type");
 	}
 
 	static GLenum ShaderDataTypeToOpenGLType(ShaderDataType type)
@@ -61,7 +61,7 @@ namespace Bron
 		case ShaderDataType::Bool: return GL_BOOL;
 		}
 
-		CORE_ASSERT(false, "Invalid Shader data type!")
+		BR_CORE_ASSERT(false, "Invalid Shader data type!");
 		return 0;
 	}
 
@@ -83,7 +83,7 @@ namespace Bron
 		case ShaderDataType::Bool: return 1;
 		}
 
-		CORE_ASSERT(false, "Invalid Shader data type!")
+		BR_CORE_ASSERT(false, "Invalid Shader data type!");
 		return -1;
 	}
 }

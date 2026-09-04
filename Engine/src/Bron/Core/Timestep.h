@@ -1,20 +1,20 @@
 #pragma once
 
-namespace Bron
+namespace bron
 {
 	class Timestep
 	{
 	public:
 		Timestep(float time = 0.0f)
-			: _time(time)
+			: time_(time)
 		{
 		}
 
-		operator float() const { return _time; }
+		operator float() const { return time_; }
 
-		float getSeconds() const { return _time; }
-		float getMilliseconds() const { return _time * 1000.0f; }
+		float GetSeconds() const { return time_; }
+		float GetMilliseconds() const { return time_ * 1000.0f; }
 	private:
-		float _time;
+		float time_;
 	};
 }

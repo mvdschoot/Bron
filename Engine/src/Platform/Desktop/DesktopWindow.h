@@ -17,7 +17,7 @@
 #include <functional>
 #include <string>
 
-namespace Bron
+namespace bron
 {
 	class DesktopWindow : public Window
 	{
@@ -28,22 +28,22 @@ namespace Bron
 		{
 		};
 
-		void onUpdate() override;
-		void setVSync(bool enabled) override;
+		void OnUpdate() override;
+		void SetVSync(bool enabled) override;
 
-		u32 getWindowWidth() override { return _window_data._width; };
-		u32 getWindowHeight() override { return _window_data._height; };
-		float getMonitorScale() override;
+		u32 GetWindowWidth() override { return window_data_.width; };
+		u32 GetWindowHeight() override { return window_data_.height; };
+		float GetMonitorScale() override;
 
-		void setEventCallback(const EventCallbackFn& func) override
+		void SetEventCallback(const EventCallbackFn& func) override
 		{
-			_window_data._event_callback = func;
+			window_data_.event_callback = func;
 		};
 
 	private:
-		bool _is_glfw_initialised;
-		Ref<GraphicsContext> _graphics_context;
+		bool is_glfw_initialised_;
+		Ref<GraphicsContext> graphics_context_;
 
-		WindowData _window_data;
+		WindowData window_data_;
 	};
 }

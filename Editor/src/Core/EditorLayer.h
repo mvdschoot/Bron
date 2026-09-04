@@ -10,7 +10,7 @@
 #include "Panels/PreferencesPanel.h"
 #include "Panels/ProjectPanel.h"
 
-namespace Bron::Editor
+namespace bron::editor
 {
 	/// The editor's only layer. It owns the shared state, drives the panels, and provides the
 	/// frame they dock into (the dockspace and the main menu bar). Everything specific to one
@@ -47,10 +47,10 @@ namespace Bron::Editor
 		void EndDockspace();
 		void DrawMenuBar();
 
-		EditorContext mContext;
-		std::vector<Scope<Panel>> mPanels;
+		EditorContext context_;
+		std::vector<Scope<Panel>> panels_;
 
-		ProjectPanel* mProjectPanel = nullptr;
-		PreferencesPanel* mPreferencesPanel = nullptr;
+		ProjectPanel* project_panel_ = nullptr;
+		PreferencesPanel* preferences_panel_ = nullptr;
 	};
 }

@@ -3,14 +3,14 @@
 #include "Bron/Core/Platform.h"
 #include "Platform/OpenGL/OpenGLVertexArray.h"
 
-namespace Bron
+namespace bron
 {
 	Ref<VertexArray> VertexArray::Create()
 	{
-		switch (Platform::getAPI())
+		switch (Platform::GetApi())
 		{
-		case Platform::API::OpenGL: return createRef<OpenGLVertexArray>();
-		case Platform::API::None: CORE_ERROR("No rendering engine selected");
+		case Platform::API::OpenGL: return CreateRef<OpenGLVertexArray>();
+		case Platform::API::None: BR_CORE_ERROR("No rendering engine selected");
 		}
 
 		return nullptr;

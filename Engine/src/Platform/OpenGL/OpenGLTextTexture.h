@@ -16,18 +16,18 @@
 #include <string>
 
 
-namespace Bron
+namespace bron
 {
 	class OpenGLTextTexture : public TextTexture
 	{
 	public:
 		OpenGLTextTexture(u32 width, u32 height);
 
-		void setData(void* data, u32 size) override;
-		void bind(u32 slot) override; 
+		void SetData(void* data, u32 size) override;
+		void Bind(u32 slot) override; 
 
-		void setLetter(void* data, u32 x, u32 y, u32 width, u32 height) override;
+		void SetLetter(void* data, u32 x, u32 y, u32 width, u32 height) override;
 	private:
-		GLenum _internalFormat, _dataFormat;
+		GLenum internal_format_, data_format_;
 	};
 }

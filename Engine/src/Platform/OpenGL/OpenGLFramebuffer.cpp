@@ -1,82 +1,82 @@
 #include "OpenGLFramebuffer.h"
 
-namespace Bron
+namespace bron
 {
 	OpenGLFramebuffer::OpenGLFramebuffer(FramebufferSpecification& spec)
-		: _spec(spec)
+		: spec_(spec)
 	{
-		OpenGLFramebuffer::invalidate();
+		OpenGLFramebuffer::Invalidate();
 	}
 
 	OpenGLFramebuffer::~OpenGLFramebuffer()
 	{
-		destroy();
+		Destroy();
 	}
 
 	// The attachments are owned by this framebuffer, so they go with it - deleting only the
 	// framebuffer object leaves the two textures alive.
-	void OpenGLFramebuffer::destroy()
+	void OpenGLFramebuffer::Destroy()
 	{
-		glDeleteFramebuffers(1, &_renderer_id);
-		glDeleteTextures(1, &_color_attachment);
-		glDeleteTextures(1, &_depth_stencil_attachment);
+		glDeleteFramebuffers(1, &renderer_id_);
+		glDeleteTextures(1, &color_attachment_);
+		glDeleteTextures(1, &depth_stencil_attachment_);
 
-		_renderer_id = 0;
-		_color_attachment = 0;
-		_depth_stencil_attachment = 0;
+		renderer_id_ = 0;
+		color_attachment_ = 0;
+		depth_stencil_attachment_ = 0;
 	}
 
-	void OpenGLFramebuffer::bind()
+	void OpenGLFramebuffer::Bind()
 	{
-		glBindFramebuffer(GL_FRAMEBUFFER, _renderer_id);
-		glViewport(0, 0, _spec.width, _spec.height);
+		glBindFramebuffer(GL_FRAMEBUFFER, renderer_id_);
+		glViewport(0, 0, spec_.width, spec_.height);
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 	}
 
-	void OpenGLFramebuffer::unbind()
+	void OpenGLFramebuffer::Unbind()
 	{
 		glBindFramebuffer(GL_FRAMEBUFFER, 0);
 	}
 
-	void OpenGLFramebuffer::invalidate()
+	void OpenGLFramebuffer::Invalidate()
 	{
-		// invalidate() is a resize as much as a first-time build, so anything from a previous
+		// Invalidate() is a resize as much as a first-time build, so anything from a previous
 		// call has to go first, otherwise every viewport resize leaks a framebuffer and two
 		// textures.
-		destroy();
+		Destroy();
 
-		glCreateFramebuffers(1, &_renderer_id);
-		glBindFramebuffer(GL_FRAMEBUFFER, _renderer_id);
+		glCreateFramebuffers(1, &renderer_id_);
+		glBindFramebuffer(GL_FRAMEBUFFER, renderer_id_);
 
-		glCreateTextures(GL_TEXTURE_2D, 1, &_color_attachment);
-		glBindTexture(GL_TEXTURE_2D, _color_attachment);
-		glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA8, _spec.width,
-		             _spec.height, 0, GL_RGBA, GL_UNSIGNED_BYTE, nullptr);
+		glCreateTextures(GL_TEXTURE_2D, 1, &color_attachment_);
+		glBindTexture(GL_TEXTURE_2D, color_attachment_);
+		glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA8, spec_.width,
+		             spec_.height, 0, GL_RGBA, GL_UNSIGNED_BYTE, nullptr);
 		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
 		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
 
-		glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, _color_attachment, 0);
+		glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, color_attachment_, 0);
 
-		glCreateTextures(GL_TEXTURE_2D, 1, &_depth_stencil_attachment);
-		glBindTexture(GL_TEXTURE_2D, _depth_stencil_attachment);
-		glTexImage2D(GL_TEXTURE_2D, 0, GL_DEPTH24_STENCIL8, _spec.width,
-		             _spec.height, 0, GL_DEPTH_STENCIL, GL_UNSIGNED_INT_24_8, nullptr);
+		glCreateTextures(GL_TEXTURE_2D, 1, &depth_stencil_attachment_);
+		glBindTexture(GL_TEXTURE_2D, depth_stencil_attachment_);
+		glTexImage2D(GL_TEXTURE_2D, 0, GL_DEPTH24_STENCIL8, spec_.width,
+		             spec_.height, 0, GL_DEPTH_STENCIL, GL_UNSIGNED_INT_24_8, nullptr);
 		glTextureParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
 		glTextureParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
 
-		glFramebufferTexture2D(GL_FRAMEBUFFER, GL_DEPTH_STENCIL_ATTACHMENT, GL_TEXTURE_2D, _depth_stencil_attachment,
+		glFramebufferTexture2D(GL_FRAMEBUFFER, GL_DEPTH_STENCIL_ATTACHMENT, GL_TEXTURE_2D, depth_stencil_attachment_,
 		                       0);
 
-		CORE_ASSERT(glCheckFramebufferStatus(GL_FRAMEBUFFER) == GL_FRAMEBUFFER_COMPLETE, "Framebuffer is not complete");
+		BR_CORE_ASSERT(glCheckFramebufferStatus(GL_FRAMEBUFFER) == GL_FRAMEBUFFER_COMPLETE, "Framebuffer is not complete");
 	}
 
-	u32 OpenGLFramebuffer::getColorAttachID()
+	u32 OpenGLFramebuffer::GetColorAttachId()
 	{
-		return _color_attachment;
+		return color_attachment_;
 	}
 
-	u32 OpenGLFramebuffer::getDepthStencilAttachID()
+	u32 OpenGLFramebuffer::GetDepthStencilAttachId()
 	{
-		return _depth_stencil_attachment;
+		return depth_stencil_attachment_;
 	}
 }

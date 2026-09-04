@@ -4,24 +4,24 @@
 #include "Bron/Events/Event.h"
 #include "Bron/Core/KeyCodes.h"
 
-namespace Bron
+namespace bron
 {
 	class BR_API KeyEvent : public Event
 	{
 	public:
-		KeyEvent(KeyCode key) : _key_code(key)
+		KeyEvent(KeyCode key) : key_code_(key)
 		{
 		};
 
-		virtual KeyCode getKey()
+		virtual KeyCode GetKey()
 		{
-			return _key_code;
+			return key_code_;
 		};
 
-		EVENT_CLASS_CATEGORY(EventCategory::EventCategoryMouse | EventCategory::EventCategoryInput);
+		BR_EVENT_CLASS_CATEGORY(EventCategory::EventCategoryMouse | EventCategory::EventCategoryInput);
 
 	protected:
-		KeyCode _key_code;
+		KeyCode key_code_;
 	};
 
 
@@ -29,7 +29,7 @@ namespace Bron
 	{
 	public:
 		using KeyEvent::KeyEvent;
-		EVENT_CLASS_TYPE(KeyPressed);
+		BR_EVENT_CLASS_TYPE(KeyPressed);
 
 	private:
 	};
@@ -38,7 +38,7 @@ namespace Bron
 	{
 	public:
 		using KeyEvent::KeyEvent;
-		EVENT_CLASS_TYPE(KeyReleased);
+		BR_EVENT_CLASS_TYPE(KeyReleased);
 
 	private:
 	};

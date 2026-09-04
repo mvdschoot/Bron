@@ -11,7 +11,7 @@
 #include <memory>
 #include <vector>
 
-namespace Bron
+namespace bron
 {
 	class OpenGLVertexArray : public VertexArray
 	{
@@ -19,20 +19,20 @@ namespace Bron
 		OpenGLVertexArray();
 		~OpenGLVertexArray() override;
 
-		void bind() override;
-		void unbind() override;
+		void Bind() override;
+		void Unbind() override;
 
-		void addVertexBuffer(const Ref<VertexBuffer> buffer) override;
-		void setIndexBuffer(const Ref<IndexBuffer> buffer) override;
+		void AddVertexBuffer(const Ref<VertexBuffer> buffer) override;
+		void SetIndexBuffer(const Ref<IndexBuffer> buffer) override;
 
-		const std::vector<Ref<VertexBuffer>>& getVertexBuffers() override;
-		const Ref<IndexBuffer>& getIndexBuffer() override;
+		const std::vector<Ref<VertexBuffer>>& GetVertexBuffers() override;
+		const Ref<IndexBuffer>& GetIndexBuffer() override;
 
 	private:
-		u32 _renderer_id;
-		std::vector<Ref<VertexBuffer>> _vertex_buffers;
-		Ref<IndexBuffer> _index_buffer;
+		u32 renderer_id_;
+		std::vector<Ref<VertexBuffer>> vertex_buffers_;
+		Ref<IndexBuffer> index_buffer_;
 
-		u32 _vertex_buffer_index = 0;
+		u32 vertex_buffer_index_ = 0;
 	};
-} // namespace Bron
+} // namespace bron

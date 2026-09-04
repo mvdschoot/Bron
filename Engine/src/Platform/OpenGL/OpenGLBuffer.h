@@ -8,7 +8,7 @@
 #include "glad/glad.h"
 #include "GLFW/glfw3.h"
 
-namespace Bron
+namespace bron
 {
 	class OpenGLVertexBuffer final : public VertexBuffer
 	{
@@ -20,18 +20,18 @@ namespace Bron
 		{
 		}
 
-		void bind() override;
-		void unbind() override;
+		void Bind() override;
+		void Unbind() override;
 
-		const BufferLayout& getBufferLayout() const override;
-		void setBufferLayout(const BufferLayout& layout) override;
-		void setBufferData(const void* data, usize size) override;
-		void resizeAndSetBuffer(const void* data, usize size) override;
+		const BufferLayout& GetBufferLayout() const override;
+		void SetBufferLayout(const BufferLayout& layout) override;
+		void SetBufferData(const void* data, usize size) override;
+		void ResizeAndSetBuffer(const void* data, usize size) override;
 
 
 	private:
-		u32 _render_id;
-		BufferLayout _layout;
+		u32 render_id_;
+		BufferLayout layout_;
 	};
 
 
@@ -45,16 +45,16 @@ namespace Bron
 		{
 		}
 
-		void bind() override;
-		void unbind() override;
+		void Bind() override;
+		void Unbind() override;
 
-		u32 getCount() const override;
-		void setBufferData(u32* data, u32 count) override;
-		void resizeAndSetBuffer(u32* data, u32 count) override;
+		u32 GetCount() const override;
+		void SetBufferData(u32* data, u32 count) override;
+		void ResizeAndSetBuffer(u32* data, u32 count) override;
 
 	private:
-		u32 _render_id;
-		u32 _count;
+		u32 render_id_;
+		u32 count_;
 	};
 
 	class OpenGLUniformBuffer final : public UniformBuffer
@@ -64,17 +64,17 @@ namespace Bron
 		OpenGLUniformBuffer(const void* data, usize size, u32 binding);
 		~OpenGLUniformBuffer() override;
 
-		void bind(u32 binding) override;
-		void unbind() override;
-		bool isBound() override;
+		void Bind(u32 binding) override;
+		void Unbind() override;
+		bool IsBound() override;
 
-		void setData(const uint8_t *data, uint64_t size, uint64_t offset = 0) override;
-		void resizeAndSetData(const uint8_t *data, uint64_t size) override;
+		void SetData(const uint8_t *data, uint64_t size, uint64_t offset = 0) override;
+		void ResizeAndSetData(const uint8_t *data, uint64_t size) override;
 
 	private:
 		GLuint rendererID;
 		usize bufferSize;
-		u32 currentBinding;
+		u32 current_binding_;
 		bool bound;
 	};
 }

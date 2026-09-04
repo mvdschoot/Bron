@@ -3,7 +3,7 @@
 #include "Command.h"
 #include "Bron/Graphics/BuiltinShaders.h"
 
-namespace Bron
+namespace bron
 {
 	struct GridData
 	{
@@ -22,12 +22,12 @@ namespace Bron
 		BR_PROFILE_FUNCTION();
 
 		gData._Camera = camera;
-		gData._Shader = Shader::Create(BuiltinShaders::Source(BuiltinShaders::Id::Grid));
+		gData._Shader = Shader::Create(builtin_shaders::Source(builtin_shaders::Id::Grid));
 
 
 		float vertices[6] = { 0, 0, 0, 0, 0, 0};
 		gData.Vbo = VertexBuffer::Create(vertices, 6 * sizeof(float));
-		gData.Vbo->setBufferLayout({
+		gData.Vbo->SetBufferLayout({
 			{"a_Position", ShaderDataType::Float}
 			});
 
@@ -35,19 +35,19 @@ namespace Bron
 		gData.Ibo = IndexBuffer::Create(indices, 6);
 
 		gData.Vao = VertexArray::Create();
-		gData.Vao->bind();
-		gData.Vao->setIndexBuffer(gData.Ibo);
-		gData.Vao->addVertexBuffer(gData.Vbo);
+		gData.Vao->Bind();
+		gData.Vao->SetIndexBuffer(gData.Ibo);
+		gData.Vao->AddVertexBuffer(gData.Vbo);
 	}
 
 	void GridRenderer::Draw()
 	{
 		BR_PROFILE_FUNCTION();
 
-		gData._Shader->bind();
-		// gData._Shader->setUniformMat4("uPosition", lineRenderData.camera->GetVPmatrix());
-		gData._Shader->setUniformMat4("uView", gData._Camera->GetViewMatrix());
-		gData._Shader->setUniformMat4("uProjection", gData._Camera->GetProjectionMatrix());
+		gData._Shader->Bind();
+		// gData._Shader->SetUniformMat4("uPosition", lineRenderData.camera->GetVPmatrix());
+		gData._Shader->SetUniformMat4("uView", gData._Camera->GetViewMatrix());
+		gData._Shader->SetUniformMat4("uProjection", gData._Camera->GetProjectionMatrix());
 
 		Command::DrawIndexed(gData.Vao, 6);
 	}

@@ -12,34 +12,34 @@
 #include <string>
 
 
-namespace Bron
+namespace bron
 {
 	using EventCallbackFn = std::function<void(Event&)>;
 
 	// Abstraction of window class, is platform dependent
 	struct BR_API WindowProps
 	{
-		std::string _title;
-		int _width;
-		int _height;
+		std::string title;
+		int width;
+		int height;
 
 		WindowProps() :
-			_title("Default"), _width(1920), _height(1080)
+			title("Default"), width(1920), height(1080)
 		{
 		};
 
 		WindowProps(std::string title, u32 width, u32 height) :
-			_title(title), _width(width), _height(height)
+			title(title), width(width), height(height)
 		{
 		};
 	};
 
 	struct WindowData
 	{
-		std::string _title;
-		u32 _width;
-		u32 _height;
-		EventCallbackFn _event_callback;
+		std::string title;
+		u32 width;
+		u32 height;
+		EventCallbackFn event_callback;
 	};
 
 	class BR_API Window
@@ -48,25 +48,25 @@ namespace Bron
 		Window() = default;
 		using EventCallbackFn = std::function<void(Event&)>;
 
-		virtual void onUpdate() = 0;
+		virtual void OnUpdate() = 0;
 
-		virtual unsigned int getWindowWidth() = 0;
-		virtual unsigned int getWindowHeight() = 0;
-		virtual float getMonitorScale() = 0;
+		virtual unsigned int GetWindowWidth() = 0;
+		virtual unsigned int GetWindowHeight() = 0;
+		virtual float GetMonitorScale() = 0;
 
-		virtual void setEventCallback(const EventCallbackFn& func) = 0;
+		virtual void SetEventCallback(const EventCallbackFn& func) = 0;
 
-		virtual void setVSync(bool enabled) = 0;
+		virtual void SetVSync(bool enabled) = 0;
 
-		GLFWwindow* getWindowPointer()
+		GLFWwindow* GetWindowPointer()
 		{
-			return _window;
+			return window_;
 		};
 
 		static Ref<Window> Create(const WindowProps& w_props = WindowProps());
 
 	protected:
-		GLFWwindow* _window;
+		GLFWwindow* window_;
 	private:
 	};
 }

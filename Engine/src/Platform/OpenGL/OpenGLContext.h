@@ -13,7 +13,7 @@
 
 #include <string>
 
-namespace Bron
+namespace bron
 {
 	class OpenGLContext : public GraphicsContext
 	{
@@ -28,6 +28,6 @@ namespace Bron
 		void SwapBuffers() override;
 
 	private:
-		GLFWwindow* _graphics_window;
+		GLFWwindow* graphics_window_;
 	};
 }

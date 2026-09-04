@@ -2,11 +2,11 @@
 
 #include <stdint.h>
 
-namespace Bron
+namespace bron
 {
 	using KeyCode = uint16_t;
 
-	namespace Key
+	namespace key
 	{
 		enum : KeyCode
 		{

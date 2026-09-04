@@ -19,7 +19,7 @@
 #include "Bron/Graphics/Renderer/2D.h"
 
 
-namespace Bron
+namespace bron
 {
 	struct Character
 	{

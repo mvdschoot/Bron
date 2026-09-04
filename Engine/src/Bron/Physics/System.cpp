@@ -1,14 +1,14 @@
 #include "System.h"
 #include "Collisions.h"
 
-namespace Bron {
+namespace bron {
     void System::add(Pt<RigidBody> object)
     {
-        bvh.addObject(object);
+        bvh.AddObject(object);
     }
     
     void System::loop()
     {
-        collides({}, {});
+        Collides({}, {});
     }
 }

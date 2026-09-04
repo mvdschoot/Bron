@@ -1,10 +1,10 @@
 #pragma once
 
-namespace Bron
+namespace bron
 {
 	using MouseCode = uint16_t;
 
-	namespace Mouse
+	namespace mouse
 	{
 		enum : MouseCode
 		{
