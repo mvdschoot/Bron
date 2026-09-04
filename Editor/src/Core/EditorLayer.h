@@ -7,6 +7,7 @@
 
 #include "Core/EditorContext.h"
 #include "Panels/Panel.h"
+#include "Panels/PreferencesPanel.h"
 #include "Panels/ProjectPanel.h"
 
 namespace Bron::Editor
@@ -26,10 +27,18 @@ namespace Bron::Editor
 		void OnImGuiRender() override;
 
 	private:
-		/// Adds a panel and returns it, so the layer can keep a handle on the ones it drives
-		/// directly (the menu bar calls into the project panel).
+		/// Adds a panel and returns it, so the layer can keep a handle on the ones the menu
+		/// bar drives directly.
 		template<typename T>
 		T* AddPanel();
+
+		/// Makes 'project' the open one: points asset resolution at it, records it in the
+		/// recent list and loads its startup scene. Null (a failed load) is ignored.
+		void OpenProject(std::unique_ptr<Project> project);
+
+		/// Ask for a .brn and open it, or create one. No-ops when the dialog is cancelled.
+		void OpenProjectDialog();
+		void NewProjectDialog();
 
 		bool OnMouseScrolled(MouseScrolledEvent& e);
 		void PollShortcuts();
@@ -39,8 +48,9 @@ namespace Bron::Editor
 		void DrawMenuBar();
 
 		EditorContext mContext;
-		std::vector<std::unique_ptr<Panel>> mPanels;
+		std::vector<Scope<Panel>> mPanels;
 
 		ProjectPanel* mProjectPanel = nullptr;
+		PreferencesPanel* mPreferencesPanel = nullptr;
 	};
 }

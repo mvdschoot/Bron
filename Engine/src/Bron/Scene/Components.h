@@ -183,7 +183,7 @@ namespace Bron
 	// everything below this entity is treated as generated output.
 	struct ModelSourceComponent
 	{
-		std::string path; // relative to Paths::ProjectAssetRoot()
+		std::string path; // relative to Paths::AssetRoot()
 		MaterialWorkflow workflow = PHONG;
 
 		ModelSourceComponent() = default;

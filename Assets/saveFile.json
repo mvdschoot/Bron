@@ -1,7 +1,7 @@
 {
 	"entities": [
 		{
-			"id": "0t83klcbhl225benxfptevhv4t37",
+			"id": "evj4eggju4uh4swq3muxexxngvt4",
 			"name": "Root node",
 			"parent": null,
 			"transform": {
@@ -24,13 +24,13 @@
 			}
 		},
 		{
-			"id": "u0npxpqqs0n3q1htesrnuy7hkg2k",
+			"id": "u5q0fvjg0sqc23d7q7jkxov9ujv6",
 			"model": {
 				"path": "mymodel/untitled.glb",
 				"workflow": "phong"
 			},
 			"name": "The model",
-			"parent": "0t83klcbhl225benxfptevhv4t37",
+			"parent": "evj4eggju4uh4swq3muxexxngvt4",
 			"transform": {
 				"Position": [
 					0.6548705101013184,
@@ -51,9 +51,9 @@
 			}
 		},
 		{
-			"id": "hw68ub5ivl0o3s4yfolx37euxu57",
-			"name": "Point light 8266",
-			"parent": "0t83klcbhl225benxfptevhv4t37",
+			"id": "xa91ytfoq0lx6yp18sd361d8nbq3",
+			"name": "Point light 4929",
+			"parent": "evj4eggju4uh4swq3muxexxngvt4",
 			"pointLight": {
 				"color": [
 					1.0,
@@ -81,9 +81,9 @@
 			}
 		},
 		{
-			"id": "kihlsljbqfyyc5m18hiychkoydb2",
-			"name": "Point light 16729",
-			"parent": "0t83klcbhl225benxfptevhv4t37",
+			"id": "idf893p8k5d9bnk4pq9bl2as2waf",
+			"name": "Point light 3566",
+			"parent": "evj4eggju4uh4swq3muxexxngvt4",
 			"pointLight": {
 				"color": [
 					1.0,
@@ -111,6 +111,6 @@
 			}
 		}
 	],
-	"root": "0t83klcbhl225benxfptevhv4t37",
+	"root": "evj4eggju4uh4swq3muxexxngvt4",
 	"version": 1
 }

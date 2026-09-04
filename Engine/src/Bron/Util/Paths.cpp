@@ -1,12 +1,6 @@
 #include "Paths.h"
 
-#include <cstdlib>
-
 #include "Bron/Core/Logger.h"
-
-#ifndef BRON_PROJECT_ASSET_DIR
-	#error "BRON_PROJECT_ASSET_DIR is not defined - configure the project through CMake."
-#endif
 
 namespace Bron
 {
@@ -14,34 +8,52 @@ namespace Bron
 	{
 		namespace
 		{
-			std::filesystem::path Resolve(const char* env_var, const char* compiled_in)
+			std::filesystem::path& Root()
 			{
-				// std::getenv is deprecated-but-portable; getenv_s/secure_getenv
-				// are not, so we keep the standard one and silence MSVC in CMake.
-				if (const char* override_dir = std::getenv(env_var))
-				{
-					if (*override_dir != '\0')
-						return std::filesystem::path(override_dir);
-				}
-
-				return std::filesystem::path(compiled_in);
+				static std::filesystem::path root;
+				return root;
 			}
 		}
 
-		const std::filesystem::path& ProjectAssetRoot()
+		const std::filesystem::path& AssetRoot()
 		{
-			static const std::filesystem::path root = Resolve("BRON_PROJECT_ASSETS", BRON_PROJECT_ASSET_DIR);
-			return root;
+			return Root();
 		}
 
-		std::filesystem::path ProjectAsset(const std::filesystem::path& relative)
+		bool HasAssetRoot()
 		{
-			return ProjectAssetRoot() / relative;
+			return !Root().empty();
 		}
 
-		std::string ProjectAssetString(const std::filesystem::path& relative)
+		void SetAssetRoot(const std::filesystem::path& root)
 		{
-			return ProjectAsset(relative).string();
+			CORE_INFO("Asset root is now {}", root.string());
+			Root() = root;
+		}
+
+		std::filesystem::path Resolve(const std::filesystem::path& relative)
+		{
+			// Reachable only through a loaded scene, which needs a project, which sets the
+			// root - so this means something resolved an asset path without one.
+			CORE_ASSERT(HasAssetRoot(), "No asset root: resolving an asset with no project open")
+
+			return AssetRoot() / relative;
+		}
+
+		std::string ResolveString(const std::filesystem::path& relative)
+		{
+			return Resolve(relative).string();
+		}
+
+		std::filesystem::path Relative(const std::filesystem::path& absolute)
+		{
+			CORE_ASSERT(HasAssetRoot(), "No asset root: storing an asset path with no project open")
+
+			std::error_code ec;
+			const std::filesystem::path relative = std::filesystem::relative(absolute, AssetRoot(), ec);
+
+			const bool inside = !ec && !relative.empty() && *relative.begin() != "..";
+			return inside ? relative : absolute;
 		}
 	}
 }

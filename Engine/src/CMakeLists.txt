@@ -81,13 +81,6 @@ target_compile_definitions(Bron
 		BR_COMPILE
 )
 
-# Application asset root, so nothing has to guess at the working directory.
-# Overridable at runtime with BRON_PROJECT_ASSETS. The engine itself needs no
-# such root - its shaders live in Bron/Graphics/BuiltinShaders.cpp.
-target_compile_definitions(Bron PUBLIC
-	BRON_PROJECT_ASSET_DIR="${BRON_PROJECT_ASSET_DIR}"
-)
-
 if(MSVC)
 	# /utf-8 makes MSVC read sources as UTF-8 like every other compiler;
 	# /permissive- turns off the MSVC-only language extensions that let

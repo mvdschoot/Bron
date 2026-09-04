@@ -5,6 +5,7 @@ add_executable(BronEditor
 	src/App.cpp
 
 	src/Core/EditorLayer.cpp
+	src/Core/Preferences.cpp
 	src/Core/EditorCamera.cpp
 	src/Core/Theme.cpp
 	src/Core/Project.cpp
@@ -14,6 +15,7 @@ add_executable(BronEditor
 	src/Panels/PropertiesPanel.cpp
 	src/Panels/ProjectPanel.cpp
 	src/Panels/StatisticsPanel.cpp
+	src/Panels/PreferencesPanel.cpp
 	src/Panels/ComponentRegistry.cpp
 )
 

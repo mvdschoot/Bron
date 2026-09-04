@@ -1,12 +1,13 @@
 #include "Core/EditorCamera.h"
 
+#include "Core/Preferences.h"
+
 namespace Bron::Editor
 {
 	namespace
 	{
-		constexpr float ZoomSpeed = 0.15f;
+		// How close the camera may get to the focus point before zooming stops.
 		constexpr float MinDistance = 0.15f;
-		constexpr float OrbitSpeed = 1.0f;   // Radians per second of held input.
 	}
 
 	EditorCamera::EditorCamera(const float fovY, const float aspectRatio, const float nearPlane, const float farPlane)
@@ -18,7 +19,7 @@ namespace Bron::Editor
 
 	void EditorCamera::OnUpdate(const Timestep ts)
 	{
-		const float dt = ts.getSeconds() * OrbitSpeed;
+		const float dt = ts.getSeconds() * Preferences::Get().cameraOrbitSpeed;
 
 		if (Input::isKeyPressed(Key::A))
 			mAzimuth += dt;
@@ -36,7 +37,7 @@ namespace Bron::Editor
 
 	bool EditorCamera::OnMouseScrolled(MouseScrolledEvent& e)
 	{
-		mDistance = std::max(mDistance - e.getOffsetY() * ZoomSpeed, MinDistance);
+		mDistance = std::max(mDistance - e.getOffsetY() * Preferences::Get().cameraZoomSpeed, MinDistance);
 		UpdatePosition();
 		return true;
 	}

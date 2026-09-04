@@ -158,7 +158,7 @@ namespace Bron {
 			}
 
 			const ModelSourceComponent &source = scene.reg.get<ModelSourceComponent>(created[i]);
-			const std::filesystem::path path = Paths::ProjectAsset(source.path);
+			const std::filesystem::path path = Paths::Resolve(source.path);
 
 			const entt::entity imported = ModelLoader::loadModel(scene, source.workflow, path.string().c_str());
 

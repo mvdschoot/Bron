@@ -2,7 +2,9 @@
 
 #include <ImGuizmo.h>
 
+#include "Core/Preferences.h"
 #include "Core/Theme.h"
+#include "Panels/PreferencesPanel.h"
 #include "Panels/PropertiesPanel.h"
 #include "Panels/SceneHierarchyPanel.h"
 #include "Panels/StatisticsPanel.h"
@@ -15,20 +17,29 @@ namespace Bron::Editor
 {
 	namespace
 	{
-		/// Contents of a freshly opened editor, until opening a project replaces it.
-		void PopulateDefaultScene(Scene& scene)
+		/// The project to reopen on startup: the most recent one that still loads. Null when
+		/// the list is empty or none of it survives, which leaves the editor with no project
+		/// open - a normal state, not an error.
+		std::unique_ptr<Project> MostRecentProject()
 		{
-			scene.CreatePhongModel("The model", Paths::ProjectAssetString("mymodel/untitled.glb").c_str());
+			for (const std::filesystem::path& path : Preferences::Get().recentProjects)
+			{
+				if (std::unique_ptr<Project> project = Project::Load(path))
+					return project;
 
-			scene.CreatePointLight({4.0, 2.0, 4.0}, {1.0, 1.0, 1.0});
-			scene.CreatePointLight({-2.0, 2.0, -2.0}, {1.0, 1.0, 1.0});
+				// Load has already logged why; a project that has been moved or deleted
+				// should not stop the editor from starting.
+				CORE_WARN("Skipping {} from the recent projects.", path.string());
+			}
+
+			return nullptr;
 		}
 	}
 
 	template<typename T>
 	T* EditorLayer::AddPanel()
 	{
-		auto panel = std::make_unique<T>(mContext);
+		auto panel = createScope<T>(mContext);
 		T* raw = panel.get();
 		mPanels.push_back(std::move(panel));
 		return raw;
@@ -42,6 +53,7 @@ namespace Bron::Editor
 		AddPanel<PropertiesPanel>();
 		mProjectPanel = AddPanel<ProjectPanel>();
 		AddPanel<StatisticsPanel>();
+		mPreferencesPanel = AddPanel<PreferencesPanel>();
 	}
 
 	void EditorLayer::OnAttach()
@@ -51,8 +63,12 @@ namespace Bron::Editor
 		Command::ClearColor({0.0, 0.0, 0.0, 0.5});
 		GridRenderer::Init(&mContext.camera);
 
-		PopulateDefaultScene(mContext.scene);
+		// Reopen where the last session left off. Nothing to reopen is fine: the editor
+		// starts with no project, and no asset root, until one is created or opened.
+		OpenProject(MostRecentProject());
 
+		// Preferences were read in createApplication(); this is the first point at which
+		// there is an ImGui context to apply them to.
 		Theme::Apply();
 
 		for (const auto& panel : mPanels)
@@ -101,6 +117,52 @@ namespace Bron::Editor
 		// Frame the selection.
 		if (Input::isKeyPressed(Key::F) && mContext.HasSelection())
 			mContext.camera.Focus(mContext.scene.reg.get<TransformComponent>(mContext.selection).Position);
+	}
+
+	void EditorLayer::OpenProject(std::unique_ptr<Project> project)
+	{
+		// Null when there was nothing to reopen, or when the file could not be read - Load
+		// and Create have already logged why. Either way the editor keeps what it has.
+		if (!project)
+			return;
+
+		mContext.project = std::move(project);
+		mContext.project->MakeActive();
+
+		Preferences::AddRecentProject(mContext.project->File());
+		Preferences::Save();
+
+		// Always succeeds: a project is guaranteed to have its startup scene on disk.
+		mProjectPanel->LoadScene();
+	}
+
+	void EditorLayer::OpenProjectDialog()
+	{
+		NFD::Init();
+
+		NFD::UniquePath outPath;
+		nfdfilteritem_t filterItem[1] = {{"Bron projects", "brn"}};
+
+		if (NFD::OpenDialog(outPath, filterItem, 1, nullptr) == NFD_OKAY)
+			OpenProject(Project::Load(outPath.get()));
+
+		NFD_Quit();
+	}
+
+	void EditorLayer::NewProjectDialog()
+	{
+		NFD::Init();
+
+		NFD::UniquePath outPath;
+		nfdfilteritem_t filterItem[1] = {{"Bron projects", "brn"}};
+
+		if (NFD::SaveDialog(outPath, filterItem, 1, nullptr, "Untitled.brn") == NFD_OKAY)
+		{
+			const std::filesystem::path file = outPath.get();
+			OpenProject(Project::Create(file, file.stem().string()));
+		}
+
+		NFD_Quit();
 	}
 
 	void EditorLayer::OnImGuiRender()
@@ -154,20 +216,33 @@ namespace Bron::Editor
 
 		if (ImGui::BeginMenu("File"))
 		{
+			if (ImGui::MenuItem("New project..."))
+				NewProjectDialog();
+
 			if (ImGui::MenuItem("Open project..."))
+				OpenProjectDialog();
+
+			if (ImGui::BeginMenu("Open recent", !Preferences::Get().recentProjects.empty()))
 			{
-				NFD::Init();
+				// Copied, because opening a project reorders the list being walked.
+				const std::vector<std::filesystem::path> recent = Preferences::Get().recentProjects;
 
-				NFD::UniquePath outPath;
-				nfdfilteritem_t filterItem[1] = {{"Bron Editor files", "brn"}};
-
-				if (NFD::OpenDialog(outPath, filterItem, 1, nullptr) == NFD_OKAY)
+				for (const std::filesystem::path& path : recent)
 				{
-					// TODO: hand the path to Project once it can load one.
+					if (ImGui::MenuItem(path.string().c_str()))
+						OpenProject(Project::Load(path));
 				}
 
-				NFD_Quit();
+				ImGui::EndMenu();
 			}
+
+			ImGui::Separator();
+
+			// Everything below needs somewhere to read and write, so it waits for a project.
+			ImGui::BeginDisabled(!mContext.HasProject());
+
+			if (ImGui::MenuItem("Save project"))
+				mContext.project->Save();
 
 			ImGui::Separator();
 
@@ -175,6 +250,16 @@ namespace Bron::Editor
 				mProjectPanel->SaveScene();
 			if (ImGui::MenuItem("Load scene"))
 				mProjectPanel->LoadScene();
+
+			ImGui::EndDisabled();
+
+			ImGui::EndMenu();
+		}
+
+		if (ImGui::BeginMenu("Edit"))
+		{
+			if (ImGui::MenuItem("Preferences..."))
+				mPreferencesPanel->Open();
 
 			ImGui::EndMenu();
 		}

@@ -98,13 +98,9 @@ namespace Bron
 		reg.get<TagComponent>(model).name = name;
 
 		// Recorded relative to the asset root so a save file survives the project
-		// being moved. A path outside the root is kept as it is; joining an
-		// absolute path back onto the root is a no-op, so loading still works.
-		std::error_code ec;
-		const std::filesystem::path relative = std::filesystem::relative(location, Paths::ProjectAssetRoot(), ec);
-		const bool inside = !ec && !relative.empty() && *relative.begin() != "..";
-
-		reg.emplace<ModelSourceComponent>(model, inside ? relative.generic_string() : std::string(location),
+		// being moved. Paths::Relative keeps a location outside the root as it is;
+		// joining an absolute path back onto the root is a no-op, so loading still works.
+		reg.emplace<ModelSourceComponent>(model, Paths::Relative(location).generic_string(),
 										  MaterialWorkflow::PHONG);
 
 		AddChild(root, model);

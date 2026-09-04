@@ -11,6 +11,7 @@ namespace Bron::Editor
 	{
 	public:
 		App();
+		~App() override;
 
 	private:
 		Overlay overlay;

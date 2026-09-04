@@ -32,7 +32,9 @@ namespace Bron
 	public:
 		Application() : _running(true), _minimized(false), _frame_count(0), _profiling(false) { Init(); }
 
-		~Application()
+		// Virtual because main() owns the application through an Application* and deletes it
+		// there; without this the derived destructor never runs.
+		virtual ~Application()
 		{
 		};
 		void Run();
