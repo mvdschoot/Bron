@@ -12,14 +12,10 @@
 
 #include <memory>
 
-namespace bron
-{
-	class OpenGLRendererAPI : public API
-	{
-		static inline int ToOpenGLDrawType(const DrawType type)
-		{
-			switch (type)
-			{
+namespace bron {
+class OpenGLRendererAPI : public API {
+	static inline int ToOpenGLDrawType(const DrawType type) {
+		switch (type) {
 			case DrawType::kTriangles:
 				return GL_TRIANGLES;
 				break;
@@ -28,25 +24,25 @@ namespace bron
 				break;
 			default:
 				BR_CORE_ASSERT(false, "RENDERER: invalid draw type");
-			}
-			return 0;
 		}
-	public:
-		OpenGLRendererAPI();
-		void Init() override;
-		void SetClearColor(const glm::vec4& color) override;
-		void Clear() override;
-		void OnResize(float x, float y, float width, float height) override;
+		return 0;
+	}
 
-		void EnableBlend() override;
-		void EnableDepth() override;
+public:
+	OpenGLRendererAPI();
+	void Init() override;
+	void SetClearColor(const glm::vec4& color) override;
+	void Clear() override;
+	void OnResize(float x, float y, float width, float height) override;
 
-		void DrawIndexed(const Ref<VertexArray>& v_array, u32 count) override;
-		void DrawIndexedLines(const Ref<VertexArray>& v_array, u32 count) override;
-		void DrawIndexedStripLines(const Ref<VertexArray>& v_array, u32 count) override;
+	void EnableBlend() override;
+	void EnableDepth() override;
 
-	private:
+	void DrawIndexed(const Ref<VertexArray>& v_array, u32 count) override;
+	void DrawIndexedLines(const Ref<VertexArray>& v_array, u32 count) override;
+	void DrawIndexedStripLines(const Ref<VertexArray>& v_array, u32 count) override;
 
-		bool blend_enabled_;
-	};
+private:
+	bool blend_enabled_;
+};
 } // namespace bron

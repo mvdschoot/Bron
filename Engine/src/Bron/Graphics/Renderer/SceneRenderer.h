@@ -8,23 +8,20 @@
 
 #include "Bron/Scene/Scene.h"
 
-namespace bron
-{
-	struct RenderStatistics
-	{
-		u32 DrawCalls;
-		u32 Shaders;
-		u32 Materials;
-		u32 Meshes;
-		u32 UniformCalls;
-	};
+namespace bron {
+struct RenderStatistics {
+	u32 DrawCalls;
+	u32 Shaders;
+	u32 Materials;
+	u32 Meshes;
+	u32 UniformCalls;
+};
 
-	class SceneRenderer
-	{
-	public:
-		static void Init();
-		static void Draw(Scene& scene);
+class SceneRenderer {
+public:
+	static void Init();
+	static void Draw(Scene& scene);
 
-		static RenderStatistics Statistics;
-	};
-}
+	static RenderStatistics Statistics;
+};
+} // namespace bron

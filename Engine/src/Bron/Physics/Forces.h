@@ -2,7 +2,6 @@
 
 #include "Math.h"
 
-namespace bron
-{
-    using Force = vec3;
-} 
+namespace bron {
+using Force = vec3;
+}

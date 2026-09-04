@@ -9,31 +9,29 @@
 
 #include <vector>
 
-namespace bron
-{
-	struct PhysicsData;
+namespace bron {
+struct PhysicsData;
 
-	struct BvhNode {
-		AABB box;
-		Ref<BvhNode> left, right;
-		std::vector<Ref<RigidBody>> primitives;
-	};
+struct BvhNode {
+	AABB box;
+	Ref<BvhNode> left, right;
+	std::vector<Ref<RigidBody>> primitives;
+};
 
-	class BVH
-	{
-	private:
-		static constexpr u8 MAX_PRIMS_IN_NODE = 5;
+class BVH {
+private:
+	static constexpr u8 kMaxPrimsInNode = 5;
 
-	public:
-		BVH();
+public:
+	BVH();
 
-		void AddObject(Ref<RigidBody> obj);
-		std::vector<Ref<RigidBody>>& get(Ref<RigidBody>& object);
+	void AddObject(Ref<RigidBody> obj);
+	std::vector<Ref<RigidBody>>& get(Ref<RigidBody>& object);
 
-	private:
-		void InsertPrimitive(Ref<BvhNode> current, Ref<RigidBody> n);
-		Ref<BvhNode> find(Ref<RigidBody> to_find);
+private:
+	void InsertPrimitive(Ref<BvhNode> current, Ref<RigidBody> n);
+	Ref<BvhNode> find(Ref<RigidBody> to_find);
 
-		Ref<BvhNode> root;
-	};
-}
+	Ref<BvhNode> root;
+};
+} // namespace bron

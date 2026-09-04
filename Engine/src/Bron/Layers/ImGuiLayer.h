@@ -16,30 +16,24 @@
 
 #include <memory>
 
-namespace bron
-{
-	class ImGuiLayer : public Layer
-	{
-	public:
-		ImGuiLayer(Ref<Window> window);
+namespace bron {
+class ImGuiLayer : public Layer {
+public:
+	ImGuiLayer(Ref<Window> window);
 
-		~ImGuiLayer() override
-		{
-		}
+	~ImGuiLayer() override {}
 
-		void OnAttach() override;
-		void OnDetach() override;
-		void OnEvent(Event& event) override;
-		void OnUpdate(Timestep ts) override;
+	void OnAttach() override;
+	void OnDetach() override;
+	void OnEvent(Event& event) override;
+	void OnUpdate(Timestep ts) override;
 
-		void OnImGuiRender() override
-		{
-		};
+	void OnImGuiRender() override {};
 
-		void Begin();
-		void End();
+	void Begin();
+	void End();
 
-	private:
-		Ref<Window> window_;
-	};
-}
+private:
+	Ref<Window> window_;
+};
+} // namespace bron

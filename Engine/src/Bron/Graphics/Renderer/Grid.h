@@ -13,16 +13,14 @@
 
 #include "glm/glm.hpp"
 
-namespace bron
-{
+namespace bron {
 
-	/*
-	 * Draws a plane and fills in the line color if the fragment is close to the line.
-	 */
-	class GridRenderer
-	{
-	public:
-		static void Init(Camera* camera);
-		static void Draw();
-	};
-}
+/*
+ * Draws a plane and fills in the line color if the fragment is close to the line.
+ */
+class GridRenderer {
+public:
+	static void Init(Camera* camera);
+	static void Draw();
+};
+} // namespace bron

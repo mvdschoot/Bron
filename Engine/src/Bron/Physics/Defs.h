@@ -8,4 +8,4 @@ namespace bron {
 // for double without touching every formula.
 using real = float;
 
-}  // namespace bron
+} // namespace bron

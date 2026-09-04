@@ -7,8 +7,7 @@
 
 extern bron::Application* bron::CreateApplication();
 
-int main(int argc, char** argv)
-{
+int main(int argc, char** argv) {
 	bron::Logger::Init();
 	bron::Application* app = bron::CreateApplication();
 	app->Run();

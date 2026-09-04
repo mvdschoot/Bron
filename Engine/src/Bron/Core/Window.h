@@ -12,61 +12,49 @@
 #include <string>
 
 
-namespace bron
-{
+namespace bron {
+using EventCallbackFn = std::function<void(Event&)>;
+
+// Abstraction of window class, is platform dependent
+struct BR_API WindowProps {
+	std::string title;
+	int width;
+	int height;
+
+	WindowProps() : title("Default"), width(1920), height(1080) {};
+
+	WindowProps(std::string title, u32 width, u32 height) : title(title), width(width), height(height) {};
+};
+
+struct WindowData {
+	std::string title;
+	u32 width;
+	u32 height;
+	EventCallbackFn event_callback;
+};
+
+class BR_API Window {
+public:
+	Window() = default;
 	using EventCallbackFn = std::function<void(Event&)>;
 
-	// Abstraction of window class, is platform dependent
-	struct BR_API WindowProps
-	{
-		std::string title;
-		int width;
-		int height;
+	virtual void OnUpdate() = 0;
 
-		WindowProps() :
-			title("Default"), width(1920), height(1080)
-		{
-		};
+	virtual unsigned int GetWindowWidth() = 0;
+	virtual unsigned int GetWindowHeight() = 0;
+	virtual float GetMonitorScale() = 0;
 
-		WindowProps(std::string title, u32 width, u32 height) :
-			title(title), width(width), height(height)
-		{
-		};
-	};
+	virtual void SetEventCallback(const EventCallbackFn& func) = 0;
 
-	struct WindowData
-	{
-		std::string title;
-		u32 width;
-		u32 height;
-		EventCallbackFn event_callback;
-	};
+	virtual void SetVSync(bool enabled) = 0;
 
-	class BR_API Window
-	{
-	public:
-		Window() = default;
-		using EventCallbackFn = std::function<void(Event&)>;
+	GLFWwindow* GetWindowPointer() { return window_; };
 
-		virtual void OnUpdate() = 0;
+	static Ref<Window> Create(const WindowProps& w_props = WindowProps());
 
-		virtual unsigned int GetWindowWidth() = 0;
-		virtual unsigned int GetWindowHeight() = 0;
-		virtual float GetMonitorScale() = 0;
+protected:
+	GLFWwindow* window_;
 
-		virtual void SetEventCallback(const EventCallbackFn& func) = 0;
-
-		virtual void SetVSync(bool enabled) = 0;
-
-		GLFWwindow* GetWindowPointer()
-		{
-			return window_;
-		};
-
-		static Ref<Window> Create(const WindowProps& w_props = WindowProps());
-
-	protected:
-		GLFWwindow* window_;
-	private:
-	};
-}
+private:
+};
+} // namespace bron

@@ -21,7 +21,7 @@ private:
 	static Ref<spdlog::logger> app_logger_;
 };
 
-}  // namespace bron
+} // namespace bron
 
 
 #ifdef BR_DEBUG
@@ -38,19 +38,19 @@ private:
 	// Assertions. The do/while(0) wrapper is what makes these safe to use as the
 	// body of an if without braces; the previous bare-brace form silently broke
 	// any `if (c) ASSERT(...); else ...`.
-	#define BR_APP_ASSERT(x, ...)                    \
-		do {                                         \
-			if (!(x)) {                              \
-				BR_APP_ERROR(__VA_ARGS__);           \
-				BR_DEBUGBREAK                        \
-			}                                        \
+	#define BR_APP_ASSERT(x, ...)                                                                                      \
+		do {                                                                                                           \
+			if (!(x)) {                                                                                                \
+				BR_APP_ERROR(__VA_ARGS__);                                                                             \
+				BR_DEBUGBREAK                                                                                          \
+			}                                                                                                          \
 		} while (0)
-	#define BR_CORE_ASSERT(x, ...)                   \
-		do {                                         \
-			if (!(x)) {                              \
-				BR_CORE_ERROR(__VA_ARGS__);          \
-				BR_DEBUGBREAK                        \
-			}                                        \
+	#define BR_CORE_ASSERT(x, ...)                                                                                     \
+		do {                                                                                                           \
+			if (!(x)) {                                                                                                \
+				BR_CORE_ERROR(__VA_ARGS__);                                                                            \
+				BR_DEBUGBREAK                                                                                          \
+			}                                                                                                          \
 		} while (0)
 #else
 	#define BR_CORE_ERROR(...)
@@ -65,13 +65,13 @@ private:
 
 	// Release keeps the condition in an unevaluated context so it still has to
 	// compile -- otherwise a Debug-only typo only surfaces in the Release CI leg.
-	#define BR_APP_ASSERT(x, ...)      \
-		do {                           \
-			(void) sizeof(!(x));       \
+	#define BR_APP_ASSERT(x, ...)                                                                                      \
+		do {                                                                                                           \
+			(void) sizeof(!(x));                                                                                       \
 		} while (0)
-	#define BR_CORE_ASSERT(x, ...)     \
-		do {                           \
-			(void) sizeof(!(x));       \
+	#define BR_CORE_ASSERT(x, ...)                                                                                     \
+		do {                                                                                                           \
+			(void) sizeof(!(x));                                                                                       \
 		} while (0)
 #endif
 

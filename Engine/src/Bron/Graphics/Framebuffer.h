@@ -3,33 +3,26 @@
 #include "Bron/Core/Core.h"
 #include "Bron/Core/Logger.h"
 
-namespace bron
-{
-	struct FramebufferSpecification
-	{
-		u32 width;
-		u32 height;
+namespace bron {
+struct FramebufferSpecification {
+	u32 width;
+	u32 height;
 
-		bool swap_chain_target = false;
-	};
+	bool swap_chain_target = false;
+};
 
-	class Framebuffer
-	{
-	public:
-		Framebuffer()
-		{
-		};
+class Framebuffer {
+public:
+	Framebuffer() {};
 
-		virtual ~Framebuffer()
-		{
-		};
-		virtual void Bind() = 0;
-		virtual void Unbind() = 0;
+	virtual ~Framebuffer() {};
+	virtual void Bind() = 0;
+	virtual void Unbind() = 0;
 
-		virtual void Invalidate() = 0;
-		virtual u32 GetColorAttachId() = 0;
-		virtual u32 GetDepthStencilAttachId() = 0;
+	virtual void Invalidate() = 0;
+	virtual u32 GetColorAttachId() = 0;
+	virtual u32 GetDepthStencilAttachId() = 0;
 
-		static Ref<Framebuffer> Create(FramebufferSpecification& spec);
-	};
-}
+	static Ref<Framebuffer> Create(FramebufferSpecification& spec);
+};
+} // namespace bron

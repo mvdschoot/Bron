@@ -3,16 +3,13 @@
 #include "Bron/Core/Core.h"
 #include "Bron/Core/Logger.h"
 
-namespace bron
-{
-	namespace builtin_shaders
-	{
-		// The shaders live here, in the translation unit, rather than in files
-		// next to the executable. Editing one is a recompile, which is the same
-		// cost as editing the renderer that drives it.
-		namespace
-		{
-		constexpr const char* Renderer2D = R"BRON_GLSL(
+namespace bron {
+namespace builtin_shaders {
+// The shaders live here, in the translation unit, rather than in files
+// next to the executable. Editing one is a recompile, which is the same
+// cost as editing the renderer that drives it.
+namespace {
+constexpr const char* Renderer2D = R"BRON_GLSL(
 #type vertex
 #version 330 core
 layout(location = 0) in vec2 a_Position;
@@ -55,7 +52,7 @@ void main()
 }
 )BRON_GLSL";
 
-		constexpr const char* Grid = R"BRON_GLSL(
+constexpr const char* Grid = R"BRON_GLSL(
 #type vertex
 #version 330 core
 layout(location = 0) in float a_Position; //Dummy
@@ -144,7 +141,7 @@ void main() {
 }
 )BRON_GLSL";
 
-		constexpr const char* Phong3D = R"BRON_GLSL(
+constexpr const char* Phong3D = R"BRON_GLSL(
 #type vertex
 #version 450 core
 
@@ -255,7 +252,7 @@ void main()
 }
 )BRON_GLSL";
 
-		constexpr const char* Text = R"BRON_GLSL(
+constexpr const char* Text = R"BRON_GLSL(
 #type vertex
 #version 330 core
 layout(location = 0) in vec2 a_Position;
@@ -294,20 +291,22 @@ void main()
     color = f_Color * sampled;
 }
 )BRON_GLSL";
-		}
+} // namespace
 
-		std::string Source(Id id)
-		{
-			switch (id)
-			{
-			case Id::kRenderer2D: return Renderer2D;
-			case Id::kGrid:       return Grid;
-			case Id::kPhong3D:    return Phong3D;
-			case Id::kText:       return Text;
-			}
-
-			BR_CORE_ASSERT(false, "Unknown built-in shader");
-			return "";
-		}
+std::string Source(Id id) {
+	switch (id) {
+		case Id::kRenderer2D:
+			return Renderer2D;
+		case Id::kGrid:
+			return Grid;
+		case Id::kPhong3D:
+			return Phong3D;
+		case Id::kText:
+			return Text;
 	}
+
+	BR_CORE_ASSERT(false, "Unknown built-in shader");
+	return "";
 }
+} // namespace builtin_shaders
+} // namespace bron

@@ -5,72 +5,69 @@
 #include <filesystem>
 #include <string>
 
-namespace bron::editor
-{
-	/// Project scope: the settings everyone working on a project shares, written into the
-	/// .brn file and meant to be version controlled. Anything that describes the person
-	/// using the editor belongs in Preferences; anything that is only true of one machine's
-	/// view of this project belongs in its session, not here.
-	struct ProjectSettings
-	{
-		std::string name = "Untitled";
+namespace bron::editor {
+/// Project scope: the settings everyone working on a project shares, written into the
+/// .brn file and meant to be version controlled. Anything that describes the person
+/// using the editor belongs in Preferences; anything that is only true of one machine's
+/// view of this project belongs in its session, not here.
+struct ProjectSettings {
+	std::string name = "Untitled";
 
-		/// Where assets live, relative to the directory holding the .brn file.
-		std::filesystem::path asset_directory = "Assets";
+	/// Where assets live, relative to the directory holding the .brn file.
+	std::filesystem::path asset_directory = "Assets";
 
-		/// Scene opened when the project is, relative to the asset root. Never empty: a
-		/// project always has at least one scene. When there are several this stays the
-		/// one opened at launch.
-		std::filesystem::path startup_scene = "Scenes/Main.json";
-	};
+	/// Scene opened when the project is, relative to the asset root. Never empty: a
+	/// project always has at least one scene. When there are several this stays the
+	/// one opened at launch.
+	std::filesystem::path startup_scene = "Scenes/Main.json";
+};
 
-	/// An open project. It owns the asset root - bron::Paths only knows how to resolve a
-	/// path against whatever root it was last given, and this is what gives it one. There is
-	/// no default or built-in project: with none open the editor simply has no asset root.
-	class Project
-	{
-	public:
-		/// Reads a .brn file. Returns null and logs when it cannot be read or parsed.
-		static Scope<Project> Load(const std::filesystem::path& file);
+/// An open project. It owns the asset root - bron::Paths only knows how to resolve a
+/// path against whatever root it was last given, and this is what gives it one. There is
+/// no default or built-in project: with none open the editor simply has no asset root.
+class Project {
+public:
+	/// Reads a .brn file. Returns null and logs when it cannot be read or parsed.
+	static Scope<Project> Load(const std::filesystem::path& file);
 
-		/// Creates a project at 'file', along with its asset directory and its first scene.
-		/// Returns null on failure.
-		static Scope<Project> Create(const std::filesystem::path& file, const std::string& name);
+	/// Creates a project at 'file', along with its asset directory and its first scene.
+	/// Returns null on failure.
+	static Scope<Project> Create(const std::filesystem::path& file, const std::string& name);
 
-		/// Writes the .brn file.
-		bool Save() const;
+	/// Writes the .brn file.
+	bool Save() const;
 
-		/// Points bron::Paths at this project's asset root. Call when it becomes the open one.
-		void MakeActive() const;
+	/// Points bron::Paths at this project's asset root. Call when it becomes the open one.
+	void MakeActive() const;
 
-		const std::filesystem::path& File() const { return file_; }
+	const std::filesystem::path& File() const { return file_; }
 
-		/// What asset_directory and the .brn file are relative to.
-		const std::filesystem::path& Directory() const { return directory_; }
+	/// What asset_directory and the .brn file are relative to.
+	const std::filesystem::path& Directory() const { return directory_; }
 
-		std::filesystem::path AssetRoot() const;
+	std::filesystem::path AssetRoot() const;
 
-		/// Absolute location of a path stored relative to the asset root.
-		std::filesystem::path Resolve(const std::filesystem::path& relative) const;
+	/// Absolute location of a path stored relative to the asset root.
+	std::filesystem::path Resolve(const std::filesystem::path& relative) const;
 
-		/// The scene to open with, absolute. Never empty, and Load() and Create() have both
-		/// guaranteed the file is there.
-		std::filesystem::path StartupScenePath() const;
+	/// The scene to open with, absolute. Never empty, and Load() and Create() have both
+	/// guaranteed the file is there.
+	std::filesystem::path StartupScenePath() const;
 
-		/// Writes the startup scene if it is not on disk. This is what makes "a project
-		/// always has at least one scene" true of the files, not just of the settings.
-		void EnsureStartupScene() const;
+	/// Writes the startup scene if it is not on disk. This is what makes "a project
+	/// always has at least one scene" true of the files, not just of the settings.
+	void EnsureStartupScene() const;
 
-		ProjectSettings& Settings() { return settings_; }
-		const ProjectSettings& Settings() const { return settings_; }
+	ProjectSettings& Settings() { return settings_; }
+	const ProjectSettings& Settings() const { return settings_; }
 
-	private:
-		// Only the factories above make a Project, so an instance always has a valid root.
-		Project() = default;
+private:
+	// Only the factories above make a Project, so an instance always has a valid root.
+	Project() = default;
 
-		std::filesystem::path file_;       // The .brn.
-		std::filesystem::path directory_;  // The directory holding the .brn.
+	std::filesystem::path file_; // The .brn.
+	std::filesystem::path directory_; // The directory holding the .brn.
 
-		ProjectSettings settings_;
-	};
-}
+	ProjectSettings settings_;
+};
+} // namespace bron::editor

@@ -12,12 +12,12 @@
 
 namespace bron {
 
-    class System {
-    public:
-        void add(Ref<RigidBody> object);
-        void loop();
+class System {
+public:
+	void add(Ref<RigidBody> object);
+	void loop();
 
-    private:
-        BVH bvh;
-    };
-}
+private:
+	BVH bvh;
+};
+} // namespace bron

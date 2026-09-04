@@ -7,6 +7,6 @@
 
 namespace bron {
 
-    std::optional<vec3> Collides(Ref<RigidBody> a, Ref<RigidBody> b);
+std::optional<vec3> Collides(Ref<RigidBody> a, Ref<RigidBody> b);
 
 }

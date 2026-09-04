@@ -17,33 +17,26 @@
 #include <functional>
 #include <string>
 
-namespace bron
-{
-	class DesktopWindow : public Window
-	{
-	public:
-		DesktopWindow(const WindowProps& w_props);
+namespace bron {
+class DesktopWindow : public Window {
+public:
+	DesktopWindow(const WindowProps& w_props);
 
-		~DesktopWindow()
-		{
-		};
+	~DesktopWindow() {};
 
-		void OnUpdate() override;
-		void SetVSync(bool enabled) override;
+	void OnUpdate() override;
+	void SetVSync(bool enabled) override;
 
-		u32 GetWindowWidth() override { return window_data_.width; };
-		u32 GetWindowHeight() override { return window_data_.height; };
-		float GetMonitorScale() override;
+	u32 GetWindowWidth() override { return window_data_.width; };
+	u32 GetWindowHeight() override { return window_data_.height; };
+	float GetMonitorScale() override;
 
-		void SetEventCallback(const EventCallbackFn& func) override
-		{
-			window_data_.event_callback = func;
-		};
+	void SetEventCallback(const EventCallbackFn& func) override { window_data_.event_callback = func; };
 
-	private:
-		bool is_glfw_initialised_;
-		Ref<GraphicsContext> graphics_context_;
+private:
+	bool is_glfw_initialised_;
+	Ref<GraphicsContext> graphics_context_;
 
-		WindowData window_data_;
-	};
-}
+	WindowData window_data_;
+};
+} // namespace bron

@@ -2,13 +2,7 @@
 #include "Collisions.h"
 
 namespace bron {
-    void System::add(Ref<RigidBody> object)
-    {
-        bvh.AddObject(object);
-    }
-    
-    void System::loop()
-    {
-        Collides({}, {});
-    }
-}
+void System::add(Ref<RigidBody> object) { bvh.AddObject(object); }
+
+void System::loop() { Collides({}, {}); }
+} // namespace bron

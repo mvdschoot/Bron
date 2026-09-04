@@ -6,6 +6,20 @@ on:
   pull_request:
 
 jobs:
+  format:
+    name: clang-format
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Check formatting
+        # Engine/vendor holds third-party sources (glad, stb, imgui_extra) that
+        # are not ours to reformat.
+        run: |
+          find Engine/src Editor/src -type f \( -name '*.h' -o -name '*.cpp' \) \
+            -not -path '*/vendor/*' -print0 \
+            | xargs -0 clang-format --style=file --dry-run --Werror
+
   build:
     name: ${{ matrix.name }}
     runs-on: ${{ matrix.os }}

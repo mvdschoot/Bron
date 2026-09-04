@@ -20,267 +20,267 @@
 
 namespace bron {
 
-	// Average of the child mesh positions, i.e. the centroid of the model as a whole.
-	static glm::vec3 ModelCentroid(entt::registry &reg, const std::vector<entt::entity> &meshes) {
-		if (meshes.empty())
-			return glm::vec3(0.0f);
+// Average of the child mesh positions, i.e. the centroid of the model as a whole.
+static glm::vec3 ModelCentroid(entt::registry& reg, const std::vector<entt::entity>& meshes) {
+	if (meshes.empty())
+		return glm::vec3(0.0f);
 
-		glm::vec3 res(0.0f);
+	glm::vec3 res(0.0f);
 
-		for (const entt::entity mesh : meshes) {
-			res += reg.get<TransformComponent>(mesh).Position;
-		}
-
-		return res / static_cast<float>(meshes.size());
+	for (const entt::entity mesh: meshes) {
+		res += reg.get<TransformComponent>(mesh).Position;
 	}
 
-	entt::entity ModelLoader::LoadModel(Scene &target, MaterialWorkflow type, const char *model_location) {
-		// Assimp load model
-		Assimp::Importer importer;
-		const aiScene *scene = importer.ReadFile(model_location, aiProcess_Triangulate | aiProcess_GenSmoothNormals);
+	return res / static_cast<float>(meshes.size());
+}
 
-		std::string error = "ERROR::ASSIMP::";
-		error.append(importer.GetErrorString());
-		BR_CORE_ASSERT(scene && !(scene->mFlags & AI_SCENE_FLAGS_INCOMPLETE) && scene->mRootNode, error);
+entt::entity ModelLoader::LoadModel(Scene& target, MaterialWorkflow type, const char* model_location) {
+	// Assimp load model
+	Assimp::Importer importer;
+	const aiScene* scene = importer.ReadFile(model_location, aiProcess_Triangulate | aiProcess_GenSmoothNormals);
 
-		// Get the directory of the model, because it will contain the textures.
-		std::filesystem::path parent_directory = std::filesystem::path(model_location).parent_path();
+	std::string error = "ERROR::ASSIMP::";
+	error.append(importer.GetErrorString());
+	BR_CORE_ASSERT(scene && !(scene->mFlags & AI_SCENE_FLAGS_INCOMPLETE) && scene->mRootNode, error);
 
-		// Set of materials, so that materials can be reused.
-		std::vector<Ref<MaterialBase>> materials;
-		switch (type) {
-			case MaterialWorkflow::kPhong:
-				materials = ProcessPhongMaterials(scene, parent_directory.string().c_str());
-				break;
-			default:
-				BR_CORE_ASSERT(false, "This MaterialWorkflow does not exist ({}).", magic_enum::enum_name(type));
-		}
+	// Get the directory of the model, because it will contain the textures.
+	std::filesystem::path parent_directory = std::filesystem::path(model_location).parent_path();
 
-		std::vector<entt::entity> meshes = ProcessNode(target, &materials, scene->mRootNode, scene, aiMatrix4x4());
-
-		// Create the model root. It stays unparented; the caller decides where it goes in the scene.
-		const entt::entity model = target.CreateEntity(std::filesystem::path(model_location).stem().string());
-
-		// The model sits at the centroid of its meshes, and each mesh is placed relative to that.
-		const glm::vec3 model_centroid = ModelCentroid(target.reg, meshes);
-		for (const entt::entity mesh : meshes) {
-			target.reg.get<TransformComponent>(mesh).Position -= model_centroid;
-			target.AddChild(model, mesh);
-		}
-		target.reg.get<TransformComponent>(model).Position = model_centroid;
-
-		return model;
+	// Set of materials, so that materials can be reused.
+	std::vector<Ref<MaterialBase>> materials;
+	switch (type) {
+		case MaterialWorkflow::kPhong:
+			materials = ProcessPhongMaterials(scene, parent_directory.string().c_str());
+			break;
+		default:
+			BR_CORE_ASSERT(false, "This MaterialWorkflow does not exist ({}).", magic_enum::enum_name(type));
 	}
 
-	std::vector<entt::entity> ModelLoader::ProcessNode(Scene &target, std::vector<Ref<MaterialBase>> *materials,
-													   const aiNode *node, const aiScene *scene,
-													   const aiMatrix4x4 &parent_transform) {
-		BR_PROFILE_FUNCTION();
+	std::vector<entt::entity> meshes = ProcessNode(target, &materials, scene->mRootNode, scene, aiMatrix4x4());
 
-		std::vector<entt::entity> meshes;
+	// Create the model root. It stays unparented; the caller decides where it goes in the scene.
+	const entt::entity model = target.CreateEntity(std::filesystem::path(model_location).stem().string());
 
-		// A node positions, rotates and scales its meshes relative to its parent. Formats that keep their
-		// scene graph intact (glTF/.glb especially) put a large part of the placement here instead of in the
-		// vertex data, so it has to be accumulated on the way down and applied to the vertices.
-		const aiMatrix4x4 transform = parent_transform * node->mTransformation;
+	// The model sits at the centroid of its meshes, and each mesh is placed relative to that.
+	const glm::vec3 model_centroid = ModelCentroid(target.reg, meshes);
+	for (const entt::entity mesh: meshes) {
+		target.reg.get<TransformComponent>(mesh).Position -= model_centroid;
+		target.AddChild(model, mesh);
+	}
+	target.reg.get<TransformComponent>(model).Position = model_centroid;
 
-		for (unsigned int i = 0; i < node->mNumMeshes; i++) {
-			aiMesh *mesh = scene->mMeshes[node->mMeshes[i]];
-			meshes.push_back(ProcessMesh(target, materials, mesh, scene, transform));
-		}
-		for (unsigned int i = 0; i < node->mNumChildren; i++) {
-			std::vector<entt::entity> added_meshes = ProcessNode(target, materials, node->mChildren[i], scene, transform);
-			meshes.insert(meshes.end(), added_meshes.begin(), added_meshes.end());
-		}
+	return model;
+}
 
-		return meshes;
+std::vector<entt::entity> ModelLoader::ProcessNode(Scene& target, std::vector<Ref<MaterialBase>>* materials,
+												   const aiNode* node, const aiScene* scene,
+												   const aiMatrix4x4& parent_transform) {
+	BR_PROFILE_FUNCTION();
+
+	std::vector<entt::entity> meshes;
+
+	// A node positions, rotates and scales its meshes relative to its parent. Formats that keep their
+	// scene graph intact (glTF/.glb especially) put a large part of the placement here instead of in the
+	// vertex data, so it has to be accumulated on the way down and applied to the vertices.
+	const aiMatrix4x4 transform = parent_transform * node->mTransformation;
+
+	for (unsigned int i = 0; i < node->mNumMeshes; i++) {
+		aiMesh* mesh = scene->mMeshes[node->mMeshes[i]];
+		meshes.push_back(ProcessMesh(target, materials, mesh, scene, transform));
+	}
+	for (unsigned int i = 0; i < node->mNumChildren; i++) {
+		std::vector<entt::entity> added_meshes = ProcessNode(target, materials, node->mChildren[i], scene, transform);
+		meshes.insert(meshes.end(), added_meshes.begin(), added_meshes.end());
 	}
 
-	entt::entity ModelLoader::ProcessMesh(Scene &target, const std::vector<Ref<MaterialBase>> *materials,
-										  const aiMesh *aiMesh, const aiScene *scene, const aiMatrix4x4 &transform) {
-		BR_PROFILE_FUNCTION();
+	return meshes;
+}
 
-		// First figure out the number of vertices in the mesh
-		u32 num_indices = 0;
-		for (u32 x = 0; x < aiMesh->mNumFaces; x++) {
-			num_indices += aiMesh->mFaces[x].mNumIndices;
-		}
+entt::entity ModelLoader::ProcessMesh(Scene& target, const std::vector<Ref<MaterialBase>>* materials,
+									  const aiMesh* aiMesh, const aiScene* scene, const aiMatrix4x4& transform) {
+	BR_PROFILE_FUNCTION();
 
-		// Initialize the mesh data struct
-		MeshData mesh_data;
-		mesh_data.positions = std::vector<glm::vec3>(aiMesh->mNumVertices);
-		mesh_data.indices = std::vector<u32>(num_indices);
-		if (aiMesh->HasNormals()) {
-			mesh_data.normals = std::vector<glm::vec3>(aiMesh->mNumVertices);
-		}
-		if (aiMesh->HasTangentsAndBitangents()) {
-			mesh_data.tangents = std::vector<glm::vec3>(aiMesh->mNumVertices);
-		}
-		if (aiMesh->HasTextureCoords(0)) {
-			mesh_data.uvs = std::vector<glm::vec2>(aiMesh->mNumVertices);
-		}
-
-		// Normals are direction vectors, so they need the inverse transpose of the transform to stay
-		// perpendicular to the surface when the mesh is scaled non-uniformly.
-		aiMatrix3x3 normal_matrix(transform);
-		normal_matrix.Inverse().Transpose();
-
-		for (u32 i = 0; i < aiMesh->mNumVertices; i++) {
-			// Position, placed in the space of the model as a whole.
-			const aiVector3D position = transform * aiMesh->mVertices[i];
-			mesh_data.positions[i] = glm::vec3(position.x, position.y, position.z);
-
-			// Normals
-			if (mesh_data.normals.has_value()) {
-				aiVector3D normal = normal_matrix * aiMesh->mNormals[i];
-				normal.Normalize();
-				mesh_data.normals.value()[i] = glm::vec3(normal.x, normal.y, normal.z);
-			}
-
-			// UV coordinates
-			if (mesh_data.uvs.has_value())
-				mesh_data.uvs.value()[i] = {aiMesh->mTextureCoords[0][i].x, aiMesh->mTextureCoords[0][i].y};
-		}
-
-		// The vertices are stored relative to the centroid of the mesh, which becomes the mesh its position.
-		const glm::vec3 centroid = FindCentroid(mesh_data.positions.data(), mesh_data.positions.size());
-		for (glm::vec3 &position: mesh_data.positions) {
-			position -= centroid;
-		}
-
-		// Set the indices
-		u32 i = 0;
-		for (unsigned int x = 0; x < aiMesh->mNumFaces; x++) {
-			// ASSUMES THE INDICES ARE 4 BYTE UNSIGNED INTS.
-			std::copy_n(aiMesh->mFaces[x].mIndices, aiMesh->mFaces[x].mNumIndices, mesh_data.indices.begin() + i);
-			i += aiMesh->mFaces[x].mNumIndices;
-		}
-
-		// Create the mesh entity
-		const Ref<MaterialBase>& mesh_material = (*materials)[aiMesh->mMaterialIndex];
-
-		const entt::entity mesh = target.CreateEntity(aiMesh->mName.length > 0 ? aiMesh->mName.C_Str() : "Mesh");
-		target.reg.emplace<MeshComponent>(mesh, std::move(mesh_data), mesh_material);
-
-		// Set the position of the mesh
-		target.reg.get<TransformComponent>(mesh).Position = centroid;
-
-		return mesh;
+	// First figure out the number of vertices in the mesh
+	u32 num_indices = 0;
+	for (u32 x = 0; x < aiMesh->mNumFaces; x++) {
+		num_indices += aiMesh->mFaces[x].mNumIndices;
 	}
 
-	std::vector<Ref<MaterialBase>> ModelLoader::ProcessPhongMaterials(const aiScene *scene,
-																	  const std::filesystem::path &directory) {
-		std::vector<Ref<MaterialBase>> materials(scene->mNumMaterials);
-		std::unordered_map<std::string, Ref<Texture>> texture_cache;
-
-		for (int x = 0; x < scene->mNumMaterials; x++) {
-			aiMaterial* material = scene->mMaterials[x];
-			Ref<PhongMaterial> phong_material = CreateRef<PhongMaterial>();
-
-			// First extract and store the textures
-			aiString dif, spec, norm;
-			material->GetTexture(aiTextureType_DIFFUSE, 0, &dif);
-			material->GetTexture(aiTextureType_SPECULAR, 0, &spec);
-			// glTF/PBR sources describe their albedo as a base colour instead of a diffuse map.
-			if (dif.length == 0)
-				material->GetTexture(aiTextureType_BASE_COLOR, 0, &dif);
-			// material->GetTexture(aiTextureType_HEIGHT, 0, &norm);
-
-			if (Ref<Texture> diffuse = LoadMaterialTexture(scene, directory, dif, texture_cache))
-				phong_material->AddTexture(PhongMaterialTextureTypes::kDiffuse, diffuse);
-			if (Ref<Texture> specular = LoadMaterialTexture(scene, directory, spec, texture_cache))
-				phong_material->AddTexture(PhongMaterialTextureTypes::kSpecular, specular);
-			// if (norm.length != 0) {
-			// 	phong_material->AddTexture(PhongMaterialTextureTypes::kNormal, Texture2D::Create((directory / norm.C_Str()).c_str()));
-			// }
-
-			// Second, extract the misc phong-related variables.
-			// Retrieve shininess
-			if (float Shininess; material->Get(AI_MATKEY_SHININESS, Shininess) == aiReturn_SUCCESS)
-				phong_material->Set(PhongMaterialVariables::kShininess, Shininess);
-			else
-				phong_material->Set(PhongMaterialVariables::kShininess, 5.0f);
-
-			// Retrieve shininess strength
-			if (float ShininessStrength;
-				material->Get(AI_MATKEY_SHININESS_STRENGTH, ShininessStrength) == aiReturn_SUCCESS)
-				phong_material->Set(PhongMaterialVariables::kShininessStrength, ShininessStrength);
-			else
-				phong_material->Set(PhongMaterialVariables::kShininessStrength, 1.0f);
-
-			// Todo: Ambient factor
-			phong_material->Set(PhongMaterialVariables::kAmbientFactor, 0.2f);
-
-			// Retrieve diffuse
-			if (aiColor3D Diffuse; material->Get(AI_MATKEY_COLOR_DIFFUSE, Diffuse) == aiReturn_SUCCESS)
-				phong_material->Set(PhongMaterialVariables::kDiffuse, Diffuse);
-			else
-				phong_material->Set(PhongMaterialVariables::kDiffuse, aiColor3D(1.0f, 1.0f, 1.0f));
-
-			// Retrieve specular
-			if (aiColor3D Specular; material->Get(AI_MATKEY_COLOR_SPECULAR, Specular) == aiReturn_SUCCESS)
-				phong_material->Set(PhongMaterialVariables::kSpecular, Specular);
-			else
-				phong_material->Set(PhongMaterialVariables::kSpecular, aiColor3D(1.0f, 1.0f, 1.0f));
-
-			materials[x] = phong_material;
-		}
-
-		return materials;
+	// Initialize the mesh data struct
+	MeshData mesh_data;
+	mesh_data.positions = std::vector<glm::vec3>(aiMesh->mNumVertices);
+	mesh_data.indices = std::vector<u32>(num_indices);
+	if (aiMesh->HasNormals()) {
+		mesh_data.normals = std::vector<glm::vec3>(aiMesh->mNumVertices);
+	}
+	if (aiMesh->HasTangentsAndBitangents()) {
+		mesh_data.tangents = std::vector<glm::vec3>(aiMesh->mNumVertices);
+	}
+	if (aiMesh->HasTextureCoords(0)) {
+		mesh_data.uvs = std::vector<glm::vec2>(aiMesh->mNumVertices);
 	}
 
+	// Normals are direction vectors, so they need the inverse transpose of the transform to stay
+	// perpendicular to the surface when the mesh is scaled non-uniformly.
+	aiMatrix3x3 normal_matrix(transform);
+	normal_matrix.Inverse().Transpose();
 
-	Ref<Texture> ModelLoader::LoadMaterialTexture(const aiScene *scene, const std::filesystem::path &directory,
-												  const aiString &reference,
-												  std::unordered_map<std::string, Ref<Texture>> &cache) {
-		if (reference.length == 0)
-			return nullptr;
+	for (u32 i = 0; i < aiMesh->mNumVertices; i++) {
+		// Position, placed in the space of the model as a whole.
+		const aiVector3D position = transform * aiMesh->mVertices[i];
+		mesh_data.positions[i] = glm::vec3(position.x, position.y, position.z);
 
-		const std::string key(reference.C_Str());
-		if (const auto cached = cache.find(key); cached != cache.end())
-			return cached->second;
+		// Normals
+		if (mesh_data.normals.has_value()) {
+			aiVector3D normal = normal_matrix * aiMesh->mNormals[i];
+			normal.Normalize();
+			mesh_data.normals.value()[i] = glm::vec3(normal.x, normal.y, normal.z);
+		}
 
-		Ref<Texture> texture;
+		// UV coordinates
+		if (mesh_data.uvs.has_value())
+			mesh_data.uvs.value()[i] = {aiMesh->mTextureCoords[0][i].x, aiMesh->mTextureCoords[0][i].y};
+	}
 
-		// Self contained formats (.glb, binary .fbx) keep their images inside the model file. Assimp hands
-		// those out as a handle like "*0" that does not exist on disk, so they have to be read from the scene.
-		if (const aiTexture *embedded = scene->GetEmbeddedTexture(reference.C_Str())) {
-			if (embedded->mHeight == 0) {
-				// Compressed blob (png/jpg/...), mWidth holds the size in bytes.
-				texture = Texture2D::CreateFromMemory(embedded->pcData, embedded->mWidth);
-			} else {
-				// Raw texels, stored as BGRA8888 and top row first. Both have to be flipped to match the
-				// RGBA, bottom row first layout that the file path produces.
-				const u32 width = embedded->mWidth;
-				const u32 height = embedded->mHeight;
+	// The vertices are stored relative to the centroid of the mesh, which becomes the mesh its position.
+	const glm::vec3 centroid = FindCentroid(mesh_data.positions.data(), mesh_data.positions.size());
+	for (glm::vec3& position: mesh_data.positions) {
+		position -= centroid;
+	}
 
-				std::vector<u8> pixels(static_cast<size_t>(width) * height * 4);
-				for (u32 y = 0; y < height; y++) {
-					const aiTexel *row = embedded->pcData + static_cast<size_t>(y) * width;
-					u8 *target = pixels.data() + static_cast<size_t>(height - 1 - y) * width * 4;
-					for (u32 x = 0; x < width; x++) {
-						target[x * 4 + 0] = row[x].r;
-						target[x * 4 + 1] = row[x].g;
-						target[x * 4 + 2] = row[x].b;
-						target[x * 4 + 3] = row[x].a;
-					}
-				}
+	// Set the indices
+	u32 i = 0;
+	for (unsigned int x = 0; x < aiMesh->mNumFaces; x++) {
+		// ASSUMES THE INDICES ARE 4 BYTE UNSIGNED INTS.
+		std::copy_n(aiMesh->mFaces[x].mIndices, aiMesh->mFaces[x].mNumIndices, mesh_data.indices.begin() + i);
+		i += aiMesh->mFaces[x].mNumIndices;
+	}
 
-				texture = Texture2D::Create(width, height);
-				texture->SetData(pixels.data(), static_cast<u32>(pixels.size()));
-			}
+	// Create the mesh entity
+	const Ref<MaterialBase>& mesh_material = (*materials)[aiMesh->mMaterialIndex];
+
+	const entt::entity mesh = target.CreateEntity(aiMesh->mName.length > 0 ? aiMesh->mName.C_Str() : "Mesh");
+	target.reg.emplace<MeshComponent>(mesh, std::move(mesh_data), mesh_material);
+
+	// Set the position of the mesh
+	target.reg.get<TransformComponent>(mesh).Position = centroid;
+
+	return mesh;
+}
+
+std::vector<Ref<MaterialBase>> ModelLoader::ProcessPhongMaterials(const aiScene* scene,
+																  const std::filesystem::path& directory) {
+	std::vector<Ref<MaterialBase>> materials(scene->mNumMaterials);
+	std::unordered_map<std::string, Ref<Texture>> texture_cache;
+
+	for (int x = 0; x < scene->mNumMaterials; x++) {
+		aiMaterial* material = scene->mMaterials[x];
+		Ref<PhongMaterial> phong_material = CreateRef<PhongMaterial>();
+
+		// First extract and store the textures
+		aiString dif, spec, norm;
+		material->GetTexture(aiTextureType_DIFFUSE, 0, &dif);
+		material->GetTexture(aiTextureType_SPECULAR, 0, &spec);
+		// glTF/PBR sources describe their albedo as a base colour instead of a diffuse map.
+		if (dif.length == 0)
+			material->GetTexture(aiTextureType_BASE_COLOR, 0, &dif);
+		// material->GetTexture(aiTextureType_HEIGHT, 0, &norm);
+
+		if (Ref<Texture> diffuse = LoadMaterialTexture(scene, directory, dif, texture_cache))
+			phong_material->AddTexture(PhongMaterialTextureTypes::kDiffuse, diffuse);
+		if (Ref<Texture> specular = LoadMaterialTexture(scene, directory, spec, texture_cache))
+			phong_material->AddTexture(PhongMaterialTextureTypes::kSpecular, specular);
+		// if (norm.length != 0) {
+		// 	phong_material->AddTexture(PhongMaterialTextureTypes::kNormal, Texture2D::Create((directory /
+		// norm.C_Str()).c_str()));
+		// }
+
+		// Second, extract the misc phong-related variables.
+		// Retrieve shininess
+		if (float Shininess; material->Get(AI_MATKEY_SHININESS, Shininess) == aiReturn_SUCCESS)
+			phong_material->Set(PhongMaterialVariables::kShininess, Shininess);
+		else
+			phong_material->Set(PhongMaterialVariables::kShininess, 5.0f);
+
+		// Retrieve shininess strength
+		if (float ShininessStrength; material->Get(AI_MATKEY_SHININESS_STRENGTH, ShininessStrength) == aiReturn_SUCCESS)
+			phong_material->Set(PhongMaterialVariables::kShininessStrength, ShininessStrength);
+		else
+			phong_material->Set(PhongMaterialVariables::kShininessStrength, 1.0f);
+
+		// Todo: Ambient factor
+		phong_material->Set(PhongMaterialVariables::kAmbientFactor, 0.2f);
+
+		// Retrieve diffuse
+		if (aiColor3D Diffuse; material->Get(AI_MATKEY_COLOR_DIFFUSE, Diffuse) == aiReturn_SUCCESS)
+			phong_material->Set(PhongMaterialVariables::kDiffuse, Diffuse);
+		else
+			phong_material->Set(PhongMaterialVariables::kDiffuse, aiColor3D(1.0f, 1.0f, 1.0f));
+
+		// Retrieve specular
+		if (aiColor3D Specular; material->Get(AI_MATKEY_COLOR_SPECULAR, Specular) == aiReturn_SUCCESS)
+			phong_material->Set(PhongMaterialVariables::kSpecular, Specular);
+		else
+			phong_material->Set(PhongMaterialVariables::kSpecular, aiColor3D(1.0f, 1.0f, 1.0f));
+
+		materials[x] = phong_material;
+	}
+
+	return materials;
+}
+
+
+Ref<Texture> ModelLoader::LoadMaterialTexture(const aiScene* scene, const std::filesystem::path& directory,
+											  const aiString& reference,
+											  std::unordered_map<std::string, Ref<Texture>>& cache) {
+	if (reference.length == 0)
+		return nullptr;
+
+	const std::string key(reference.C_Str());
+	if (const auto cached = cache.find(key); cached != cache.end())
+		return cached->second;
+
+	Ref<Texture> texture;
+
+	// Self contained formats (.glb, binary .fbx) keep their images inside the model file. Assimp hands
+	// those out as a handle like "*0" that does not exist on disk, so they have to be read from the scene.
+	if (const aiTexture* embedded = scene->GetEmbeddedTexture(reference.C_Str())) {
+		if (embedded->mHeight == 0) {
+			// Compressed blob (png/jpg/...), mWidth holds the size in bytes.
+			texture = Texture2D::CreateFromMemory(embedded->pcData, embedded->mWidth);
 		} else {
-			const std::filesystem::path path = directory / reference.C_Str();
-			if (!std::filesystem::exists(path)) {
-				BR_CORE_WARN("Texture '{}' referenced by the model does not exist.", path.string());
-				return nullptr;
+			// Raw texels, stored as BGRA8888 and top row first. Both have to be flipped to match the
+			// RGBA, bottom row first layout that the file path produces.
+			const u32 width = embedded->mWidth;
+			const u32 height = embedded->mHeight;
+
+			std::vector<u8> pixels(static_cast<size_t>(width) * height * 4);
+			for (u32 y = 0; y < height; y++) {
+				const aiTexel* row = embedded->pcData + static_cast<size_t>(y) * width;
+				u8* target = pixels.data() + static_cast<size_t>(height - 1 - y) * width * 4;
+				for (u32 x = 0; x < width; x++) {
+					target[x * 4 + 0] = row[x].r;
+					target[x * 4 + 1] = row[x].g;
+					target[x * 4 + 2] = row[x].b;
+					target[x * 4 + 3] = row[x].a;
+				}
 			}
 
-			texture = Texture2D::Create(path.string().c_str());
+			texture = Texture2D::Create(width, height);
+			texture->SetData(pixels.data(), static_cast<u32>(pixels.size()));
+		}
+	} else {
+		const std::filesystem::path path = directory / reference.C_Str();
+		if (!std::filesystem::exists(path)) {
+			BR_CORE_WARN("Texture '{}' referenced by the model does not exist.", path.string());
+			return nullptr;
 		}
 
-		cache[key] = texture;
-		return texture;
+		texture = Texture2D::Create(path.string().c_str());
 	}
 
-} // Bron
+	cache[key] = texture;
+	return texture;
+}
+
+} // namespace bron

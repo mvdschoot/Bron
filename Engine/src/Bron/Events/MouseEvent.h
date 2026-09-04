@@ -4,78 +4,57 @@
 #include "Bron/Core/KeyCodes.h"
 #include "Bron/Core/MouseCodes.h"
 
-namespace bron
-{
-	class BR_API MouseMovedEvent : public Event
-	{
-	public:
-		MouseMovedEvent(const float x, const float y):
-			mouse_x_(x), mouse_y_(y)
-		{
-		};
+namespace bron {
+class BR_API MouseMovedEvent : public Event {
+public:
+	MouseMovedEvent(const float x, const float y) : mouse_x_(x), mouse_y_(y) {};
 
-		BR_EVENT_CLASS_CATEGORY(EventCategory::kMouse | EventCategory::kInput);
-		BR_EVENT_CLASS_TYPE(MouseMoved);
+	BR_EVENT_CLASS_CATEGORY(EventCategory::kMouse | EventCategory::kInput);
+	BR_EVENT_CLASS_TYPE(MouseMoved);
 
-	private:
-		float mouse_x_, mouse_y_;
-	};
+private:
+	float mouse_x_, mouse_y_;
+};
 
-	class BR_API MouseButtonEvent : public Event
-	{
-	public:
-		MouseButtonEvent(int key):
-			key_(static_cast<MouseCode>(key))
-		{
-		};
+class BR_API MouseButtonEvent : public Event {
+public:
+	MouseButtonEvent(int key) : key_(static_cast<MouseCode>(key)) {};
 
-		BR_EVENT_CLASS_CATEGORY(EventCategory::kMouseButton | EventCategory::kInput);
+	BR_EVENT_CLASS_CATEGORY(EventCategory::kMouseButton | EventCategory::kInput);
 
-	private:
-		MouseCode key_;
-	};
+private:
+	MouseCode key_;
+};
 
-	class BR_API MouseButtonPressedEvent : public MouseButtonEvent
-	{
-	public:
-		using MouseButtonEvent::MouseButtonEvent;
-		BR_EVENT_CLASS_TYPE(MouseButtonPressed);
+class BR_API MouseButtonPressedEvent : public MouseButtonEvent {
+public:
+	using MouseButtonEvent::MouseButtonEvent;
+	BR_EVENT_CLASS_TYPE(MouseButtonPressed);
 
-	private:
-	};
+private:
+};
 
-	class BR_API MouseButtonReleasedEvent : public MouseButtonEvent
-	{
-	public:
-		using MouseButtonEvent::MouseButtonEvent;
-		BR_EVENT_CLASS_TYPE(MouseButtonReleased);
+class BR_API MouseButtonReleasedEvent : public MouseButtonEvent {
+public:
+	using MouseButtonEvent::MouseButtonEvent;
+	BR_EVENT_CLASS_TYPE(MouseButtonReleased);
 
-	private:
-	};
+private:
+};
 
-	class BR_API MouseScrolledEvent : public Event
-	{
-	public:
-		MouseScrolledEvent(const float offx, const float offy) :
-			offx_(offx), offy_(offy)
-		{
-		};
+class BR_API MouseScrolledEvent : public Event {
+public:
+	MouseScrolledEvent(const float offx, const float offy) : offx_(offx), offy_(offy) {};
 
 
-		BR_EVENT_CLASS_CATEGORY(EventCategory::kMouse || EventCategory::kInput);
-		BR_EVENT_CLASS_TYPE(MouseScrolled);
+	BR_EVENT_CLASS_CATEGORY(EventCategory::kMouse || EventCategory::kInput);
+	BR_EVENT_CLASS_TYPE(MouseScrolled);
 
-		float GetOffsetX()
-		{
-			return offx_;
-		}
+	float GetOffsetX() { return offx_; }
 
-		float GetOffsetY()
-		{
-			return offy_;
-		}
+	float GetOffsetY() { return offy_; }
 
-	private:
-		float offx_, offy_;
-	};
-}
+private:
+	float offx_, offy_;
+};
+} // namespace bron

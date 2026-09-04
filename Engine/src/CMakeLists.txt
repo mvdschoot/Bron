@@ -1,50 +1,61 @@
 cmake_minimum_required(VERSION 3.16)
 
 add_library(Bron STATIC
-	Bron/Core/Application.cpp 
+	# Core
+	Bron/Core/Application.cpp
 	Bron/Core/Logger.cpp
 	Bron/Core/Window.cpp
 
-	Bron/Graphics/Renderer/API.cpp
-	Bron/Graphics/Renderer/Command.cpp
-	Bron/Graphics/Renderer/2D.cpp
-	Bron/Graphics/Renderer/SceneRenderer.cpp
-	
-	Bron/Graphics/Renderer/Grid.cpp
-	
-	
-	
-	Bron/Scene/Scene.cpp
-	Bron/Scene/Components.cpp
-
-	Bron/Graphics/GraphicsContext.cpp
-	Bron/Graphics/Shader.cpp
-	Bron/Graphics/BuiltinShaders.cpp
-	
-	Bron/Graphics/OrthographicCamera.cpp
-	Bron/Graphics/VertexArray.cpp
-	Bron/Graphics/Buffer.cpp
-	Bron/Graphics/Texture.cpp
-	Bron/Graphics/Framebuffer.cpp
-	# Bron/Graphics/TextRenderer.cpp
-	Bron/Graphics/FrustumCamera.cpp
-	
-	
-
+	# Layers
 	Bron/Layers/Layer.cpp
 	Bron/Layers/Overlay.cpp
 	Bron/Layers/OverlayStack.cpp
 	Bron/Layers/ImGuiLayer.cpp
-	
+
+	# Graphics
+	Bron/Graphics/GraphicsContext.cpp
+	Bron/Graphics/Shader.cpp
+	Bron/Graphics/ShaderRegistry.cpp
+	Bron/Graphics/BuiltinShaders.cpp
+	Bron/Graphics/VertexArray.cpp
+	Bron/Graphics/Buffer.cpp
+	Bron/Graphics/Texture.cpp
+	Bron/Graphics/Framebuffer.cpp
+	Bron/Graphics/LightManagement.cpp
+	Bron/Graphics/OrthographicCamera.cpp
+	Bron/Graphics/FrustumCamera.cpp
+	Bron/Graphics/Phong/PhongMaterial.cpp
+	Bron/Graphics/Components/Cube.cpp
+	Bron/Graphics/Components/ModelLoader.cpp
+	# TextRenderer is out of the build: it calls an R2D::DrawQuad overload that no
+	# longer exists. TextTexture (Platform/OpenGL/OpenGLTextTexture.cpp) is still
+	# built regardless, because Texture.cpp's TextTexture::Create names it.
+	# Bron/Graphics/TextRenderer.cpp
+
+	# Renderers
+	Bron/Graphics/Renderer/API.cpp
+	Bron/Graphics/Renderer/Command.cpp
+	Bron/Graphics/Renderer/2D.cpp
+	Bron/Graphics/Renderer/SceneRenderer.cpp
+	Bron/Graphics/Renderer/Grid.cpp
+
+	# Scene
+	Bron/Scene/Scene.cpp
+	Bron/Scene/Components.cpp
+	Bron/Scene/Serialization/Serialization.cpp
+
+	# Physics
 	Bron/Physics/BVH.cpp
 	Bron/Physics/Splitting.cpp
 	Bron/Physics/Components.cpp
 	Bron/Physics/System.cpp
 	Bron/Physics/Collisions.cpp
 
+	# Util
 	Bron/Util/Util.cpp
 	Bron/Util/Paths.cpp
-	 
+
+	# OpenGL backend
 	Platform/OpenGL/OpenGLContext.cpp
 	Platform/OpenGL/OpenGLBuffer.cpp
 	Platform/OpenGL/OpenGLVertexArray.cpp
@@ -54,16 +65,9 @@ add_library(Bron STATIC
 	Platform/OpenGL/OpenGLFramebuffer.cpp
 	Platform/OpenGL/OpenGLTextTexture.cpp
 
+	# Desktop backend
 	Platform/Desktop/DesktopWindow.cpp
-	Platform/Desktop/DesktopInput.cpp
-		Bron/Graphics/ShaderRegistry.cpp
-		Bron/Graphics/Phong/PhongMaterial.cpp
-		Bron/Graphics/Components/Cube.cpp
-		Bron/Graphics/Components/ModelLoader.cpp
-        Bron/Graphics/LightManagement.cpp
-		Bron/Scene/Serialization/Serialization.cpp
-		Bron/Scene/Serialization/Serialization.h
-)
+	Platform/Desktop/DesktopInput.cpp)
 
 target_include_directories(Bron PUBLIC .)
 

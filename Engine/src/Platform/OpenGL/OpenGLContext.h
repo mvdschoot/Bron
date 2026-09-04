@@ -13,21 +13,17 @@
 
 #include <string>
 
-namespace bron
-{
-	class OpenGLContext : public GraphicsContext
-	{
-	public:
-		OpenGLContext(GLFWwindow* window);
+namespace bron {
+class OpenGLContext : public GraphicsContext {
+public:
+	OpenGLContext(GLFWwindow* window);
 
-		~OpenGLContext()
-		{
-		}
+	~OpenGLContext() {}
 
-		void Init() override;
-		void SwapBuffers() override;
+	void Init() override;
+	void SwapBuffers() override;
 
-	private:
-		GLFWwindow* graphics_window_;
-	};
-}
+private:
+	GLFWwindow* graphics_window_;
+};
+} // namespace bron

@@ -4,25 +4,21 @@
 
 #include "Core/Preferences.h"
 
-namespace bron::editor
-{
-	App::App()
-	{
-		BR_PROFILE_FUNCTION();
+namespace bron::editor {
+App::App() {
+	BR_PROFILE_FUNCTION();
 
-		overlay.InsertLayer(&editor_layer);
-		AddOverlay(&overlay);
-	}
-
-	App::~App()
-	{
-		// Application never calls Layer::OnDetach, so shutdown work hangs off the app itself.
-		Preferences::Save();
-	}
+	overlay.InsertLayer(&editor_layer);
+	AddOverlay(&overlay);
 }
 
-bron::Application* bron::CreateApplication()
-{
+App::~App() {
+	// Application never calls Layer::OnDetach, so shutdown work hangs off the app itself.
+	Preferences::Save();
+}
+} // namespace bron::editor
+
+bron::Application* bron::CreateApplication() {
 	// Before the Application constructor, which is what creates the window: the theme and
 	// the UI scale have to be known by the time anything is drawn.
 	bron::editor::Preferences::Load();
