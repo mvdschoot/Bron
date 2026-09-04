@@ -8,7 +8,7 @@ namespace bron
 		max = glm::max(A, B);
 	}
 
-	bool AABB::contains(AABB& other)
+	bool AABB::Contains(AABB& other)
 	{
 		return (other.min.x >= min.x && other.max.x <= max.x &&
 			other.min.y >= min.y && other.max.y <= max.y &&

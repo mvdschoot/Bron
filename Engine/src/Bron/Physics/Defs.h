@@ -1,12 +1,11 @@
 #pragma once
 
+#include "Bron/Core/Core.h"
+
 namespace bron {
 
-    #define real float
+// The physics code is written against a single scalar type so it can be swapped
+// for double without touching every formula.
+using real = float;
 
-    #include "Bron/Core/Core.h"
-    template<typename T>
-    using Pt = Ref<T>;
-
-    #define createPt CreateRef
-}
+}  // namespace bron

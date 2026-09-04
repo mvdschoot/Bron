@@ -9,8 +9,8 @@ namespace bron
 	{
 		switch (Platform::GetApi())
 		{
-		case Platform::API::None: BR_CORE_ASSERT(false, "No Rendering API selected!");
-		case Platform::API::OpenGL: return CreateRef<OpenGLContext>(window);
+		case Platform::API::kNone: BR_CORE_ASSERT(false, "No Rendering API selected!");
+		case Platform::API::kOpenGl: return CreateRef<OpenGLContext>(window);
 		}
 		return nullptr;
 	}

@@ -148,7 +148,7 @@ namespace bron {
 			scene.AddChild(it->second, created[i]);
 		}
 
-		// Re-import the models. loadModel builds its own root, so its meshes are
+		// Re-import the models. load_model builds its own root, so its meshes are
 		// moved under the entity that was restored from the file and that root is
 		// dropped: the saved transform is the one the user placed, not the centroid
 		// the importer would compute again.

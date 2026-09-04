@@ -58,15 +58,15 @@ namespace bron::editor
 			settings.name = name;
 
 		char scene[260];
-		std::snprintf(scene, sizeof(scene), "%s", settings.startupScene.generic_string().c_str());
+		std::snprintf(scene, sizeof(scene), "%s", settings.startup_scene.generic_string().c_str());
 		if (InputText("Startup scene", scene, sizeof(scene)))
-			settings.startupScene = scene;
+			settings.startup_scene = scene;
 
 		// The asset directory is not editable here: changing it invalidates every path
 		// already stored in the scenes, so it belongs in a migration, not a text field.
 		BeginDisabled();
 		char assets[260];
-		std::snprintf(assets, sizeof(assets), "%s", settings.assetDirectory.generic_string().c_str());
+		std::snprintf(assets, sizeof(assets), "%s", settings.asset_directory.generic_string().c_str());
 		InputText("Asset directory", assets, sizeof(assets));
 		EndDisabled();
 

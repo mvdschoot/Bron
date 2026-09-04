@@ -19,21 +19,21 @@ namespace bron
 		vec3 min;
 		vec3 max;
 
-		bool contains(AABB& other);
+		bool Contains(AABB& other);
 		void ResizeTo(AABB& other);
 	};
 
 	enum RigidBodyType {
-		SPHERE,
-		CUBE
+		kSphere,
+		kCube
 	};
 
 	struct RigidBody {
 		RigidBodyType type;
-		AABB boundingBox;
+		AABB bounding_box;
 		
 		real weight;
-		vec3 centerOfMass;
+		vec3 center_of_mass;
 
 		bool active;
 	};

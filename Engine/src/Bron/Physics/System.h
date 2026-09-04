@@ -14,7 +14,7 @@ namespace bron {
 
     class System {
     public:
-        void add(Pt<RigidBody> object);
+        void add(Ref<RigidBody> object);
         void loop();
 
     private:

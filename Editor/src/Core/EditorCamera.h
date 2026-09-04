@@ -10,7 +10,7 @@ namespace bron::editor
 	class EditorCamera final : public FrustumCamera
 	{
 	public:
-		EditorCamera(float fovY, float aspectRatio, float nearPlane, float farPlane);
+		EditorCamera(float fov_y, float aspect_ratio, float near_plane, float far_plane);
 
 		/// Applies the held-key orbit controls. Called once per frame.
 		void OnUpdate(Timestep ts);

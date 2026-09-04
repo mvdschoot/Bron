@@ -18,8 +18,8 @@ namespace bron
 	public:
 		enum class DrawType
 		{
-			TRIANGLES,
-			LINES
+			kTriangles,
+			kLines
 		};
 
 		virtual void Init() = 0;

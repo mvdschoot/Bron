@@ -9,10 +9,10 @@
 
 namespace bron {
 	entt::entity CreateCube(Scene &target, const Ref<MaterialBase> &material) {
-		MeshData meshData;
+		MeshData mesh_data;
 
 		// Cube vertices (positions)
-		meshData.positions = {
+		mesh_data.positions = {
 			{-0.5f, -0.5f, -0.5f}, // 0
 			{ 0.5f, -0.5f, -0.5f}, // 1
 			{ 0.5f,  0.5f, -0.5f}, // 2
@@ -24,7 +24,7 @@ namespace bron {
 		};
 
 		// 12 triangles (36 indices)
-		meshData.indices = {
+		mesh_data.indices = {
 			0, 1, 2, 2, 3, 0, // back
 			4, 5, 6, 6, 7, 4, // front
 			0, 4, 7, 7, 3, 0, // left
@@ -34,7 +34,7 @@ namespace bron {
 		};
 
 		// Optional normals (flat shading per face)
-		meshData.normals = std::vector<glm::vec3>{
+		mesh_data.normals = std::vector<glm::vec3>{
 		        { 0.0f,  0.0f, -1.0f}, // back
 				{ 0.0f,  0.0f, -1.0f},
 				{ 0.0f,  0.0f, -1.0f},
@@ -47,7 +47,7 @@ namespace bron {
 		};
 
 		// Optional UVs (basic cube projection)
-		meshData.uvs = std::vector<glm::vec2>{
+		mesh_data.uvs = std::vector<glm::vec2>{
 		        {0.0f, 0.0f}, // 0
 				{1.0f, 0.0f}, // 1
 				{1.0f, 1.0f}, // 2
@@ -59,7 +59,7 @@ namespace bron {
 		};
 
 		// Optional tangents (approximate for a cube)
-		meshData.tangents = std::vector<glm::vec3>{
+		mesh_data.tangents = std::vector<glm::vec3>{
 		        { 1.0f, 0.0f, 0.0f}, // 0
 				{ 1.0f, 0.0f, 0.0f}, // 1
 				{ 1.0f, 0.0f, 0.0f}, // 2
@@ -71,18 +71,18 @@ namespace bron {
 		};
 
 		const entt::entity cube = target.CreateEntity("Cube");
-		target.reg.emplace<MeshComponent>(cube, std::move(meshData), material);
+		target.reg.emplace<MeshComponent>(cube, std::move(mesh_data), material);
 
 		return cube;
 	}
 
 	entt::entity CreatePhongCube(Scene &target, const glm::vec3 color) {
 		const Ref<PhongMaterial> material = CreateRef<PhongMaterial>();
-		material->Set(PhongMaterialVariables::Diffuse, color);
-		material->Set(PhongMaterialVariables::Specular, color);
-		material->Set(PhongMaterialVariables::Shininess, 5.0f);
-		material->Set(PhongMaterialVariables::ShininessStrength, 1.0f);
-		material->Set(PhongMaterialVariables::AmbientFactor, 0.2f);
+		material->Set(PhongMaterialVariables::kDiffuse, color);
+		material->Set(PhongMaterialVariables::kSpecular, color);
+		material->Set(PhongMaterialVariables::kShininess, 5.0f);
+		material->Set(PhongMaterialVariables::kShininessStrength, 1.0f);
+		material->Set(PhongMaterialVariables::kAmbientFactor, 0.2f);
 
 		return CreateCube(target, material);
 	}

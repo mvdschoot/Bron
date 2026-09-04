@@ -17,7 +17,7 @@ public:
 	static void Init();
 
     static Ref<Shader> GetShader(const char* name);
-    static void CreateShader(const char* name, const char* pathToShader);
+    static void CreateShader(const char* name, const char* path_to_shader);
 
     // For shaders that are already in memory, such as the engine's built-in
     // ones (see BuiltinShaders.h).

@@ -86,8 +86,8 @@ namespace bron
 	template<typename T>
 	struct MultipleNamedBufferData
 	{
-		MultipleNamedBufferData(const NamedBufferLayout<T>* layout, const u8 numberOfBuffers)
-				: Layout(layout), NumberOfBuffers(numberOfBuffers), Data(new u8[layout->GetStride() * numberOfBuffers])
+		MultipleNamedBufferData(const NamedBufferLayout<T>* layout, const u8 number_of_buffers)
+				: Layout(layout), NumberOfBuffers(number_of_buffers), Data(new u8[layout->GetStride() * number_of_buffers])
 		{}
 
 		/**
@@ -100,8 +100,8 @@ namespace bron
 		void Set(T type, u8* values)
 		{
 			const BufferElement& el = Layout->GetElementData(type);
-			for (int bufferOffset = 0; bufferOffset < NumberOfBuffers; bufferOffset++) {
-				memcpy(Data + (bufferOffset * Layout->GetStride()) + el.offset, values + bufferOffset * el.size, el.size);
+			for (int buffer_offset = 0; buffer_offset < NumberOfBuffers; buffer_offset++) {
+				memcpy(Data + (buffer_offset * Layout->GetStride()) + el.offset, values + buffer_offset * el.size, el.size);
 			}
 		}
 

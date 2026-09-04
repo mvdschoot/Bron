@@ -133,16 +133,16 @@ namespace bron
 	}
 	
 	float DesktopWindow::GetMonitorScale() {
-		float xScale, yScale;
-		glfwGetWindowContentScale(this->window_, &xScale, &yScale);
+		float x_scale, y_scale;
+		glfwGetWindowContentScale(this->window_, &x_scale, &y_scale);
 
-		BR_CORE_INFO("Monitor scale x: {} y: {}", xScale, yScale);
+		BR_CORE_INFO("Monitor scale x: {} y: {}", x_scale, y_scale);
 
-		if (xScale == yScale) {
-			return xScale;
+		if (x_scale == y_scale) {
+			return x_scale;
 		} else {
-			BR_CORE_WARN("The OS's scaling for the primary monitor differs between the x scaling factor and y scaling factor: x: {}, y: {}", xScale, yScale);
-			return xScale;
+			BR_CORE_WARN("The OS's scaling for the primary monitor differs between the x scaling factor and y scaling factor: x: {}, y: {}", x_scale, y_scale);
+			return x_scale;
 		}
 	}
 }

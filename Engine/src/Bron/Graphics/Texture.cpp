@@ -10,8 +10,8 @@ namespace bron
 	{
 		switch (Platform::GetApi())
 		{
-		case Platform::API::None: BR_CORE_ASSERT(false, "No rendering API detected!");
-		case Platform::API::OpenGL: return CreateRef<OpenGLTexture2D>(width, height);
+		case Platform::API::kNone: BR_CORE_ASSERT(false, "No rendering API detected!");
+		case Platform::API::kOpenGl: return CreateRef<OpenGLTexture2D>(width, height);
 		}
 
 		return nullptr;
@@ -21,8 +21,8 @@ namespace bron
 	{
 		switch (Platform::GetApi())
 		{
-		case Platform::API::None: BR_CORE_ASSERT(false, "No rendering API detected!");
-		case Platform::API::OpenGL: return CreateRef<OpenGLTexture2D>(path);
+		case Platform::API::kNone: BR_CORE_ASSERT(false, "No rendering API detected!");
+		case Platform::API::kOpenGl: return CreateRef<OpenGLTexture2D>(path);
 		}
 
 		return nullptr;
@@ -32,8 +32,8 @@ namespace bron
 	{
 		switch (Platform::GetApi())
 		{
-		case Platform::API::None: BR_CORE_ASSERT(false, "No rendering API detected!");
-		case Platform::API::OpenGL: return CreateRef<OpenGLTexture2D>(data, size);
+		case Platform::API::kNone: BR_CORE_ASSERT(false, "No rendering API detected!");
+		case Platform::API::kOpenGl: return CreateRef<OpenGLTexture2D>(data, size);
 		}
 
 		return nullptr;
@@ -43,8 +43,8 @@ namespace bron
 	{
 		switch (Platform::GetApi())
 		{
-		case Platform::API::None: BR_CORE_ASSERT(false, "No rendering API detected!");
-		case Platform::API::OpenGL: return CreateRef<OpenGLTextTexture>(width, height);
+		case Platform::API::kNone: BR_CORE_ASSERT(false, "No rendering API detected!");
+		case Platform::API::kOpenGl: return CreateRef<OpenGLTextTexture>(width, height);
 		}
 
 		return nullptr;

@@ -23,7 +23,7 @@ namespace bron::editor
 		/// The open project, or null when there is none - the state the editor starts in
 		/// when nothing has been opened before. Panels must handle null; with no project
 		/// there is no asset root, so nothing may resolve an asset path.
-		std::unique_ptr<Project> project;
+		Scope<Project> project;
 
 		[[nodiscard]] bool HasProject() const { return project != nullptr; }
 
@@ -32,10 +32,10 @@ namespace bron::editor
 
 		/// The entity the inspector and the gizmo act on, or entt::null for "nothing selected".
 		entt::entity selection = entt::null;
-		ImGuizmo::OPERATION gizmoOperation = ImGuizmo::OPERATION::TRANSLATE;
+		ImGuizmo::OPERATION gizmo_operation = ImGuizmo::OPERATION::TRANSLATE;
 
 		/// Duration of the last frame, for the statistics panel.
-		Timestep frameTime;
+		Timestep frame_time;
 
 		[[nodiscard]] bool HasSelection() const { return selection != entt::null; }
 		void ClearSelection() { selection = entt::null; }

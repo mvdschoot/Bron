@@ -9,8 +9,8 @@ namespace bron
 	{
 		switch (Platform::GetApi())
 		{
-		case Platform::API::OpenGL: return CreateRef<OpenGLVertexArray>();
-		case Platform::API::None: BR_CORE_ERROR("No rendering engine selected");
+		case Platform::API::kOpenGl: return CreateRef<OpenGLVertexArray>();
+		case Platform::API::kNone: BR_CORE_ERROR("No rendering engine selected");
 		}
 
 		return nullptr;

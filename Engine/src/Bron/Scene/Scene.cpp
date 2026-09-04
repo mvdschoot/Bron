@@ -8,7 +8,7 @@
 
 namespace bron
 {
-	Scene::Scene() : lightManagement(*this)
+	Scene::Scene() : light_management(*this)
 	{
 		root = CreateEntity("Root node");
 	}
@@ -54,14 +54,14 @@ namespace bron
 		BR_CORE_ASSERT(reg.valid(parent) && reg.valid(child), "Cannot parent an entity that does not exist");
 		BR_CORE_ASSERT(parent != child, "An entity cannot be its own parent");
 
-		HierarchyComponent& childHierarchy = reg.get<HierarchyComponent>(child);
+		HierarchyComponent& child_hierarchy = reg.get<HierarchyComponent>(child);
 
 		// Re-parenting: unhook from the previous parent first.
-		if (childHierarchy.parent != entt::null) {
-			RemoveChild(childHierarchy.parent, child);
+		if (child_hierarchy.parent != entt::null) {
+			RemoveChild(child_hierarchy.parent, child);
 		}
 
-		childHierarchy.parent = parent;
+		child_hierarchy.parent = parent;
 		reg.get<HierarchyComponent>(parent).children.push_back(child);
 	}
 
@@ -93,7 +93,7 @@ namespace bron
 
 	entt::entity Scene::CreatePhongModel(const char* name, const char* location)
 	{
-		const entt::entity model = ModelLoader::LoadModel(*this, MaterialWorkflow::PHONG, location);
+		const entt::entity model = ModelLoader::LoadModel(*this, MaterialWorkflow::kPhong, location);
 
 		reg.get<TagComponent>(model).name = name;
 
@@ -101,7 +101,7 @@ namespace bron
 		// being moved. paths::Relative keeps a location outside the root as it is;
 		// joining an absolute path back onto the root is a no-op, so loading still works.
 		reg.emplace<ModelSourceComponent>(model, paths::Relative(location).generic_string(),
-										  MaterialWorkflow::PHONG);
+										  MaterialWorkflow::kPhong);
 
 		AddChild(root, model);
 

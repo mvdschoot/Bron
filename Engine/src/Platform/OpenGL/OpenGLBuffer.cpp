@@ -111,28 +111,28 @@ namespace bron
 	////////////////////////////////////////////////////////////////////////////////
 
 	OpenGLUniformBuffer::OpenGLUniformBuffer(usize size, u32 binding) :
-		bufferSize(size), current_binding_(binding), bound(false)
+		buffer_size(size), current_binding_(binding), bound(false)
 	{
-		glGenBuffers(1, &rendererID);
-		glBindBuffer(GL_UNIFORM_BUFFER, rendererID);
+		glGenBuffers(1, &renderer_id);
+		glBindBuffer(GL_UNIFORM_BUFFER, renderer_id);
 		glBufferData(GL_UNIFORM_BUFFER, size, nullptr, GL_DYNAMIC_DRAW);
-		glBindBufferRange(GL_UNIFORM_BUFFER, binding, rendererID, 0, size);
+		glBindBufferRange(GL_UNIFORM_BUFFER, binding, renderer_id, 0, size);
 		glBindBuffer(GL_UNIFORM_BUFFER, 0);
 	}
 
 	OpenGLUniformBuffer::OpenGLUniformBuffer(const void *data, usize size, u32 binding) :
-		bufferSize(size), current_binding_(binding), bound(false)
+		buffer_size(size), current_binding_(binding), bound(false)
 	{
-		glGenBuffers(1, &rendererID);
-		glBindBuffer(GL_UNIFORM_BUFFER, rendererID);
+		glGenBuffers(1, &renderer_id);
+		glBindBuffer(GL_UNIFORM_BUFFER, renderer_id);
 		glBufferData(GL_UNIFORM_BUFFER, size, data, GL_DYNAMIC_DRAW);
-		glBindBufferRange(GL_UNIFORM_BUFFER, binding, rendererID, 0, size);
+		glBindBufferRange(GL_UNIFORM_BUFFER, binding, renderer_id, 0, size);
 		glBindBuffer(GL_UNIFORM_BUFFER, 0);
 	}
 
 	OpenGLUniformBuffer::~OpenGLUniformBuffer()
 	{
-		glDeleteBuffers(1, &rendererID);
+		glDeleteBuffers(1, &renderer_id);
 	}
 
 	void OpenGLUniformBuffer::Bind(u32 binding)
@@ -141,7 +141,7 @@ namespace bron
 			Unbind();
 		}
 		current_binding_ = binding;
-		glBindBufferBase(GL_UNIFORM_BUFFER, binding, rendererID);
+		glBindBufferBase(GL_UNIFORM_BUFFER, binding, renderer_id);
 		bound = true;
 	}
 
@@ -156,15 +156,15 @@ namespace bron
 
 	void OpenGLUniformBuffer::SetData(const u8* data, usize size, usize offset)
 	{
-		glBindBuffer(GL_UNIFORM_BUFFER, rendererID);
+		glBindBuffer(GL_UNIFORM_BUFFER, renderer_id);
 		glBufferSubData(GL_UNIFORM_BUFFER, offset, size, data);
 		glBindBuffer(GL_UNIFORM_BUFFER, 0);
 	}
 
 	void OpenGLUniformBuffer::ResizeAndSetData(const u8* data, usize size)
 	{
-		bufferSize = size;
-		glBindBuffer(GL_UNIFORM_BUFFER, rendererID);
+		buffer_size = size;
+		glBindBuffer(GL_UNIFORM_BUFFER, renderer_id);
 		glBufferData(GL_UNIFORM_BUFFER, size, data, GL_DYNAMIC_DRAW);
 		glBindBuffer(GL_UNIFORM_BUFFER, 0);
 	}

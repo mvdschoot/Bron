@@ -34,23 +34,23 @@ namespace bron {
 		return res / static_cast<float>(meshes.size());
 	}
 
-	entt::entity ModelLoader::LoadModel(Scene &target, MaterialWorkflow type, const char *modelLocation) {
+	entt::entity ModelLoader::LoadModel(Scene &target, MaterialWorkflow type, const char *model_location) {
 		// Assimp load model
 		Assimp::Importer importer;
-		const aiScene *scene = importer.ReadFile(modelLocation, aiProcess_Triangulate | aiProcess_GenSmoothNormals);
+		const aiScene *scene = importer.ReadFile(model_location, aiProcess_Triangulate | aiProcess_GenSmoothNormals);
 
 		std::string error = "ERROR::ASSIMP::";
 		error.append(importer.GetErrorString());
 		BR_CORE_ASSERT(scene && !(scene->mFlags & AI_SCENE_FLAGS_INCOMPLETE) && scene->mRootNode, error);
 
 		// Get the directory of the model, because it will contain the textures.
-		std::filesystem::path parentDirectory = std::filesystem::path(modelLocation).parent_path();
+		std::filesystem::path parent_directory = std::filesystem::path(model_location).parent_path();
 
 		// Set of materials, so that materials can be reused.
 		std::vector<Ref<MaterialBase>> materials;
 		switch (type) {
-			case MaterialWorkflow::PHONG:
-				materials = ProcessPhongMaterials(scene, parentDirectory.string().c_str());
+			case MaterialWorkflow::kPhong:
+				materials = ProcessPhongMaterials(scene, parent_directory.string().c_str());
 				break;
 			default:
 				BR_CORE_ASSERT(false, "This MaterialWorkflow does not exist ({}).", magic_enum::enum_name(type));
@@ -59,7 +59,7 @@ namespace bron {
 		std::vector<entt::entity> meshes = ProcessNode(target, &materials, scene->mRootNode, scene, aiMatrix4x4());
 
 		// Create the model root. It stays unparented; the caller decides where it goes in the scene.
-		const entt::entity model = target.CreateEntity(std::filesystem::path(modelLocation).stem().string());
+		const entt::entity model = target.CreateEntity(std::filesystem::path(model_location).stem().string());
 
 		// The model sits at the centroid of its meshes, and each mesh is placed relative to that.
 		const glm::vec3 model_centroid = ModelCentroid(target.reg, meshes);
@@ -74,7 +74,7 @@ namespace bron {
 
 	std::vector<entt::entity> ModelLoader::ProcessNode(Scene &target, std::vector<Ref<MaterialBase>> *materials,
 													   const aiNode *node, const aiScene *scene,
-													   const aiMatrix4x4 &parentTransform) {
+													   const aiMatrix4x4 &parent_transform) {
 		BR_PROFILE_FUNCTION();
 
 		std::vector<entt::entity> meshes;
@@ -82,15 +82,15 @@ namespace bron {
 		// A node positions, rotates and scales its meshes relative to its parent. Formats that keep their
 		// scene graph intact (glTF/.glb especially) put a large part of the placement here instead of in the
 		// vertex data, so it has to be accumulated on the way down and applied to the vertices.
-		const aiMatrix4x4 transform = parentTransform * node->mTransformation;
+		const aiMatrix4x4 transform = parent_transform * node->mTransformation;
 
 		for (unsigned int i = 0; i < node->mNumMeshes; i++) {
 			aiMesh *mesh = scene->mMeshes[node->mMeshes[i]];
 			meshes.push_back(ProcessMesh(target, materials, mesh, scene, transform));
 		}
 		for (unsigned int i = 0; i < node->mNumChildren; i++) {
-			std::vector<entt::entity> addedMeshes = ProcessNode(target, materials, node->mChildren[i], scene, transform);
-			meshes.insert(meshes.end(), addedMeshes.begin(), addedMeshes.end());
+			std::vector<entt::entity> added_meshes = ProcessNode(target, materials, node->mChildren[i], scene, transform);
+			meshes.insert(meshes.end(), added_meshes.begin(), added_meshes.end());
 		}
 
 		return meshes;
@@ -107,44 +107,44 @@ namespace bron {
 		}
 
 		// Initialize the mesh data struct
-		MeshData meshData;
-		meshData.positions = std::vector<glm::vec3>(aiMesh->mNumVertices);
-		meshData.indices = std::vector<u32>(num_indices);
+		MeshData mesh_data;
+		mesh_data.positions = std::vector<glm::vec3>(aiMesh->mNumVertices);
+		mesh_data.indices = std::vector<u32>(num_indices);
 		if (aiMesh->HasNormals()) {
-			meshData.normals = std::vector<glm::vec3>(aiMesh->mNumVertices);
+			mesh_data.normals = std::vector<glm::vec3>(aiMesh->mNumVertices);
 		}
 		if (aiMesh->HasTangentsAndBitangents()) {
-			meshData.tangents = std::vector<glm::vec3>(aiMesh->mNumVertices);
+			mesh_data.tangents = std::vector<glm::vec3>(aiMesh->mNumVertices);
 		}
 		if (aiMesh->HasTextureCoords(0)) {
-			meshData.uvs = std::vector<glm::vec2>(aiMesh->mNumVertices);
+			mesh_data.uvs = std::vector<glm::vec2>(aiMesh->mNumVertices);
 		}
 
 		// Normals are direction vectors, so they need the inverse transpose of the transform to stay
 		// perpendicular to the surface when the mesh is scaled non-uniformly.
-		aiMatrix3x3 normalMatrix(transform);
-		normalMatrix.Inverse().Transpose();
+		aiMatrix3x3 normal_matrix(transform);
+		normal_matrix.Inverse().Transpose();
 
 		for (u32 i = 0; i < aiMesh->mNumVertices; i++) {
 			// Position, placed in the space of the model as a whole.
 			const aiVector3D position = transform * aiMesh->mVertices[i];
-			meshData.positions[i] = glm::vec3(position.x, position.y, position.z);
+			mesh_data.positions[i] = glm::vec3(position.x, position.y, position.z);
 
 			// Normals
-			if (meshData.normals.has_value()) {
-				aiVector3D normal = normalMatrix * aiMesh->mNormals[i];
+			if (mesh_data.normals.has_value()) {
+				aiVector3D normal = normal_matrix * aiMesh->mNormals[i];
 				normal.Normalize();
-				meshData.normals.value()[i] = glm::vec3(normal.x, normal.y, normal.z);
+				mesh_data.normals.value()[i] = glm::vec3(normal.x, normal.y, normal.z);
 			}
 
 			// UV coordinates
-			if (meshData.uvs.has_value())
-				meshData.uvs.value()[i] = {aiMesh->mTextureCoords[0][i].x, aiMesh->mTextureCoords[0][i].y};
+			if (mesh_data.uvs.has_value())
+				mesh_data.uvs.value()[i] = {aiMesh->mTextureCoords[0][i].x, aiMesh->mTextureCoords[0][i].y};
 		}
 
 		// The vertices are stored relative to the centroid of the mesh, which becomes the mesh its position.
-		const glm::vec3 centroid = FindCentroid(meshData.positions.data(), meshData.positions.size());
-		for (glm::vec3 &position: meshData.positions) {
+		const glm::vec3 centroid = FindCentroid(mesh_data.positions.data(), mesh_data.positions.size());
+		for (glm::vec3 &position: mesh_data.positions) {
 			position -= centroid;
 		}
 
@@ -152,15 +152,15 @@ namespace bron {
 		u32 i = 0;
 		for (unsigned int x = 0; x < aiMesh->mNumFaces; x++) {
 			// ASSUMES THE INDICES ARE 4 BYTE UNSIGNED INTS.
-			std::copy_n(aiMesh->mFaces[x].mIndices, aiMesh->mFaces[x].mNumIndices, meshData.indices.begin() + i);
+			std::copy_n(aiMesh->mFaces[x].mIndices, aiMesh->mFaces[x].mNumIndices, mesh_data.indices.begin() + i);
 			i += aiMesh->mFaces[x].mNumIndices;
 		}
 
 		// Create the mesh entity
-		const Ref<MaterialBase>& meshMaterial = (*materials)[aiMesh->mMaterialIndex];
+		const Ref<MaterialBase>& mesh_material = (*materials)[aiMesh->mMaterialIndex];
 
 		const entt::entity mesh = target.CreateEntity(aiMesh->mName.length > 0 ? aiMesh->mName.C_Str() : "Mesh");
-		target.reg.emplace<MeshComponent>(mesh, std::move(meshData), meshMaterial);
+		target.reg.emplace<MeshComponent>(mesh, std::move(mesh_data), mesh_material);
 
 		// Set the position of the mesh
 		target.reg.get<TransformComponent>(mesh).Position = centroid;
@@ -171,11 +171,11 @@ namespace bron {
 	std::vector<Ref<MaterialBase>> ModelLoader::ProcessPhongMaterials(const aiScene *scene,
 																	  const std::filesystem::path &directory) {
 		std::vector<Ref<MaterialBase>> materials(scene->mNumMaterials);
-		std::unordered_map<std::string, Ref<Texture>> textureCache;
+		std::unordered_map<std::string, Ref<Texture>> texture_cache;
 
 		for (int x = 0; x < scene->mNumMaterials; x++) {
 			aiMaterial* material = scene->mMaterials[x];
-			Ref<PhongMaterial> phongMaterial = CreateRef<PhongMaterial>();
+			Ref<PhongMaterial> phong_material = CreateRef<PhongMaterial>();
 
 			// First extract and store the textures
 			aiString dif, spec, norm;
@@ -186,44 +186,44 @@ namespace bron {
 				material->GetTexture(aiTextureType_BASE_COLOR, 0, &dif);
 			// material->GetTexture(aiTextureType_HEIGHT, 0, &norm);
 
-			if (Ref<Texture> diffuse = LoadMaterialTexture(scene, directory, dif, textureCache))
-				phongMaterial->AddTexture(PhongMaterialTextureTypes::Diffuse, diffuse);
-			if (Ref<Texture> specular = LoadMaterialTexture(scene, directory, spec, textureCache))
-				phongMaterial->AddTexture(PhongMaterialTextureTypes::Specular, specular);
+			if (Ref<Texture> diffuse = LoadMaterialTexture(scene, directory, dif, texture_cache))
+				phong_material->AddTexture(PhongMaterialTextureTypes::kDiffuse, diffuse);
+			if (Ref<Texture> specular = LoadMaterialTexture(scene, directory, spec, texture_cache))
+				phong_material->AddTexture(PhongMaterialTextureTypes::kSpecular, specular);
 			// if (norm.length != 0) {
-			// 	phongMaterial->AddTexture(PhongMaterialTextureTypes::Normal, Texture2D::Create((directory / norm.C_Str()).c_str()));
+			// 	phong_material->AddTexture(PhongMaterialTextureTypes::kNormal, Texture2D::Create((directory / norm.C_Str()).c_str()));
 			// }
 
 			// Second, extract the misc phong-related variables.
 			// Retrieve shininess
 			if (float Shininess; material->Get(AI_MATKEY_SHININESS, Shininess) == aiReturn_SUCCESS)
-				phongMaterial->Set(PhongMaterialVariables::Shininess, Shininess);
+				phong_material->Set(PhongMaterialVariables::kShininess, Shininess);
 			else
-				phongMaterial->Set(PhongMaterialVariables::Shininess, 5.0f);
+				phong_material->Set(PhongMaterialVariables::kShininess, 5.0f);
 
 			// Retrieve shininess strength
 			if (float ShininessStrength;
 				material->Get(AI_MATKEY_SHININESS_STRENGTH, ShininessStrength) == aiReturn_SUCCESS)
-				phongMaterial->Set(PhongMaterialVariables::ShininessStrength, ShininessStrength);
+				phong_material->Set(PhongMaterialVariables::kShininessStrength, ShininessStrength);
 			else
-				phongMaterial->Set(PhongMaterialVariables::ShininessStrength, 1.0f);
+				phong_material->Set(PhongMaterialVariables::kShininessStrength, 1.0f);
 
 			// Todo: Ambient factor
-			phongMaterial->Set(PhongMaterialVariables::AmbientFactor, 0.2f);
+			phong_material->Set(PhongMaterialVariables::kAmbientFactor, 0.2f);
 
 			// Retrieve diffuse
 			if (aiColor3D Diffuse; material->Get(AI_MATKEY_COLOR_DIFFUSE, Diffuse) == aiReturn_SUCCESS)
-				phongMaterial->Set(PhongMaterialVariables::Diffuse, Diffuse);
+				phong_material->Set(PhongMaterialVariables::kDiffuse, Diffuse);
 			else
-				phongMaterial->Set(PhongMaterialVariables::Diffuse, aiColor3D(1.0f, 1.0f, 1.0f));
+				phong_material->Set(PhongMaterialVariables::kDiffuse, aiColor3D(1.0f, 1.0f, 1.0f));
 
 			// Retrieve specular
 			if (aiColor3D Specular; material->Get(AI_MATKEY_COLOR_SPECULAR, Specular) == aiReturn_SUCCESS)
-				phongMaterial->Set(PhongMaterialVariables::Specular, Specular);
+				phong_material->Set(PhongMaterialVariables::kSpecular, Specular);
 			else
-				phongMaterial->Set(PhongMaterialVariables::Specular, aiColor3D(1.0f, 1.0f, 1.0f));
+				phong_material->Set(PhongMaterialVariables::kSpecular, aiColor3D(1.0f, 1.0f, 1.0f));
 
-			materials[x] = phongMaterial;
+			materials[x] = phong_material;
 		}
 
 		return materials;

@@ -15,6 +15,6 @@ namespace bron::editor
 
 	private:
 		Overlay overlay;
-		EditorLayer editorLayer;
+		EditorLayer editor_layer;
 	};
 }

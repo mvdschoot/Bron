@@ -33,17 +33,17 @@ namespace bron
 		{
 			switch (type)
 			{
-			case ShaderDataType::Float: return 1;
-			case ShaderDataType::Float2: return 2;
-			case ShaderDataType::Float3: return 3;
-			case ShaderDataType::Float4: return 4;
-			case ShaderDataType::Mat3: return 3; // 3* float3
-			case ShaderDataType::Mat4: return 4; // 4* float4
-			case ShaderDataType::Int: return 1;
-			case ShaderDataType::Int2: return 2;
-			case ShaderDataType::Int3: return 3;
-			case ShaderDataType::Int4: return 4;
-			case ShaderDataType::Bool: return 1;
+			case ShaderDataType::kFloat: return 1;
+			case ShaderDataType::kFloat2: return 2;
+			case ShaderDataType::kFloat3: return 3;
+			case ShaderDataType::kFloat4: return 4;
+			case ShaderDataType::kMat3: return 3; // 3* float3
+			case ShaderDataType::kMat4: return 4; // 4* float4
+			case ShaderDataType::kInt: return 1;
+			case ShaderDataType::kInt2: return 2;
+			case ShaderDataType::kInt3: return 3;
+			case ShaderDataType::kInt4: return 4;
+			case ShaderDataType::kBool: return 1;
 			}
 
 			return 0;

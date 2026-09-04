@@ -6,19 +6,19 @@
 
 namespace bron::editor
 {
-	enum ComponentFlags_
+	enum ComponentFlags
 	{
-		ComponentFlags_None = 0,
+		kComponentFlagsNone = 0,
 
 		// Offered in the "Add Component" menu. Off for components that cannot be usefully
 		// default constructed, and for the ones every entity is guaranteed to have.
-		ComponentFlags_Addable = BR_BIT(0),
+		kComponentFlagsAddable = BR_BIT(0),
 
 		// Gets a remove button in the inspector. Off for the structural components, because
 		// the rest of the engine assumes every entity has them.
-		ComponentFlags_Removable = BR_BIT(1),
+		kComponentFlagsRemovable = BR_BIT(1),
 
-		ComponentFlags_Default = ComponentFlags_Addable | ComponentFlags_Removable
+		kComponentFlagsDefault = kComponentFlagsAddable | kComponentFlagsRemovable
 	};
 
 	/// Everything the editor needs to know about one component type, with the type erased into

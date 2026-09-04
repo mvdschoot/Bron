@@ -171,12 +171,12 @@ namespace bron
 
 		void Stop()
 		{
-			auto endTimepoint = std::chrono::high_resolution_clock::now();
-			auto highResStart = FloatingPointMicroseconds{m_StartTimepoint.time_since_epoch()};
-			auto elapsedTime = std::chrono::time_point_cast<std::chrono::microseconds>(endTimepoint).time_since_epoch()
+			auto end_timepoint = std::chrono::high_resolution_clock::now();
+			auto high_res_start = FloatingPointMicroseconds{m_StartTimepoint.time_since_epoch()};
+			auto elapsed_time = std::chrono::time_point_cast<std::chrono::microseconds>(end_timepoint).time_since_epoch()
 				- std::chrono::time_point_cast<std::chrono::microseconds>(m_StartTimepoint).time_since_epoch();
 
-			Instrumentor::Get().WriteProfile({m_Name, highResStart, elapsedTime, std::this_thread::get_id()});
+			Instrumentor::Get().WriteProfile({m_Name, high_res_start, elapsed_time, std::this_thread::get_id()});
 
 			m_Stopped = true;
 		}
@@ -200,18 +200,18 @@ namespace bron
 		{
 			ChangeResult<N> result = {};
 
-			size_t srcIndex = 0;
-			size_t dstIndex = 0;
-			while (srcIndex < N)
+			size_t src_index = 0;
+			size_t dst_index = 0;
+			while (src_index < N)
 			{
-				size_t matchIndex = 0;
-				while (matchIndex < K - 1 && srcIndex + matchIndex < N - 1 && expr[srcIndex + matchIndex] == remove[
-					matchIndex])
-					matchIndex++;
-				if (matchIndex == K - 1)
-					srcIndex += matchIndex;
-				result.Data[dstIndex++] = expr[srcIndex] == '"' ? '\'' : expr[srcIndex];
-				srcIndex++;
+				size_t match_index = 0;
+				while (match_index < K - 1 && src_index + match_index < N - 1 && expr[src_index + match_index] == remove[
+					match_index])
+					match_index++;
+				if (match_index == K - 1)
+					src_index += match_index;
+				result.Data[dst_index++] = expr[src_index] == '"' ? '\'' : expr[src_index];
+				src_index++;
 			}
 			return result;
 		}
@@ -242,8 +242,8 @@ namespace bron
 
 	#define BR_PROFILE_BEGIN_SESSION(name, filepath) ::bron::Instrumentor::Get().BeginSession(name, filepath)
 	#define BR_PROFILE_END_SESSION() ::bron::Instrumentor::Get().EndSession()
-	#define BR_PROFILE_SCOPE_LINE2(name, line) constexpr auto fixedName##line = ::bron::instrumentor_utils::CleanupOutputString(name, "__cdecl ");\
-											   ::bron::InstrumentationTimer timer##line(fixedName##line.Data)
+	#define BR_PROFILE_SCOPE_LINE2(name, line) constexpr auto fixed_name##line = ::bron::instrumentor_utils::CleanupOutputString(name, "__cdecl ");\
+											   ::bron::InstrumentationTimer timer##line(fixed_name##line.Data)
 	#define BR_PROFILE_SCOPE_LINE(name, line) BR_PROFILE_SCOPE_LINE2(name, line)
 	#define BR_PROFILE_SCOPE(name) BR_PROFILE_SCOPE_LINE(name, __LINE__)
 	#define BR_PROFILE_FUNCTION() BR_PROFILE_SCOPE(BR_FUNC_SIG)

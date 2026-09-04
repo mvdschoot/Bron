@@ -105,8 +105,8 @@ namespace bron::editor
 
 		palette->apply(style.Colors);
 
-		style.ScaleAllSizes(prefs.uiScale);
-		ImGui::GetIO().FontGlobalScale = prefs.uiScale;
+		style.ScaleAllSizes(prefs.ui_scale);
+		ImGui::GetIO().FontGlobalScale = prefs.ui_scale;
 	}
 
 	const std::vector<const char*>& theme::Names()

@@ -15,8 +15,8 @@ namespace bron
 
 	struct BvhNode {
 		AABB box;
-		Pt<BvhNode> left, right;
-		std::vector<Pt<RigidBody>> primitives;
+		Ref<BvhNode> left, right;
+		std::vector<Ref<RigidBody>> primitives;
 	};
 
 	class BVH
@@ -27,13 +27,13 @@ namespace bron
 	public:
 		BVH();
 
-		void AddObject(Pt<RigidBody> obj);
-		std::vector<Pt<RigidBody>>& get(Pt<RigidBody>& object);
+		void AddObject(Ref<RigidBody> obj);
+		std::vector<Ref<RigidBody>>& get(Ref<RigidBody>& object);
 
 	private:
-		void InsertPrimitive(Pt<BvhNode> current, Pt<RigidBody> n);
-		Pt<BvhNode> find(Pt<RigidBody> toFind);
+		void InsertPrimitive(Ref<BvhNode> current, Ref<RigidBody> n);
+		Ref<BvhNode> find(Ref<RigidBody> to_find);
 
-		Pt<BvhNode> root;
+		Ref<BvhNode> root;
 	};
 }

@@ -20,10 +20,10 @@ namespace bron
 		{
 			switch (type)
 			{
-			case DrawType::TRIANGLES:
+			case DrawType::kTriangles:
 				return GL_TRIANGLES;
 				break;
-			case DrawType::LINES:
+			case DrawType::kLines:
 				return GL_LINES;
 				break;
 			default:
@@ -41,9 +41,9 @@ namespace bron
 		void EnableBlend() override;
 		void EnableDepth() override;
 
-		void DrawIndexed(const std::shared_ptr<VertexArray>& v_array, u32 count) override;
-		void DrawIndexedLines(const std::shared_ptr<VertexArray>& v_array, u32 count) override;
-		void DrawIndexedStripLines(const std::shared_ptr<VertexArray>& v_array, u32 count) override;
+		void DrawIndexed(const Ref<VertexArray>& v_array, u32 count) override;
+		void DrawIndexedLines(const Ref<VertexArray>& v_array, u32 count) override;
+		void DrawIndexedStripLines(const Ref<VertexArray>& v_array, u32 count) override;
 
 	private:
 

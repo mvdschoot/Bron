@@ -42,11 +42,11 @@ namespace bron::editor
 											   ImGuiTreeNodeFlags_DefaultOpen | ImGuiTreeNodeFlags_AllowOverlap);
 
 			// Remove button on the header row itself, so a collapsed section can still be removed.
-			bool removeRequested = false;
+			bool remove_requested = false;
 			if (component.remove)
 			{
 				SameLine(GetWindowWidth() - 30.0f);
-				removeRequested = SmallButton("x");
+				remove_requested = SmallButton("x");
 			}
 
 			if (open)
@@ -55,7 +55,7 @@ namespace bron::editor
 			PopID();
 
 			// Applied after drawing, so this frame's draw still sees a live component.
-			if (removeRequested)
+			if (remove_requested)
 				component.remove(scene, entity);
 		}
 	}
@@ -67,18 +67,18 @@ namespace bron::editor
 
 		Scene& scene = Context.scene;
 
-		bool anyOffered = false;
+		bool any_offered = false;
 		for (const ComponentMeta& component : component_registry::All())
 		{
 			if (!component.add || component.has(scene, entity))
 				continue;
 
-			anyOffered = true;
+			any_offered = true;
 			if (MenuItem(component.name))
 				component.add(scene, entity);
 		}
 
-		if (!anyOffered)
+		if (!any_offered)
 			TextDisabled("Nothing left to add");
 
 		EndPopup();

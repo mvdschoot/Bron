@@ -19,12 +19,12 @@ namespace bron
 		if (FT_Init_FreeType(&s_text_data.FT_library)) BR_CORE_ERROR("Could not initialise FreeText library");
 
 		s_text_data.ShaderId = R2D::AddShader(
-			Shader::Create(builtin_shaders::Source(builtin_shaders::Id::Text)), 
+			Shader::Create(builtin_shaders::Source(builtin_shaders::Id::kText)), 
 			BufferLayout({
-				{"a_Position", ShaderDataType::Float2},
-				{"a_Color", ShaderDataType::Float4},
-				{"a_TexCoord", ShaderDataType::Float2},
-				{"a_TexIndex", ShaderDataType::Float}
+				{"a_Position", ShaderDataType::kFloat2},
+				{"a_Color", ShaderDataType::kFloat4},
+				{"a_TexCoord", ShaderDataType::kFloat2},
+				{"a_TexIndex", ShaderDataType::kFloat}
 			})
 		);
 	}
@@ -101,13 +101,13 @@ namespace bron
             float w = ch.Location.z * scale;
             float h = ch.Location.w * scale;
 
-			glm::vec4 txtLoc = {
+			glm::vec4 txt_loc = {
 				((float)ch.Location.x) / font.Texture->GetWidth(),
 				((float)ch.Location.y) / font.Texture->GetHeight(),
 				(float)ch.Location.z / font.Texture->GetWidth(),
 				(float)ch.Location.w / font.Texture->GetHeight()
 			};
-			R2D::DrawQuad({ xpos, ypos }, { w, h }, font.Texture, txtLoc);
+			R2D::DrawQuad({ xpos, ypos }, { w, h }, font.Texture, txt_loc);
 
             // now advance cursors for next glyph (note that advance is number of 1/64 pixels)
             x += (ch.Advance >> 6) * scale; // bitshift by 6 to get value in pixels (2^6 = 64)

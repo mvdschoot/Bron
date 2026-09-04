@@ -48,16 +48,16 @@ namespace bron
 
 	inline void Shader::SetUniform(ShaderDataType type, std::string name, u8* data)
 	{
-		if (type == ShaderDataType::Float) return SetUniform1f(std::move(name), *(float*)data);
-		if (type == ShaderDataType::Float2) return SetUniform2f(std::move(name), *(float*) data, *((float*)data + 1));
-		if (type == ShaderDataType::Float3) return SetUniform3f(std::move(name), *((float*)data), *((float*)data + 1), *((float*)data + 2));
-		if (type == ShaderDataType::Float4) return SetUniform4f(std::move(name), *((float*)data), *((float*)data + 1), *((float*)data + 2), *((float*)data + 3));
-		if (type == ShaderDataType::Int) return SetUniform1i(std::move(name), *((u32*)data));
-		if (type == ShaderDataType::Int2) return SetUniform2i(std::move(name), *((u32*)data), *((u32*)data + 1));
-		if (type == ShaderDataType::Int3) return SetUniform3i(std::move(name), *((u32*)data), *((u32*)data + 1), *((u32*)data + 2));
-		if (type == ShaderDataType::Int4) return SetUniform4i(std::move(name), *((u32*)data), *((u32*)data + 1), *((u32*)data + 2), *((u32*)data + 3));
-		if (type == ShaderDataType::Mat3) return SetUniformMat3(std::move(name), *(glm::mat3*)data);
-		if (type == ShaderDataType::Mat4) return SetUniformMat4(std::move(name), *(glm::mat4*)data);
+		if (type == ShaderDataType::kFloat) return SetUniform1f(std::move(name), *(float*)data);
+		if (type == ShaderDataType::kFloat2) return SetUniform2f(std::move(name), *(float*) data, *((float*)data + 1));
+		if (type == ShaderDataType::kFloat3) return SetUniform3f(std::move(name), *((float*)data), *((float*)data + 1), *((float*)data + 2));
+		if (type == ShaderDataType::kFloat4) return SetUniform4f(std::move(name), *((float*)data), *((float*)data + 1), *((float*)data + 2), *((float*)data + 3));
+		if (type == ShaderDataType::kInt) return SetUniform1i(std::move(name), *((u32*)data));
+		if (type == ShaderDataType::kInt2) return SetUniform2i(std::move(name), *((u32*)data), *((u32*)data + 1));
+		if (type == ShaderDataType::kInt3) return SetUniform3i(std::move(name), *((u32*)data), *((u32*)data + 1), *((u32*)data + 2));
+		if (type == ShaderDataType::kInt4) return SetUniform4i(std::move(name), *((u32*)data), *((u32*)data + 1), *((u32*)data + 2), *((u32*)data + 3));
+		if (type == ShaderDataType::kMat3) return SetUniformMat3(std::move(name), *(glm::mat3*)data);
+		if (type == ShaderDataType::kMat4) return SetUniformMat4(std::move(name), *(glm::mat4*)data);
 
 		BR_CORE_ASSERT(false, "Uniform type not supported");
 	}

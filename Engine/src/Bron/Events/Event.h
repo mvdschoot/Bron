@@ -7,7 +7,7 @@
 
 namespace bron
 {
-#define BR_EVENT_CLASS_TYPE(type) static EventType GetStaticType() { return EventType::type; }\
+#define BR_EVENT_CLASS_TYPE(type) static EventType GetStaticType() { return EventType::k##type; }\
 								virtual EventType GetEventType() const { return GetStaticType(); }\
 								virtual const char* GetName() const { return #type; }
 
@@ -15,27 +15,27 @@ namespace bron
 
 	enum class EventType
 	{
-		None = 0,
-		KeyPressed,
-		KeyReleased,
-		WindowClose,
-		WindowResize,
-		WindowFocus,
-		WindowUnfocus,
-		MouseMoved,
-		MouseButtonPressed,
-		MouseButtonReleased,
-		MouseScrolled
+		kNone = 0,
+		kKeyPressed,
+		kKeyReleased,
+		kWindowClose,
+		kWindowResize,
+		kWindowFocus,
+		kWindowUnfocus,
+		kMouseMoved,
+		kMouseButtonPressed,
+		kMouseButtonReleased,
+		kMouseScrolled
 	};
 
 	enum EventCategory
 	{
-		None = 0,
-		EventCategoryApplication = BR_BIT(0),
-		EventCategoryInput = BR_BIT(1),
-		EventCategoryKeyboard = BR_BIT(2),
-		EventCategoryMouseButton = BR_BIT(3),
-		EventCategoryMouse = BR_BIT(4)
+		kNone = 0,
+		kApplication = BR_BIT(0),
+		kInput = BR_BIT(1),
+		kKeyboard = BR_BIT(2),
+		kMouseButton = BR_BIT(3),
+		kMouse = BR_BIT(4)
 	};
 
 	class BR_API Event

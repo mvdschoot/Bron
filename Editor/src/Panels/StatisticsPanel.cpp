@@ -9,7 +9,7 @@ namespace bron::editor
 		// called either way or the outer dockspace window loses its End().
 		if (ImGui::Begin("Statistics"))
 		{
-			ImGui::Text("FPS: %f", 1000.0f / Context.frameTime.GetMilliseconds());
+			ImGui::Text("FPS: %f", 1000.0f / Context.frame_time.GetMilliseconds());
 
 			ImGui::NewLine();
 			ImGui::Separator();

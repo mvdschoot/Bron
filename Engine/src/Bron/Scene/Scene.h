@@ -37,7 +37,7 @@ namespace bron
 		entt::registry reg;
 		entt::entity root;
 
-		LightManagement lightManagement;
+		LightManagement light_management;
 		Camera* camera = nullptr;
 	};
 }

@@ -10,7 +10,7 @@ namespace bron::editor
 	{
 		BR_PROFILE_FUNCTION();
 
-		overlay.InsertLayer(&editorLayer);
+		overlay.InsertLayer(&editor_layer);
 		AddOverlay(&overlay);
 	}
 

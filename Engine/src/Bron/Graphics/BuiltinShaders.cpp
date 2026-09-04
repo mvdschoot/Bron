@@ -300,10 +300,10 @@ void main()
 		{
 			switch (id)
 			{
-			case Id::Renderer2D: return Renderer2D;
-			case Id::Grid:       return Grid;
-			case Id::Phong3D:    return Phong3D;
-			case Id::Text:       return Text;
+			case Id::kRenderer2D: return Renderer2D;
+			case Id::kGrid:       return Grid;
+			case Id::kPhong3D:    return Phong3D;
+			case Id::kText:       return Text;
 			}
 
 			BR_CORE_ASSERT(false, "Unknown built-in shader");

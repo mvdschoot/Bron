@@ -67,24 +67,24 @@ namespace bron
 		BR_PROFILE_FUNCTION();
 
 		// Vertex shader
-		const GLuint vertexShader = glCreateShader(GL_VERTEX_SHADER);
+		const GLuint vertex_shader = glCreateShader(GL_VERTEX_SHADER);
 
 		auto source = v_shader_.c_str();
-		glShaderSource(vertexShader, 1, &source, nullptr);
+		glShaderSource(vertex_shader, 1, &source, nullptr);
 
-		glCompileShader(vertexShader);
-		GLint isCompiled = 0;
-		glGetShaderiv(vertexShader, GL_COMPILE_STATUS, &isCompiled);
-		if (isCompiled == GL_FALSE)
+		glCompileShader(vertex_shader);
+		GLint is_compiled = 0;
+		glGetShaderiv(vertex_shader, GL_COMPILE_STATUS, &is_compiled);
+		if (is_compiled == GL_FALSE)
 		{
-			GLint maxLength = 0;
-			glGetShaderiv(vertexShader, GL_INFO_LOG_LENGTH, &maxLength);
+			GLint max_length = 0;
+			glGetShaderiv(vertex_shader, GL_INFO_LOG_LENGTH, &max_length);
 
-			std::vector<GLchar> info_log(maxLength);
-			glGetShaderInfoLog(vertexShader, maxLength, &maxLength, &info_log[0]);
+			std::vector<GLchar> info_log(max_length);
+			glGetShaderInfoLog(vertex_shader, max_length, &max_length, &info_log[0]);
 
 
-			glDeleteShader(vertexShader);
+			glDeleteShader(vertex_shader);
 
 			BR_CORE_ERROR("Failed to compile vertex shader: {}", info_log.data());
 
@@ -93,24 +93,24 @@ namespace bron
 
 
 		// Fragment shader
-		const GLuint fragmentShader = glCreateShader(GL_FRAGMENT_SHADER);
+		const GLuint fragment_shader = glCreateShader(GL_FRAGMENT_SHADER);
 
 		source = f_shader_.c_str();
-		glShaderSource(fragmentShader, 1, &source, nullptr);
+		glShaderSource(fragment_shader, 1, &source, nullptr);
 
-		glCompileShader(fragmentShader);
-		glGetShaderiv(fragmentShader, GL_COMPILE_STATUS, &isCompiled);
-		if (isCompiled == GL_FALSE)
+		glCompileShader(fragment_shader);
+		glGetShaderiv(fragment_shader, GL_COMPILE_STATUS, &is_compiled);
+		if (is_compiled == GL_FALSE)
 		{
-			GLint maxLength = 0;
-			glGetShaderiv(fragmentShader, GL_INFO_LOG_LENGTH, &maxLength);
+			GLint max_length = 0;
+			glGetShaderiv(fragment_shader, GL_INFO_LOG_LENGTH, &max_length);
 
-			std::vector<GLchar> info_log(maxLength);
-			glGetShaderInfoLog(fragmentShader, maxLength, &maxLength, &info_log[0]);
+			std::vector<GLchar> info_log(max_length);
+			glGetShaderInfoLog(fragment_shader, max_length, &max_length, &info_log[0]);
 
 
-			glDeleteShader(fragmentShader);
-			glDeleteShader(vertexShader);
+			glDeleteShader(fragment_shader);
+			glDeleteShader(vertex_shader);
 
 			BR_CORE_ERROR("Failed to compile fragment shader: {}", info_log.data());
 
@@ -119,27 +119,27 @@ namespace bron
 
 
 		// (Optional) geometry shader
-		GLuint geometryShader = -1;
+		GLuint geometry_shader = -1;
 		if (!g_shader_.empty())
 		{
-			geometryShader = glCreateShader(GL_GEOMETRY_SHADER);
+			geometry_shader = glCreateShader(GL_GEOMETRY_SHADER);
 
 			source = g_shader_.c_str();
-			glShaderSource(geometryShader, 1, &source, nullptr);
+			glShaderSource(geometry_shader, 1, &source, nullptr);
 
-			glCompileShader(geometryShader);
-			glGetShaderiv(geometryShader, GL_COMPILE_STATUS, &isCompiled);
-			if (isCompiled == GL_FALSE)
+			glCompileShader(geometry_shader);
+			glGetShaderiv(geometry_shader, GL_COMPILE_STATUS, &is_compiled);
+			if (is_compiled == GL_FALSE)
 			{
-				GLint maxLength = 0;
-				glGetShaderiv(geometryShader, GL_INFO_LOG_LENGTH, &maxLength);
+				GLint max_length = 0;
+				glGetShaderiv(geometry_shader, GL_INFO_LOG_LENGTH, &max_length);
 
-				std::vector<GLchar> info_log(maxLength);
-				glGetShaderInfoLog(geometryShader, maxLength, &maxLength, &info_log[0]);
+				std::vector<GLchar> info_log(max_length);
+				glGetShaderInfoLog(geometry_shader, max_length, &max_length, &info_log[0]);
 
-				glDeleteShader(geometryShader);
-				glDeleteShader(fragmentShader);
-				glDeleteShader(vertexShader);
+				glDeleteShader(geometry_shader);
+				glDeleteShader(fragment_shader);
+				glDeleteShader(vertex_shader);
 
 				BR_CORE_ERROR("Failed to compile geometry shader: {}", info_log.data());
 
@@ -150,30 +150,30 @@ namespace bron
 
 		renderer_id_ = glCreateProgram();
 
-		glAttachShader(renderer_id_, vertexShader);
-		glAttachShader(renderer_id_, fragmentShader);
+		glAttachShader(renderer_id_, vertex_shader);
+		glAttachShader(renderer_id_, fragment_shader);
 		if (!g_shader_.empty())
-			glAttachShader(renderer_id_, geometryShader);
+			glAttachShader(renderer_id_, geometry_shader);
 
 
 		glLinkProgram(renderer_id_);
 
-		GLint isLinked = 0;
-		glGetProgramiv(renderer_id_, GL_LINK_STATUS, &isLinked);
-		if (isLinked == GL_FALSE)
+		GLint is_linked = 0;
+		glGetProgramiv(renderer_id_, GL_LINK_STATUS, &is_linked);
+		if (is_linked == GL_FALSE)
 		{
-			GLint maxLength = 0;
-			glGetProgramiv(renderer_id_, GL_INFO_LOG_LENGTH, &maxLength);
+			GLint max_length = 0;
+			glGetProgramiv(renderer_id_, GL_INFO_LOG_LENGTH, &max_length);
 
-			std::vector<GLchar> info_log(maxLength);
-			glGetProgramInfoLog(renderer_id_, maxLength, &maxLength, &info_log[0]);
+			std::vector<GLchar> info_log(max_length);
+			glGetProgramInfoLog(renderer_id_, max_length, &max_length, &info_log[0]);
 
 
 			glDeleteProgram(renderer_id_);
 
-			glDeleteShader(vertexShader);
-			glDeleteShader(fragmentShader);
-			glDeleteShader(geometryShader);
+			glDeleteShader(vertex_shader);
+			glDeleteShader(fragment_shader);
+			glDeleteShader(geometry_shader);
 
 			BR_CORE_ERROR("Failed to link shaders into renderer_id_: {}", info_log.data());
 
@@ -183,11 +183,11 @@ namespace bron
 
 		BR_CORE_INFO("Loaded shader {} into program!", renderer_id_);
 
-		glDetachShader(renderer_id_, vertexShader);
-		glDetachShader(renderer_id_, fragmentShader);
+		glDetachShader(renderer_id_, vertex_shader);
+		glDetachShader(renderer_id_, fragment_shader);
 
 		if (!g_shader_.empty())
-			glDetachShader(renderer_id_, geometryShader);
+			glDetachShader(renderer_id_, geometry_shader);
 	}
 
 	void OpenGLShader::SetUniformMat3(std::string name, const glm::mat3& matrix)

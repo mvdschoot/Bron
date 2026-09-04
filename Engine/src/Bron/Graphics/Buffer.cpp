@@ -9,8 +9,8 @@ namespace bron
 	{
 		switch (Platform::GetApi())
 		{
-		case Platform::API::None: BR_CORE_ASSERT(false, "No Rendering API selected!");
-		case Platform::API::OpenGL: return CreateRef<OpenGLVertexBuffer>(size);
+		case Platform::API::kNone: BR_CORE_ASSERT(false, "No Rendering API selected!");
+		case Platform::API::kOpenGl: return CreateRef<OpenGLVertexBuffer>(size);
 		}
 		return nullptr;
 	}
@@ -19,8 +19,8 @@ namespace bron
 	{
 		switch (Platform::GetApi())
 		{
-		case Platform::API::None: BR_CORE_ASSERT(false, "No Rendering API selected!");
-		case Platform::API::OpenGL: return CreateRef<OpenGLVertexBuffer>(vertices, size);
+		case Platform::API::kNone: BR_CORE_ASSERT(false, "No Rendering API selected!");
+		case Platform::API::kOpenGl: return CreateRef<OpenGLVertexBuffer>(vertices, size);
 		}
 		return nullptr;
 	}
@@ -29,17 +29,17 @@ namespace bron
 	{
 		switch (Platform::GetApi())
 		{
-		case Platform::API::None: BR_CORE_ASSERT(false, "No Rendering API selected!");
-		case Platform::API::OpenGL: return CreateRef<OpenGLIndexBuffer>(indices, count);
+		case Platform::API::kNone: BR_CORE_ASSERT(false, "No Rendering API selected!");
+		case Platform::API::kOpenGl: return CreateRef<OpenGLIndexBuffer>(indices, count);
 		}
 		return nullptr;
 	}
 
 	Ref<IndexBuffer> IndexBuffer::Create(usize size) {
 		switch (Platform::GetApi()) {
-			case Platform::API::None:
+			case Platform::API::kNone:
 				BR_CORE_ASSERT(false, "No Rendering API selected!");
-			case Platform::API::OpenGL:
+			case Platform::API::kOpenGl:
 				return CreateRef<OpenGLIndexBuffer>(size);
 		}
 		return nullptr;
@@ -47,9 +47,9 @@ namespace bron
 
 	Ref<UniformBuffer> UniformBuffer::Create(usize size, u32 binding) {
 		switch (Platform::GetApi()) {
-			case Platform::API::None:
+			case Platform::API::kNone:
 				BR_CORE_ASSERT(false, "No Rendering API selected!");
-			case Platform::API::OpenGL:
+			case Platform::API::kOpenGl:
 				return CreateRef<OpenGLUniformBuffer>(size, binding);
 		}
 		return nullptr;
@@ -57,9 +57,9 @@ namespace bron
 
 	Ref<UniformBuffer> UniformBuffer::Create(const void *data, usize size, u32 binding) {
 		switch (Platform::GetApi()) {
-			case Platform::API::None:
+			case Platform::API::kNone:
 				BR_CORE_ASSERT(false, "No Rendering API selected!");
-			case Platform::API::OpenGL:
+			case Platform::API::kOpenGl:
 				return CreateRef<OpenGLUniformBuffer>(data, size, binding);
 		}
 		return nullptr;

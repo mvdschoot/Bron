@@ -8,7 +8,7 @@ namespace bron::editor
 	/// not sit in the middle of the frame logic.
 	namespace theme
 	{
-		/// Applies the palette named by Preferences::theme, scaled by Preferences::uiScale.
+		/// Applies the palette named by Preferences::theme, scaled by Preferences::ui_scale.
 		/// Falls back to the default palette when the name is not registered.
 		void Apply();
 

@@ -20,8 +20,8 @@ namespace bron
 	{
 		switch (Platform::GetApi())
 		{
-		case Platform::API::None: BR_CORE_ASSERT(false, "No Rendering API selected!");
-		case Platform::API::OpenGL: return CreateRef<OpenGLShader>(shader);
+		case Platform::API::kNone: BR_CORE_ASSERT(false, "No Rendering API selected!");
+		case Platform::API::kOpenGl: return CreateRef<OpenGLShader>(shader);
 		}
 		BR_CORE_ASSERT(false, "No Rendering API detected!");
 			return nullptr;

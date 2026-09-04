@@ -15,41 +15,41 @@ namespace bron
 		Camera* _Camera;
 	};
 
-	static GridData gData;
+	static GridData g_data;
 
 	void GridRenderer::Init(Camera* camera)
 	{
 		BR_PROFILE_FUNCTION();
 
-		gData._Camera = camera;
-		gData._Shader = Shader::Create(builtin_shaders::Source(builtin_shaders::Id::Grid));
+		g_data._Camera = camera;
+		g_data._Shader = Shader::Create(builtin_shaders::Source(builtin_shaders::Id::kGrid));
 
 
 		float vertices[6] = { 0, 0, 0, 0, 0, 0};
-		gData.Vbo = VertexBuffer::Create(vertices, 6 * sizeof(float));
-		gData.Vbo->SetBufferLayout({
-			{"a_Position", ShaderDataType::Float}
+		g_data.Vbo = VertexBuffer::Create(vertices, 6 * sizeof(float));
+		g_data.Vbo->SetBufferLayout({
+			{"a_Position", ShaderDataType::kFloat}
 			});
 
 		u32 indices[6] = {0,1,2,3,4,5};
-		gData.Ibo = IndexBuffer::Create(indices, 6);
+		g_data.Ibo = IndexBuffer::Create(indices, 6);
 
-		gData.Vao = VertexArray::Create();
-		gData.Vao->Bind();
-		gData.Vao->SetIndexBuffer(gData.Ibo);
-		gData.Vao->AddVertexBuffer(gData.Vbo);
+		g_data.Vao = VertexArray::Create();
+		g_data.Vao->Bind();
+		g_data.Vao->SetIndexBuffer(g_data.Ibo);
+		g_data.Vao->AddVertexBuffer(g_data.Vbo);
 	}
 
 	void GridRenderer::Draw()
 	{
 		BR_PROFILE_FUNCTION();
 
-		gData._Shader->Bind();
-		// gData._Shader->SetUniformMat4("uPosition", lineRenderData.camera->GetVPmatrix());
-		gData._Shader->SetUniformMat4("uView", gData._Camera->GetViewMatrix());
-		gData._Shader->SetUniformMat4("uProjection", gData._Camera->GetProjectionMatrix());
+		g_data._Shader->Bind();
+		// g_data._Shader->SetUniformMat4("uPosition", line_render_data.camera->GetVPmatrix());
+		g_data._Shader->SetUniformMat4("uView", g_data._Camera->GetViewMatrix());
+		g_data._Shader->SetUniformMat4("uProjection", g_data._Camera->GetProjectionMatrix());
 
-		Command::DrawIndexed(gData.Vao, 6);
+		Command::DrawIndexed(g_data.Vao, 6);
 	}
 	
 }

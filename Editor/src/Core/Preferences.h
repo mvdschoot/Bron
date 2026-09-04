@@ -21,20 +21,20 @@ namespace bron::editor
 		std::string theme = "Dark";
 
 		/// Multiplies every style metric and the font, for high-DPI displays.
-		float uiScale = 1.0f;
+		float ui_scale = 1.0f;
 
 		// --- Viewport navigation ---
 
 		/// Radians per second of held orbit input.
-		float cameraOrbitSpeed = 1.0f;
+		float camera_orbit_speed = 1.0f;
 
 		/// World units per scroll notch.
-		float cameraZoomSpeed = 0.15f;
+		float camera_zoom_speed = 0.15f;
 
 		// --- Projects ---
 
 		/// Most recently opened first. Truncated to MaxRecentProjects on write.
-		std::vector<std::filesystem::path> recentProjects;
+		std::vector<std::filesystem::path> recent_projects;
 
 		static constexpr size_t MaxRecentProjects = 10;
 

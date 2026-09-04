@@ -34,7 +34,7 @@ namespace bron::editor
 
 		/// Makes 'project' the open one: points asset resolution at it, records it in the
 		/// recent list and loads its startup scene. Null (a failed load) is ignored.
-		void OpenProject(std::unique_ptr<Project> project);
+		void OpenProject(Scope<Project> project);
 
 		/// Ask for a .brn and open it, or create one. No-ops when the dialog is cancelled.
 		void OpenProjectDialog();

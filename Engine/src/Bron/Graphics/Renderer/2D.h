@@ -30,10 +30,10 @@ namespace bron
 		 * 2D shaders work with a template for variables.
 		 * The input is this:
 		 *	
-				{"a_Position", ShaderDataType::Float2},
-				{"a_Color", ShaderDataType::Float4},
-				{"a_TexCoord", ShaderDataType::Float2},
-				{"a_TexIndex", ShaderDataType::Float}
+				{"a_Position", ShaderDataType::kFloat2},
+				{"a_Color", ShaderDataType::kFloat4},
+				{"a_TexCoord", ShaderDataType::kFloat2},
+				{"a_TexIndex", ShaderDataType::kFloat}
 
 		 * It also need uTextures and uVPmatrix as uniforms.
 		 */
@@ -43,7 +43,7 @@ namespace bron
 
 		static void DrawQuad(glm::vec3 pos, glm::vec3 dimension, glm::vec4 color);
 		static void DrawQuad(glm::vec3 pos, glm::vec3 dimension, const Ref<Texture> texture);
-		static void DrawQuad(glm::vec3 pos, glm::vec3 dimension, const Ref<Texture> texture, glm::vec4 texCoordsAndDims);
+		static void DrawQuad(glm::vec3 pos, glm::vec3 dimension, const Ref<Texture> texture, glm::vec4 tex_coords_and_dims);
 
 		static u32 GetTotQuadCount();
 		static u32 GetTotQuadIndexCount();

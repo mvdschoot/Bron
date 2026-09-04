@@ -10,7 +10,7 @@ namespace bron {
 	std::map<std::string, Ref<Shader>> ShaderRegistry::shaders = std::map<std::string, Ref<Shader>>();
 
 	void ShaderRegistry::Init() {
-		ShaderRegistry::CreateShaderFromSource(PHONG_SHADER, builtin_shaders::Source(builtin_shaders::Id::Phong3D));
+		ShaderRegistry::CreateShaderFromSource(PHONG_SHADER, builtin_shaders::Source(builtin_shaders::Id::kPhong3D));
 	}
 
 	Ref<Shader> ShaderRegistry::GetShader(const char *name) {
@@ -18,9 +18,9 @@ namespace bron {
         return shaders[name];
     }
 
-    void ShaderRegistry::CreateShader(const char *name, const char *pathToShader) {
-        const Ref<Shader> newShader = Shader::CreateShaderFromLocation(pathToShader);
-        shaders[name] = newShader;
+    void ShaderRegistry::CreateShader(const char *name, const char *path_to_shader) {
+        const Ref<Shader> new_shader = Shader::CreateShaderFromLocation(path_to_shader);
+        shaders[name] = new_shader;
     }
 
     void ShaderRegistry::CreateShaderFromSource(const char *name, const std::string &source) {

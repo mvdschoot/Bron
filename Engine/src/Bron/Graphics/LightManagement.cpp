@@ -35,12 +35,12 @@ namespace bron {
 			i++;
 		}
 
-		constexpr usize totalSize = sizeof(ShaderPointlightStruct) * POINTLIGHT_MAX;
+		constexpr usize total_size = sizeof(ShaderPointlightStruct) * POINTLIGHT_MAX;
 
 		if (ubo == nullptr)
-			ubo = UniformBuffer::Create(lights.data(), totalSize, POINTLIGHT_UBO_INDEX);
+			ubo = UniformBuffer::Create(lights.data(), total_size, POINTLIGHT_UBO_INDEX);
 		else
-			ubo->SetData(reinterpret_cast<const u8*>(lights.data()), totalSize);
+			ubo->SetData(reinterpret_cast<const u8*>(lights.data()), total_size);
 
 		ubo->Bind(POINTLIGHT_UBO_INDEX);
 	}

@@ -10,40 +10,40 @@ namespace bron
 	public:
 		enum class API
 		{
-			None = 0,
-			OpenGL = 1
+			kNone = 0,
+			kOpenGl = 1
 		};
 
 		enum class OS
 		{
-			None = 0,
-			Windows = 1,
-			Linux = 2,
-			MacOS = 3
+			kNone = 0,
+			kWindows = 1,
+			kLinux = 2,
+			kMacOs = 3
 		};
 
 	public:
 		static OS GetOs()
 		{
 #if defined(BR_PLATFORM_WINDOWS)
-			return OS::Windows;
+			return OS::kWindows;
 #elif defined(BR_PLATFORM_LINUX)
-			return OS::Linux;
+			return OS::kLinux;
 #elif defined(BR_PLATFORM_MACOS)
-			return OS::MacOS;
+			return OS::kMacOs;
 #else
 			BR_CORE_ERROR("No Platform detected");
-			return OS::None;
+			return OS::kNone;
 #endif
 		}
 
 		static API GetApi()
 		{
 #if defined(BR_RENDERER_OPENGL)
-			return API::OpenGL;
+			return API::kOpenGl;
 #else
 			BR_CORE_ERROR("No rendering API selected");
-			return API::None;
+			return API::kNone;
 #endif
 		}
 	};

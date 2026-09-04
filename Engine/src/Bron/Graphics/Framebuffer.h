@@ -10,7 +10,7 @@ namespace bron
 		u32 width;
 		u32 height;
 
-		bool swapChainTarget = false;
+		bool swap_chain_target = false;
 	};
 
 	class Framebuffer

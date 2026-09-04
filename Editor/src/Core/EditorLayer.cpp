@@ -20,11 +20,11 @@ namespace bron::editor
 		/// The project to reopen on startup: the most recent one that still loads. Null when
 		/// the list is empty or none of it survives, which leaves the editor with no project
 		/// open - a normal state, not an error.
-		std::unique_ptr<Project> MostRecentProject()
+		Scope<Project> MostRecentProject()
 		{
-			for (const std::filesystem::path& path : Preferences::Get().recentProjects)
+			for (const std::filesystem::path& path : Preferences::Get().recent_projects)
 			{
-				if (std::unique_ptr<Project> project = Project::Load(path))
+				if (Scope<Project> project = Project::Load(path))
 					return project;
 
 				// Load has already logged why; a project that has been moved or deleted
@@ -97,7 +97,7 @@ namespace bron::editor
 
 	void EditorLayer::OnUpdate(const Timestep ts)
 	{
-		context_.frameTime = ts;
+		context_.frame_time = ts;
 
 		PollShortcuts();
 
@@ -108,18 +108,18 @@ namespace bron::editor
 	void EditorLayer::PollShortcuts()
 	{
 		if (Input::IsKeyPressed(key::T))
-			context_.gizmoOperation = ImGuizmo::OPERATION::TRANSLATE;
+			context_.gizmo_operation = ImGuizmo::OPERATION::TRANSLATE;
 		if (Input::IsKeyPressed(key::R))
-			context_.gizmoOperation = ImGuizmo::OPERATION::ROTATE;
+			context_.gizmo_operation = ImGuizmo::OPERATION::ROTATE;
 		if (Input::IsKeyPressed(key::H))
-			context_.gizmoOperation = ImGuizmo::OPERATION::SCALE;
+			context_.gizmo_operation = ImGuizmo::OPERATION::SCALE;
 
 		// Frame the selection.
 		if (Input::IsKeyPressed(key::F) && context_.HasSelection())
 			context_.camera.Focus(context_.scene.reg.get<TransformComponent>(context_.selection).Position);
 	}
 
-	void EditorLayer::OpenProject(std::unique_ptr<Project> project)
+	void EditorLayer::OpenProject(Scope<Project> project)
 	{
 		// Null when there was nothing to reopen, or when the file could not be read - Load
 		// and Create have already logged why. Either way the editor keeps what it has.
@@ -140,11 +140,11 @@ namespace bron::editor
 	{
 		NFD::Init();
 
-		NFD::UniquePath outPath;
-		nfdfilteritem_t filterItem[1] = {{"Bron projects", "brn"}};
+		NFD::UniquePath out_path;
+		nfdfilteritem_t filter_item[1] = {{"Bron projects", "brn"}};
 
-		if (NFD::OpenDialog(outPath, filterItem, 1, nullptr) == NFD_OKAY)
-			OpenProject(Project::Load(outPath.get()));
+		if (NFD::OpenDialog(out_path, filter_item, 1, nullptr) == NFD_OKAY)
+			OpenProject(Project::Load(out_path.get()));
 
 		NFD_Quit();
 	}
@@ -153,12 +153,12 @@ namespace bron::editor
 	{
 		NFD::Init();
 
-		NFD::UniquePath outPath;
-		nfdfilteritem_t filterItem[1] = {{"Bron projects", "brn"}};
+		NFD::UniquePath out_path;
+		nfdfilteritem_t filter_item[1] = {{"Bron projects", "brn"}};
 
-		if (NFD::SaveDialog(outPath, filterItem, 1, nullptr, "Untitled.brn") == NFD_OKAY)
+		if (NFD::SaveDialog(out_path, filter_item, 1, nullptr, "Untitled.brn") == NFD_OKAY)
 		{
-			const std::filesystem::path file = outPath.get();
+			const std::filesystem::path file = out_path.get();
 			OpenProject(Project::Create(file, file.stem().string()));
 		}
 
@@ -180,7 +180,7 @@ namespace bron::editor
 	{
 		// The dockspace host covers the whole viewport and is not itself dockable, because
 		// having two docking targets inside each other is confusing.
-		ImGuiWindowFlags windowFlags = ImGuiWindowFlags_MenuBar | ImGuiWindowFlags_NoDocking
+		ImGuiWindowFlags window_flags = ImGuiWindowFlags_MenuBar | ImGuiWindowFlags_NoDocking
 			| ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_NoResize
 			| ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoBringToFrontOnFocus | ImGuiWindowFlags_NoNavFocus;
 
@@ -196,7 +196,7 @@ namespace bron::editor
 		// Proceed even if Begin() returns false (the window is collapsed): the DockSpace() call
 		// has to keep happening, or every window docked into it loses its parent.
 		static bool dockspaceOpen = true;
-		ImGui::Begin("Dockspace", &dockspaceOpen, windowFlags);
+		ImGui::Begin("Dockspace", &dockspaceOpen, window_flags);
 
 		ImGui::PopStyleVar(3);
 
@@ -222,10 +222,10 @@ namespace bron::editor
 			if (ImGui::MenuItem("Open project..."))
 				OpenProjectDialog();
 
-			if (ImGui::BeginMenu("Open recent", !Preferences::Get().recentProjects.empty()))
+			if (ImGui::BeginMenu("Open recent", !Preferences::Get().recent_projects.empty()))
 			{
 				// Copied, because opening a project reorders the list being walked.
-				const std::vector<std::filesystem::path> recent = Preferences::Get().recentProjects;
+				const std::vector<std::filesystem::path> recent = Preferences::Get().recent_projects;
 
 				for (const std::filesystem::path& path : recent)
 				{

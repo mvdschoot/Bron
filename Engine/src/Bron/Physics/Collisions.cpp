@@ -5,20 +5,20 @@
 namespace bron {
     #define cast std::static_pointer_cast
 
-    std::optional<vec3> Collides(Pt<RigidBody> a, Pt<RigidBody> b)
+    std::optional<vec3> Collides(Ref<RigidBody> a, Ref<RigidBody> b)
     {
 
         const RigidBodyType at = a->type;
         const RigidBodyType bt = b->type;
 
-        if (at == RigidBodyType::SPHERE && bt == RigidBodyType::SPHERE) {
+        if (at == RigidBodyType::kSphere && bt == RigidBodyType::kSphere) {
             return Collides(cast<SphereBody>(a), cast<SphereBody>(b));
         }
 
         return {};
     }
 
-    std::optional<vec3> Collides(Pt<SphereBody> a, Pt<SphereBody> b) {
+    std::optional<vec3> Collides(Ref<SphereBody> a, Ref<SphereBody> b) {
         return {};
     }
 }

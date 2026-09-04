@@ -13,8 +13,8 @@ namespace bron
 	{
 	public:
 		OrthographicCamera() = default;
-		OrthographicCamera(float left, float right, float bottom, float top, float aspectRatio);
-		OrthographicCamera(float left, float right, float bottom, float top, float aspectRatio, glm::vec3 position,
+		OrthographicCamera(float left, float right, float bottom, float top, float aspect_ratio);
+		OrthographicCamera(float left, float right, float bottom, float top, float aspect_ratio, glm::vec3 position,
 		                   float rotation);
 
 

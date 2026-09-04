@@ -56,57 +56,57 @@ namespace bron
 
 	std::tuple<glm::vec3*, glm::vec3*, uint32_t*, u32, u32> GenSphereSmoothVertices(glm::vec3 position, float radius, u32 accuracy)
 	{
-		const int numSlices = accuracy;
-		const int numStacks = accuracy / 2;
+		const int num_slices = accuracy;
+		const int num_stacks = accuracy / 2;
 
-		int numVertices = (numSlices + 1) * (numStacks + 1);
-		int numIndices = 6 * numSlices * numStacks;
+		int num_vertices = (num_slices + 1) * (num_stacks + 1);
+		int num_indices = 6 * num_slices * num_stacks;
 
-		u8* storage = new u8[sizeof(glm::vec3) * numVertices * 2 + sizeof(u32) * numIndices];
+		u8* storage = new u8[sizeof(glm::vec3) * num_vertices * 2 + sizeof(u32) * num_indices];
 		glm::vec3* vertices = (glm::vec3*)storage;
-		glm::vec3* normals = (glm::vec3*)(storage + sizeof(glm::vec3) * numVertices);
-		u32* indices = (u32*)(storage + 2 * sizeof(glm::vec3) * numVertices);
+		glm::vec3* normals = (glm::vec3*)(storage + sizeof(glm::vec3) * num_vertices);
+		u32* indices = (u32*)(storage + 2 * sizeof(glm::vec3) * num_vertices);
 
-		float dTheta = 2.0f * glm::pi<float>() / numSlices;
-		float dPhi = glm::pi<float>() / numStacks;
+		float d_theta = 2.0f * glm::pi<float>() / num_slices;
+		float d_phi = glm::pi<float>() / num_stacks;
 
-		int vertexIndex = 0;
-		int indexIndex = 0;
+		int vertex_index = 0;
+		int index_index = 0;
 
 		// Generate vertices and normals
-		for (int stack = 0; stack <= numStacks; stack++) {
-			float phi = stack * dPhi;
-			for (int slice = 0; slice <= numSlices; slice++) {
-				float theta = slice * dTheta;
+		for (int stack = 0; stack <= num_stacks; stack++) {
+			float phi = stack * d_phi;
+			for (int slice = 0; slice <= num_slices; slice++) {
+				float theta = slice * d_theta;
 
 				float x = radius * sin(phi) * cos(theta);
 				float y = radius * cos(phi);
 				float z = radius * sin(phi) * sin(theta);
 
-				vertices[vertexIndex] = glm::vec3(x, y, z);
-				normals[vertexIndex] = glm::normalize(vertices[vertexIndex] - position);
-				vertexIndex++;
+				vertices[vertex_index] = glm::vec3(x, y, z);
+				normals[vertex_index] = glm::normalize(vertices[vertex_index] - position);
+				vertex_index++;
 			}
 		}
 
 		// Generate indices
-		for (int stack = 0; stack < numStacks; stack++) {
-			for (int slice = 0; slice < numSlices; slice++) {
-				int v1 = stack * (numSlices + 1) + slice;
+		for (int stack = 0; stack < num_stacks; stack++) {
+			for (int slice = 0; slice < num_slices; slice++) {
+				int v1 = stack * (num_slices + 1) + slice;
 				int v2 = v1 + 1;
-				int v3 = (stack + 1) * (numSlices + 1) + slice;
+				int v3 = (stack + 1) * (num_slices + 1) + slice;
 				int v4 = v3 + 1;
 
-				indices[indexIndex++] = v1;
-				indices[indexIndex++] = v2;
-				indices[indexIndex++] = v3;
+				indices[index_index++] = v1;
+				indices[index_index++] = v2;
+				indices[index_index++] = v3;
 
-				indices[indexIndex++] = v2;
-				indices[indexIndex++] = v4;
-				indices[indexIndex++] = v3;
+				indices[index_index++] = v2;
+				indices[index_index++] = v4;
+				indices[index_index++] = v3;
 			}
 		}
 
-		return std::make_tuple(vertices, normals, indices, numVertices, numIndices);
+		return std::make_tuple(vertices, normals, indices, num_vertices, num_indices);
 	}
 }

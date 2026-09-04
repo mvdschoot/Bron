@@ -1,7 +1,8 @@
 #pragma once
 
+#include "Bron/Core/Core.h"
+
 #include <filesystem>
-#include <memory>
 #include <string>
 
 namespace bron::editor
@@ -15,12 +16,12 @@ namespace bron::editor
 		std::string name = "Untitled";
 
 		/// Where assets live, relative to the directory holding the .brn file.
-		std::filesystem::path assetDirectory = "Assets";
+		std::filesystem::path asset_directory = "Assets";
 
 		/// Scene opened when the project is, relative to the asset root. Never empty: a
 		/// project always has at least one scene. When there are several this stays the
 		/// one opened at launch.
-		std::filesystem::path startupScene = "Scenes/Main.json";
+		std::filesystem::path startup_scene = "Scenes/Main.json";
 	};
 
 	/// An open project. It owns the asset root - bron::Paths only knows how to resolve a
@@ -30,11 +31,11 @@ namespace bron::editor
 	{
 	public:
 		/// Reads a .brn file. Returns null and logs when it cannot be read or parsed.
-		static std::unique_ptr<Project> Load(const std::filesystem::path& file);
+		static Scope<Project> Load(const std::filesystem::path& file);
 
 		/// Creates a project at 'file', along with its asset directory and its first scene.
 		/// Returns null on failure.
-		static std::unique_ptr<Project> Create(const std::filesystem::path& file, const std::string& name);
+		static Scope<Project> Create(const std::filesystem::path& file, const std::string& name);
 
 		/// Writes the .brn file.
 		bool Save() const;
@@ -44,7 +45,7 @@ namespace bron::editor
 
 		const std::filesystem::path& File() const { return file_; }
 
-		/// What assetDirectory and the .brn file are relative to.
+		/// What asset_directory and the .brn file are relative to.
 		const std::filesystem::path& Directory() const { return directory_; }
 
 		std::filesystem::path AssetRoot() const;

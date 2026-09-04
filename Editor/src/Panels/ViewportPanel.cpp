@@ -64,8 +64,8 @@ namespace bron::editor
 		const ImVec2 available = ImGui::GetContentRegionAvail();
 		Resize(available);
 
-		const uint64_t textureID = framebuffer_->GetColorAttachId();
-		ImGui::Image(textureID, available, ImVec2{0, 1}, ImVec2{1, 0});
+		const uint64_t texture_id = framebuffer_->GetColorAttachId();
+		ImGui::Image(texture_id, available, ImVec2{0, 1}, ImVec2{1, 0});
 
 		DrawGizmo();
 
@@ -83,10 +83,10 @@ namespace bron::editor
 		ImGuizmo::SetOrthographic(false);
 		ImGuizmo::SetDrawlist();
 
-		const ImVec2 viewportMinRegion = ImGui::GetWindowContentRegionMin();
-		const ImVec2 viewportOffset = ImGui::GetWindowPos();
-		ImGuizmo::SetRect(viewportMinRegion.x + viewportOffset.x,
-						  viewportMinRegion.y + viewportOffset.y,
+		const ImVec2 viewport_min_region = ImGui::GetWindowContentRegionMin();
+		const ImVec2 viewport_offset = ImGui::GetWindowPos();
+		ImGuizmo::SetRect(viewport_min_region.x + viewport_offset.x,
+						  viewport_min_region.y + viewport_offset.y,
 						  size_.x, size_.y);
 
 		glm::mat4 proj = scene.camera->GetProjectionMatrix();
@@ -96,7 +96,7 @@ namespace bron::editor
 		glm::mat4 transform = scene.WorldTransform(selected);
 
 		ImGuizmo::Manipulate(glm::value_ptr(view), glm::value_ptr(proj),
-							 Context.gizmoOperation, ImGuizmo::LOCAL, glm::value_ptr(transform));
+							 Context.gizmo_operation, ImGuizmo::LOCAL, glm::value_ptr(transform));
 
 		if (!ImGuizmo::IsUsing()) // only update if the user is manipulating
 			return;
@@ -105,20 +105,20 @@ namespace bron::editor
 
 		// Back out the parent transform, so the entity keeps its place in the hierarchy.
 		const entt::entity parent = scene.reg.get<HierarchyComponent>(selected).parent;
-		const glm::mat4 parentTransform = parent != entt::null ? scene.WorldTransform(parent) : glm::mat4(1.0f);
-		const glm::mat4 local = glm::inverse(parentTransform) * transform;
+		const glm::mat4 parent_transform = parent != entt::null ? scene.WorldTransform(parent) : glm::mat4(1.0f);
+		const glm::mat4 local = glm::inverse(parent_transform) * transform;
 
 		// Extract TRS in a stable way
 		glm::vec3 skew;
 		glm::vec4 perspective;
-		glm::quat rotationQuat;
-		glm::decompose(local, comp.Scaling, rotationQuat, comp.Position, skew, perspective);
+		glm::quat rotation_quat;
+		glm::decompose(local, comp.Scaling, rotation_quat, comp.Position, skew, perspective);
 
-		glm::quat newQuat = glm::normalize(rotationQuat);
-		if (glm::dot(rotationQuat, comp.RotationQuat) < 0.0f)
-			newQuat = -newQuat;
+		glm::quat new_quat = glm::normalize(rotation_quat);
+		if (glm::dot(rotation_quat, comp.RotationQuat) < 0.0f)
+			new_quat = -new_quat;
 
-		comp.RotationQuat = newQuat;
+		comp.RotationQuat = new_quat;
 
 		// The properties panel caches euler angles; the gizmo just changed the quaternion under it.
 		component_registry::InvalidateEulerCache();

@@ -8,10 +8,10 @@ namespace bron
 	class SAH
 	{
 	public:
-		static void Split(Pt<BvhNode> node);
+		static void Split(Ref<BvhNode> node);
 
 	private:
-		static float Cost(Pt<BvhNode> node, AABB a, AABB b);
+		static float Cost(Ref<BvhNode> node, AABB a, AABB b);
 
 		static constexpr u8 SplitPerAxis = 3;
 		static constexpr u8 CostTraverse = 1;

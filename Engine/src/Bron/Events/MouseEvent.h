@@ -14,7 +14,7 @@ namespace bron
 		{
 		};
 
-		BR_EVENT_CLASS_CATEGORY(EventCategory::EventCategoryMouse | EventCategory::EventCategoryInput);
+		BR_EVENT_CLASS_CATEGORY(EventCategory::kMouse | EventCategory::kInput);
 		BR_EVENT_CLASS_TYPE(MouseMoved);
 
 	private:
@@ -29,7 +29,7 @@ namespace bron
 		{
 		};
 
-		BR_EVENT_CLASS_CATEGORY(EventCategory::EventCategoryMouseButton | EventCategory::EventCategoryInput);
+		BR_EVENT_CLASS_CATEGORY(EventCategory::kMouseButton | EventCategory::kInput);
 
 	private:
 		MouseCode key_;
@@ -62,7 +62,7 @@ namespace bron
 		};
 
 
-		BR_EVENT_CLASS_CATEGORY(EventCategory::EventCategoryMouse || EventCategory::EventCategoryInput);
+		BR_EVENT_CLASS_CATEGORY(EventCategory::kMouse || EventCategory::kInput);
 		BR_EVENT_CLASS_TYPE(MouseScrolled);
 
 		float GetOffsetX()

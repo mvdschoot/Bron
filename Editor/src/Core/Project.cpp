@@ -22,7 +22,7 @@ namespace bron::editor
 		const char* kDefaultScene = "Scenes/Main.json";
 	}
 
-	std::unique_ptr<Project> Project::Load(const std::filesystem::path& file)
+	Scope<Project> Project::Load(const std::filesystem::path& file)
 	{
 		std::ifstream stream(file);
 		if (!stream)
@@ -50,21 +50,21 @@ namespace bron::editor
 			return nullptr;
 		}
 
-		auto project = std::unique_ptr<Project>(new Project());
+		auto project = Scope<Project>(new Project());
 		project->file_ = file;
 		project->directory_ = file.parent_path();
 
 		const json& settings = document.value("project", json::object());
 		project->settings_.name = settings.value("name", file.stem().string());
-		project->settings_.assetDirectory = settings.value("assetDirectory", std::string("Assets"));
-		project->settings_.startupScene = settings.value("startupScene", std::string(kDefaultScene));
+		project->settings_.asset_directory = settings.value("assetDirectory", std::string("Assets"));
+		project->settings_.startup_scene = settings.value("startupScene", std::string(kDefaultScene));
 
-		if (project->settings_.startupScene.empty())
+		if (project->settings_.startup_scene.empty())
 		{
 			// Older or hand-edited files can name no scene. The invariant is worth more than
 			// the file's word, so one is put back and written out.
 			BR_CORE_WARN("{} names no scene; adding {}.", file.string(), kDefaultScene);
-			project->settings_.startupScene = kDefaultScene;
+			project->settings_.startup_scene = kDefaultScene;
 			project->Save();
 		}
 
@@ -73,9 +73,9 @@ namespace bron::editor
 		return project;
 	}
 
-	std::unique_ptr<Project> Project::Create(const std::filesystem::path& file, const std::string& name)
+	Scope<Project> Project::Create(const std::filesystem::path& file, const std::string& name)
 	{
-		auto project = std::unique_ptr<Project>(new Project());
+		auto project = Scope<Project>(new Project());
 		project->file_ = file;
 		project->directory_ = file.parent_path();
 		project->settings_.name = name;
@@ -104,8 +104,8 @@ namespace bron::editor
 		document["project"]["name"] = settings_.name;
 
 		// generic_string keeps the file readable and portable across platforms.
-		document["project"]["assetDirectory"] = settings_.assetDirectory.generic_string();
-		document["project"]["startupScene"] = settings_.startupScene.generic_string();
+		document["project"]["assetDirectory"] = settings_.asset_directory.generic_string();
+		document["project"]["startupScene"] = settings_.startup_scene.generic_string();
 
 		std::ofstream stream(file_);
 		if (!stream)
@@ -125,7 +125,7 @@ namespace bron::editor
 
 	std::filesystem::path Project::AssetRoot() const
 	{
-		return (directory_ / settings_.assetDirectory).lexically_normal();
+		return (directory_ / settings_.asset_directory).lexically_normal();
 	}
 
 	std::filesystem::path Project::Resolve(const std::filesystem::path& relative) const
@@ -135,7 +135,7 @@ namespace bron::editor
 
 	std::filesystem::path Project::StartupScenePath() const
 	{
-		return Resolve(settings_.startupScene);
+		return Resolve(settings_.startup_scene);
 	}
 
 	void Project::EnsureStartupScene() const

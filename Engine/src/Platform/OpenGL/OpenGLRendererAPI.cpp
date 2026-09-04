@@ -46,7 +46,7 @@ namespace bron
 		glDepthFunc(GL_LEQUAL);
 	}
 
-	void OpenGLRendererAPI::DrawIndexed(const std::shared_ptr<VertexArray>& v_array, u32 count)
+	void OpenGLRendererAPI::DrawIndexed(const Ref<VertexArray>& v_array, u32 count)
 	{
 		BR_PROFILE_FUNCTION();
 		
@@ -55,7 +55,7 @@ namespace bron
 		glBindTexture(GL_TEXTURE_2D, 0);
 	}
 
-	void OpenGLRendererAPI::DrawIndexedLines(const std::shared_ptr<VertexArray>& v_array, u32 count)
+	void OpenGLRendererAPI::DrawIndexedLines(const Ref<VertexArray>& v_array, u32 count)
 	{
 		BR_PROFILE_FUNCTION();
 
@@ -65,7 +65,7 @@ namespace bron
 		glBindTexture(GL_TEXTURE_2D, 0);
 	}
 
-	void OpenGLRendererAPI::DrawIndexedStripLines(const std::shared_ptr<VertexArray>& v_array, u32 count)
+	void OpenGLRendererAPI::DrawIndexedStripLines(const Ref<VertexArray>& v_array, u32 count)
 	{
 		BR_PROFILE_FUNCTION();
 

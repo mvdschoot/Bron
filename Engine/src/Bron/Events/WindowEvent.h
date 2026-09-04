@@ -13,7 +13,7 @@ namespace bron
 		};
 
 
-		BR_EVENT_CLASS_CATEGORY(EventCategory::EventCategoryApplication);
+		BR_EVENT_CLASS_CATEGORY(EventCategory::kApplication);
 		BR_EVENT_CLASS_TYPE(WindowResize);
 
 		int GetWidth() { return width_; }
@@ -30,7 +30,7 @@ namespace bron
 		{
 		};
 
-		BR_EVENT_CLASS_CATEGORY(EventCategory::EventCategoryApplication);
+		BR_EVENT_CLASS_CATEGORY(EventCategory::kApplication);
 		BR_EVENT_CLASS_TYPE(WindowClose);
 
 	private:
@@ -43,7 +43,7 @@ namespace bron
 		{
 		};
 
-		BR_EVENT_CLASS_CATEGORY(EventCategory::EventCategoryApplication);
+		BR_EVENT_CLASS_CATEGORY(EventCategory::kApplication);
 		BR_EVENT_CLASS_TYPE(WindowFocus);
 
 	private:
@@ -56,7 +56,7 @@ namespace bron
 		{
 		};
 
-		BR_EVENT_CLASS_CATEGORY(EventCategory::EventCategoryApplication);
+		BR_EVENT_CLASS_CATEGORY(EventCategory::kApplication);
 		BR_EVENT_CLASS_TYPE(WindowUnfocus);
 
 	private:

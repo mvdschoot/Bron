@@ -27,8 +27,8 @@ namespace bron::editor
 		std::filesystem::path ConfigDirectory()
 		{
 		#if defined(BR_PLATFORM_WINDOWS)
-			if (std::filesystem::path appData = EnvPath("APPDATA"); !appData.empty())
-				return appData;
+			if (std::filesystem::path app_data = EnvPath("APPDATA"); !app_data.empty())
+				return app_data;
 		#elif defined(BR_PLATFORM_MACOS)
 			if (std::filesystem::path home = EnvPath("HOME"); !home.empty())
 				return home / "Library" / "Application Support";
@@ -106,21 +106,21 @@ namespace bron::editor
 		if (const auto appearance = root.find("appearance"); appearance != root.end())
 		{
 			ReadInto(*appearance, "theme", prefs.theme);
-			ReadInto(*appearance, "uiScale", prefs.uiScale);
+			ReadInto(*appearance, "uiScale", prefs.ui_scale);
 		}
 
 		if (const auto camera = root.find("camera"); camera != root.end())
 		{
-			ReadInto(*camera, "orbitSpeed", prefs.cameraOrbitSpeed);
-			ReadInto(*camera, "zoomSpeed", prefs.cameraZoomSpeed);
+			ReadInto(*camera, "orbitSpeed", prefs.camera_orbit_speed);
+			ReadInto(*camera, "zoomSpeed", prefs.camera_zoom_speed);
 		}
 
 		std::vector<std::string> recent;
 		ReadInto(root, "recentProjects", recent);
 
-		prefs.recentProjects.clear();
+		prefs.recent_projects.clear();
 		for (const std::string& path : recent)
-			prefs.recentProjects.emplace_back(path);
+			prefs.recent_projects.emplace_back(path);
 	}
 
 	void Preferences::Save()
@@ -129,12 +129,12 @@ namespace bron::editor
 
 		json root;
 		root["appearance"]["theme"] = prefs.theme;
-		root["appearance"]["uiScale"] = prefs.uiScale;
-		root["camera"]["orbitSpeed"] = prefs.cameraOrbitSpeed;
-		root["camera"]["zoomSpeed"] = prefs.cameraZoomSpeed;
+		root["appearance"]["uiScale"] = prefs.ui_scale;
+		root["camera"]["orbitSpeed"] = prefs.camera_orbit_speed;
+		root["camera"]["zoomSpeed"] = prefs.camera_zoom_speed;
 
 		json recent = json::array();
-		for (const std::filesystem::path& path : prefs.recentProjects)
+		for (const std::filesystem::path& path : prefs.recent_projects)
 		{
 			if (recent.size() >= MaxRecentProjects)
 				break;
@@ -164,7 +164,7 @@ namespace bron::editor
 
 	void Preferences::AddRecentProject(const std::filesystem::path& path)
 	{
-		std::vector<std::filesystem::path>& recent = Get().recentProjects;
+		std::vector<std::filesystem::path>& recent = Get().recent_projects;
 
 		const auto existing = std::find(recent.begin(), recent.end(), path);
 		if (existing != recent.end())

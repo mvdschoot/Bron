@@ -14,23 +14,23 @@ namespace bron
 
 	struct SceneRendererData
 	{
-		Ref<Texture> whiteTexture;
+		Ref<Texture> white_texture;
 
-		static constexpr u32 textureSlots = 32;
-		u32 textureArray[textureSlots]{};
+		static constexpr u32 texture_slots = 32;
+		u32 texture_array[texture_slots]{};
 
 	};
 	static SceneRendererData Data;
 
 	void SceneRenderer::Init()
 	{
-		Data.whiteTexture = Texture2D::Create(1, 1);
+		Data.white_texture = Texture2D::Create(1, 1);
 		u32 white_data = 0xffffffff;
-		Data.whiteTexture->SetData(&white_data, sizeof(u32));
+		Data.white_texture->SetData(&white_data, sizeof(u32));
 
-		for(int i = 0; i < bron::SceneRendererData::textureSlots; i++)
+		for(int i = 0; i < bron::SceneRendererData::texture_slots; i++)
 		{
-			Data.textureArray[i] = i;
+			Data.texture_array[i] = i;
 		}
 	}
 
@@ -49,11 +49,11 @@ namespace bron
 		for (auto [entity, mesh] : scene.reg.view<MeshComponent>().each())
 		{
 			BR_CORE_ASSERT(mesh.material != nullptr, "Mesh has no material and cannot be drawn");
-			queue[mesh.material->shaderName][mesh.material.get()].push_back(entity);
+			queue[mesh.material->shader_name][mesh.material.get()].push_back(entity);
 		}
 
 		// Light data is shared by every shader, so upload and bind it once for the whole frame.
-		scene.lightManagement.Bind();
+		scene.light_management.Bind();
 
 		for (auto& [shader_name, materials] : queue)
 		{
@@ -61,19 +61,19 @@ namespace bron
 			Ref<Shader> shader = ShaderRegistry::GetShader(shader_name.c_str());
 			shader->Bind();
 
-			shader->SetUniform1iv("u_Textures", (i32*)Data.textureArray, Data.textureSlots);
+			shader->SetUniform1iv("u_Textures", (i32*)Data.texture_array, Data.texture_slots);
 			shader->SetUniformMat4("u_Projection", scene.camera->GetProjectionMatrix());
 			shader->SetUniformMat4("u_View", scene.camera->GetViewMatrix());
 			shader->SetUniform3f("u_ViewPos", scene.camera->GetPosition().x, scene.camera->GetPosition().y, scene.camera->GetPosition().z);
 			Statistics.UniformCalls += 3;
 
-			shader->SetUniform1i("u_NumPointLights", scene.lightManagement.NumberPointLights());
+			shader->SetUniform1i("u_NumPointLights", scene.light_management.NumberPointLights());
 
 			for (auto& [material, entities] : materials)
 			{
 				Statistics.Materials++;
 
-				Data.whiteTexture->Bind(0);
+				Data.white_texture->Bind(0);
 
 				material->Bind(shader, 1);
 				Statistics.UniformCalls += material->NumberUniformCalls();

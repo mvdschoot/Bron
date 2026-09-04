@@ -72,8 +72,8 @@ namespace bron
 		void ResizeAndSetData(const uint8_t *data, uint64_t size) override;
 
 	private:
-		GLuint rendererID;
-		usize bufferSize;
+		GLuint renderer_id;
+		usize buffer_size;
 		u32 current_binding_;
 		bool bound;
 	};

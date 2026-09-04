@@ -10,8 +10,8 @@ namespace bron::editor
 		constexpr float MinDistance = 0.15f;
 	}
 
-	EditorCamera::EditorCamera(const float fovY, const float aspectRatio, const float nearPlane, const float farPlane)
-		: FrustumCamera(fovY, aspectRatio, nearPlane, farPlane,
+	EditorCamera::EditorCamera(const float fov_y, const float aspect_ratio, const float near_plane, const float far_plane)
+		: FrustumCamera(fov_y, aspect_ratio, near_plane, far_plane,
 						glm::vec3{0.0f}, glm::vec3{0.0f}, glm::vec3{0.0f, 1.0f, 0.0f})
 	{
 		UpdatePosition();
@@ -19,7 +19,7 @@ namespace bron::editor
 
 	void EditorCamera::OnUpdate(const Timestep ts)
 	{
-		const float dt = ts.GetSeconds() * Preferences::Get().cameraOrbitSpeed;
+		const float dt = ts.GetSeconds() * Preferences::Get().camera_orbit_speed;
 
 		if (Input::IsKeyPressed(key::A))
 			azimuth_ += dt;
@@ -37,7 +37,7 @@ namespace bron::editor
 
 	bool EditorCamera::OnMouseScrolled(MouseScrolledEvent& e)
 	{
-		distance_ = std::max(distance_ - e.GetOffsetY() * Preferences::Get().cameraZoomSpeed, MinDistance);
+		distance_ = std::max(distance_ - e.GetOffsetY() * Preferences::Get().camera_zoom_speed, MinDistance);
 		UpdatePosition();
 		return true;
 	}

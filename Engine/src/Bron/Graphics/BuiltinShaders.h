@@ -13,10 +13,10 @@ namespace bron
 	{
 		enum class Id
 		{
-			Renderer2D,
-			Grid,
-			Phong3D,
-			Text
+			kRenderer2D,
+			kGrid,
+			kPhong3D,
+			kText
 		};
 
 		// GLSL source for a built-in shader, ready for Shader::Create.

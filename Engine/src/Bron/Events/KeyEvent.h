@@ -18,7 +18,7 @@ namespace bron
 			return key_code_;
 		};
 
-		BR_EVENT_CLASS_CATEGORY(EventCategory::EventCategoryMouse | EventCategory::EventCategoryInput);
+		BR_EVENT_CLASS_CATEGORY(EventCategory::kMouse | EventCategory::kInput);
 
 	protected:
 		KeyCode key_code_;

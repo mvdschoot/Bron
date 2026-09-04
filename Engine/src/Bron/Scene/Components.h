@@ -139,10 +139,10 @@ namespace bron
 
 	enum VertexVariables
 	{
-		POSITIONS,
-		NORMALS,
-		UVS,
-		TANGENTS
+		kPositions,
+		kNormals,
+		kUvs,
+		kTangents
 	};
 
 	struct MeshData
@@ -156,7 +156,7 @@ namespace bron
 
 	struct MeshComponent
 	{
-		MeshData vertexData;
+		MeshData vertex_data;
 		Ref<MaterialBase> material;
 
 		// Lazily built by GetVao(); not part of the mesh's data.
@@ -167,7 +167,7 @@ namespace bron
 	glm::vec3 FindCentroid(const glm::vec3* vertices, uint64_t n);
 
 	// Returns the mesh's vertex array, building it against the given layout on first use.
-	Ref<VertexArray> GetVao(MeshComponent& mesh, const NamedBufferLayout<VertexVariables>& bufferLayout);
+	Ref<VertexArray> GetVao(MeshComponent& mesh, const NamedBufferLayout<VertexVariables>& buffer_layout);
 
 
 	// --------------------------------------------------------------------
@@ -175,7 +175,7 @@ namespace bron
 	// --------------------------------------------------------------------
 
 	NLOHMANN_JSON_SERIALIZE_ENUM(MaterialWorkflow, {
-		{ PHONG, "phong" },
+		{ kPhong, "phong" },
 	})
 
 	// Marks an entity as the root of an imported model. Meshes are never written
@@ -184,7 +184,7 @@ namespace bron
 	struct ModelSourceComponent
 	{
 		std::string path; // relative to paths::AssetRoot()
-		MaterialWorkflow workflow = PHONG;
+		MaterialWorkflow workflow = kPhong;
 
 		ModelSourceComponent() = default;
 		ModelSourceComponent(std::string p, const MaterialWorkflow w) : path(std::move(p)), workflow(w) {}
