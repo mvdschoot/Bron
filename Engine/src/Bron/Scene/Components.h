@@ -1,6 +1,7 @@
 #pragma once
 
 #include "Bron/Core/Core.h"
+#include "Bron/Core/UUID.h"
 #include "Bron/Core/Profiling.h"
 #include "Bron/Util/Util.h"
 
@@ -20,9 +21,37 @@
 #include "Bron/Graphics/Components/BufferExtentions.h"
 #include "Bron/Graphics/MaterialBase.h"
 #include "Bron/Graphics/VertexArray.h"
+#include "Serialization/GlmJson.h"
+#include "nlohmann/json.hpp"
 
 namespace Bron
 {
+	// nlohmann has no idea what a UUID is; it round trips as its string form.
+	inline void to_json(nlohmann::json& j, const UUID& uuid)
+	{
+		j = uuid.p_UUID;
+	}
+
+	inline void from_json(const nlohmann::json& j, UUID& uuid)
+	{
+		const std::string text = j.get<std::string>();
+		std::strncpy(uuid.p_UUID, text.c_str(), sizeof(uuid.p_UUID) - 1);
+		uuid.p_UUID[sizeof(uuid.p_UUID) - 1] = '\0';
+	}
+
+	// A save file cannot key entities by entt::entity: those are positions in a
+	// registry, so they only mean anything in the registry that produced them.
+	// Every entity carries a stable identifier instead.
+	struct IDComponent
+	{
+		UUID id;
+
+		IDComponent() = default;
+		explicit IDComponent(const UUID& uuid) : id(uuid) {}
+
+		NLOHMANN_DEFINE_TYPE_INTRUSIVE(IDComponent, id)
+	};
+
 	// --------------------------------------------------------------------
 	// Tag
 	// --------------------------------------------------------------------
@@ -33,6 +62,8 @@ namespace Bron
 
 		TagComponent() = default;
 		explicit TagComponent(std::string n) : name(std::move(n)) {}
+
+		NLOHMANN_DEFINE_TYPE_INTRUSIVE(TagComponent, name)
 	};
 
 
@@ -84,6 +115,8 @@ namespace Bron
 		glm::vec3 OPosition;
 		glm::quat ORotationQuat;
 		glm::vec3 OScaling;
+
+		template<typename BasicJsonType, nlohmann::detail::enable_if_t<nlohmann::detail::is_basic_json<BasicJsonType>::value, int> = 0> friend void to_json(BasicJsonType& nlohmann_json_j, const TransformComponent& nlohmann_json_t) { NLOHMANN_JSON_EXPAND(NLOHMANN_JSON_PASTE(NLOHMANN_JSON_TO, Position, RotationQuat, Scaling)) } template<typename BasicJsonType, nlohmann::detail::enable_if_t<nlohmann::detail::is_basic_json<BasicJsonType>::value, int> = 0> friend void from_json(const BasicJsonType& nlohmann_json_j, TransformComponent& nlohmann_json_t) { NLOHMANN_JSON_EXPAND(NLOHMANN_JSON_PASTE(NLOHMANN_JSON_FROM, Position, RotationQuat, Scaling)) }
 	};
 
 
@@ -95,6 +128,8 @@ namespace Bron
 	{
 		entt::entity parent = entt::null;
 		std::vector<entt::entity> children;
+
+		NLOHMANN_DEFINE_TYPE_INTRUSIVE(HierarchyComponent, parent, children)
 	};
 
 
@@ -136,6 +171,29 @@ namespace Bron
 
 
 	// --------------------------------------------------------------------
+	// Model source
+	// --------------------------------------------------------------------
+
+	NLOHMANN_JSON_SERIALIZE_ENUM(MaterialWorkflow, {
+		{ PHONG, "phong" },
+	})
+
+	// Marks an entity as the root of an imported model. Meshes are never written
+	// to a save file - they are re-imported from this path on load, and
+	// everything below this entity is treated as generated output.
+	struct ModelSourceComponent
+	{
+		std::string path; // relative to Paths::ProjectAssetRoot()
+		MaterialWorkflow workflow = PHONG;
+
+		ModelSourceComponent() = default;
+		ModelSourceComponent(std::string p, const MaterialWorkflow w) : path(std::move(p)), workflow(w) {}
+
+		NLOHMANN_DEFINE_TYPE_INTRUSIVE(ModelSourceComponent, path, workflow)
+	};
+
+
+	// --------------------------------------------------------------------
 	// Point light
 	// --------------------------------------------------------------------
 
@@ -145,5 +203,7 @@ namespace Bron
 
 		PointLightComponent() = default;
 		explicit PointLightComponent(const glm::vec3& c) : color(c) {}
+
+		NLOHMANN_DEFINE_TYPE_INTRUSIVE(PointLightComponent, color)
 	};
 }

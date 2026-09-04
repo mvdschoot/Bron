@@ -61,6 +61,8 @@ add_library(Bron STATIC
 		Bron/Graphics/Components/Cube.cpp
 		Bron/Graphics/Components/ModelLoader.cpp
         Bron/Graphics/LightManagement.cpp
+		Bron/Scene/Serialization/Serialization.cpp
+		Bron/Scene/Serialization/Serialization.h
 )
 
 target_include_directories(Bron PUBLIC .)

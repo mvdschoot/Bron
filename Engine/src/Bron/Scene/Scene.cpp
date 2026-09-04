@@ -4,6 +4,7 @@
 #include <cstdlib>
 
 #include "Bron/Graphics/Components/ModelLoader.h"
+#include "Bron/Util/Paths.h"
 
 namespace Bron
 {
@@ -16,6 +17,7 @@ namespace Bron
 	{
 		const entt::entity entity = reg.create();
 
+		reg.emplace<IDComponent>(entity);
 		reg.emplace<TagComponent>(entity, name);
 		reg.emplace<TransformComponent>(entity);
 		reg.emplace<HierarchyComponent>(entity);
@@ -94,6 +96,17 @@ namespace Bron
 		const entt::entity model = ModelLoader::loadModel(*this, MaterialWorkflow::PHONG, location);
 
 		reg.get<TagComponent>(model).name = name;
+
+		// Recorded relative to the asset root so a save file survives the project
+		// being moved. A path outside the root is kept as it is; joining an
+		// absolute path back onto the root is a no-op, so loading still works.
+		std::error_code ec;
+		const std::filesystem::path relative = std::filesystem::relative(location, Paths::ProjectAssetRoot(), ec);
+		const bool inside = !ec && !relative.empty() && *relative.begin() != "..";
+
+		reg.emplace<ModelSourceComponent>(model, inside ? relative.generic_string() : std::string(location),
+										  MaterialWorkflow::PHONG);
+
 		AddChild(root, model);
 
 		return model;

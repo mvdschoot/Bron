@@ -4,6 +4,10 @@
 #include "IconManagement.h"
 #include "Panels/ComponentRegistry.h"
 #include <glm/gtx/matrix_decompose.hpp>
+#include <entt/entt.hpp>
+
+#include "Bron/Scene/Serialization/Serialization.h"
+#include "Bron/Util/Paths.h"
 
 namespace Bron::Editor
 {
@@ -189,6 +193,22 @@ namespace Bron::Editor
 			}
 		}
 
+
+		ImGui::End();
+
+		ImGui::Begin("Project explorer");
+
+		if (ImGui::Button("serialize")) {
+			Serialization::SerializeScene(App->Sc, Paths::ProjectAsset("saveFile.json"));
+		}
+
+		if (ImGui::Button("deserialize")) {
+			// The load replaces every entity, so nothing may still be holding a
+			// handle into the old scene.
+			SceneHierarchyPanel::Data.selectedObject = entt::null;
+
+			Serialization::DeserializeScene(App->Sc, Paths::ProjectAsset("saveFile.json"));
+		}
 
 		ImGui::End();
 

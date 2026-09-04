@@ -153,6 +153,20 @@ FetchContent_MakeAvailable(EnTT)
 
 
 # --------------------
+# nlohmann::json
+# --------------------
+
+# The git repo carries ~1GB of test-data history, so fetch the release
+# archive instead of cloning.
+FetchContent_Declare(
+        nlohmann_json
+        URL https://github.com/nlohmann/json/releases/download/v3.12.0/json.tar.xz
+        URL_HASH SHA256=42f6e95cad6ec532fd372391373363b62a14af6d771056dbfc86160e6dfff7aa
+)
+FetchContent_MakeAvailable(nlohmann_json)
+
+
+# --------------------
 # Vendor library
 # --------------------
 target_link_libraries(VendorLibrary INTERFACE
@@ -167,4 +181,5 @@ target_link_libraries(VendorLibrary INTERFACE
         glm
         magic_enum
         EnTT::EnTT
+        nlohmann_json
 )
