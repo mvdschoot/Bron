@@ -17,7 +17,12 @@ void ViewportPanel::OnAttach() {
 }
 
 void ViewportPanel::OnUpdate(const Timestep ts) {
-	context_.camera.OnUpdate(ts);
+	// OnUpdate runs before ImGui::NewFrame(), so there is no current window to ask here -
+	// the flag is what the panel saw last frame.
+	if (focused_) {
+		PollShortcuts();
+		context_.camera.OnUpdate(ts);
+	}
 
 	framebuffer_->Bind();
 	Command::Clear();
@@ -57,6 +62,9 @@ void ViewportPanel::OnImGuiRender() {
 	ImGui::Begin("Viewport");
 	ImGui::PopStyleVar();
 
+	focused_ = ImGui::IsWindowFocused();
+	hovered_ = ImGui::IsWindowHovered();
+
 	const ImVec2 available = ImGui::GetContentRegionAvail();
 	Resize(available);
 
@@ -68,7 +76,18 @@ void ViewportPanel::OnImGuiRender() {
 	ImGui::End();
 }
 
-void ViewportPanel::DrawGizmo() {
+void ViewportPanel::OnEvent(Event& event) {
+	EventDispatcher dispatcher(event);
+	if (hovered_) {
+		dispatcher.Dispatch<MouseScrolledEvent>(BR_BIND_EVENT_FN(ViewportPanel::OnMouseScrolled));
+	}
+}
+
+bool ViewportPanel::OnMouseScrolled(MouseScrolledEvent& event) const {
+	return context_.camera.OnMouseScrolled(event);
+}
+
+void ViewportPanel::DrawGizmo() const {
 	if (!context_.HasSelection())
 		return;
 
@@ -116,5 +135,18 @@ void ViewportPanel::DrawGizmo() {
 
 	// The properties panel caches euler angles; the gizmo just changed the quaternion under it.
 	component_registry::InvalidateEulerCache();
+}
+
+void ViewportPanel::PollShortcuts() {
+	if (Input::IsKeyPressed(key::T))
+		context_.gizmo_operation = ImGuizmo::OPERATION::TRANSLATE;
+	if (Input::IsKeyPressed(key::R))
+		context_.gizmo_operation = ImGuizmo::OPERATION::ROTATE;
+	if (Input::IsKeyPressed(key::H))
+		context_.gizmo_operation = ImGuizmo::OPERATION::SCALE;
+
+	// Frame the selection.
+	if (Input::IsKeyPressed(key::F) && context_.HasSelection())
+		context_.camera.Focus(context_.active_scene->reg.get<TransformComponent>(context_.selection).Position);
 }
 } // namespace bron::editor

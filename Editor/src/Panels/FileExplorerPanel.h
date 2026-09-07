@@ -28,6 +28,8 @@ private:
 		/// The filename, kept as a string because that is what ImGui takes and it is
 		/// drawn every frame.
 		std::string name;
+
+		BR_LOGGABLE(Entry, type, path, name)
 	};
 
 	/// Reads current_path_ into entries_ and drops the selection, which belonged to the
@@ -39,6 +41,7 @@ private:
 
 	void DrawHeader();
 	void DrawEntries();
+	void DrawEntryList();
 
 	/// Called when a file is double-clicked. Opening scenes and importing models belong
 	/// here; until they exist it only logs what was asked for.

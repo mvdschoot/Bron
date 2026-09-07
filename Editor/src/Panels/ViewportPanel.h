@@ -13,15 +13,24 @@ public:
 	void OnAttach() override;
 	void OnUpdate(Timestep ts) override;
 	void OnImGuiRender() override;
+	void OnEvent(Event& event) override;
+
+	bool OnMouseScrolled(MouseScrolledEvent& event) const;
 
 private:
 	/// Keeps the framebuffer and the camera projection matching the panel.
 	void Resize(ImVec2 size);
-	void DrawGizmo();
+	void DrawGizmo() const;
+	void PollShortcuts();
 
 	Ref<Framebuffer> framebuffer_;
 	FramebufferSpecification spec_;
 
 	ImVec2 size_{0.0f, 0.0f};
+
+	/// Whether the panel had focus last frame. OnUpdate runs outside the ImGui frame, so
+	/// it cannot query focus itself.
+	bool focused_ = false;
+	bool hovered_ = false;
 };
 } // namespace bron::editor

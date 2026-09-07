@@ -76,35 +76,15 @@ void EditorLayer::OnDetach() {
 }
 
 void EditorLayer::OnEvent(Event& event) {
-	EventDispatcher dispatcher(event);
-	dispatcher.Dispatch<MouseScrolledEvent>(BR_BIND_EVENT_FN(EditorLayer::OnMouseScrolled));
-
 	for (const auto& panel: panels_)
 		panel->OnEvent(event);
 }
 
-bool EditorLayer::OnMouseScrolled(MouseScrolledEvent& e) { return context_.camera.OnMouseScrolled(e); }
-
 void EditorLayer::OnUpdate(const Timestep ts) {
 	context_.frame_time = ts;
 
-	PollShortcuts();
-
 	for (const auto& panel: panels_)
 		panel->OnUpdate(ts);
-}
-
-void EditorLayer::PollShortcuts() {
-	if (Input::IsKeyPressed(key::T))
-		context_.gizmo_operation = ImGuizmo::OPERATION::TRANSLATE;
-	if (Input::IsKeyPressed(key::R))
-		context_.gizmo_operation = ImGuizmo::OPERATION::ROTATE;
-	if (Input::IsKeyPressed(key::H))
-		context_.gizmo_operation = ImGuizmo::OPERATION::SCALE;
-
-	// Frame the selection.
-	if (Input::IsKeyPressed(key::F) && context_.HasSelection())
-		context_.camera.Focus(context_.active_scene->reg.get<TransformComponent>(context_.selection).Position);
 }
 
 void EditorLayer::OpenProject(Scope<Project> project) {

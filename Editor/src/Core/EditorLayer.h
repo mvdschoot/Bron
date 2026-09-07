@@ -41,9 +41,6 @@ private:
 	void OpenProjectDialog();
 	void NewProjectDialog();
 
-	bool OnMouseScrolled(MouseScrolledEvent& e);
-	void PollShortcuts();
-
 	void BeginDockspace();
 	void EndDockspace();
 	void DrawMenuBar();

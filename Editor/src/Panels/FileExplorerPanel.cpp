@@ -51,9 +51,14 @@ void FileExplorerPanel::DrawHeader() {
 }
 
 void FileExplorerPanel::DrawEntries() {
-	if (!BeginChild("Entries"))
-		return;
+	// BeginChild() returns false for a clipped child but still has to be closed, unlike
+	// Begin() - skipping EndChild() here trips an assert in the End() above us.
+	if (BeginChild("Entries"))
+		DrawEntryList();
+	EndChild();
+}
 
+void FileExplorerPanel::DrawEntryList() {
 	if (entries_.empty())
 		TextDisabled("Empty folder.");
 
@@ -82,13 +87,18 @@ void FileExplorerPanel::DrawEntries() {
 		}
 		PopID();
 	}
-
-	EndChild();
 }
 
 void FileExplorerPanel::ActivateFile(const Entry& entry) {
-	// TODO: open scenes, import models, hand the rest to the OS.
-	BR_APP_INFO("File explorer: activated {}", entry.path.string());
+	switch (entry.type) {
+		case kModelFile:
+			BR_APP_INFO("Loaded Phong model: {}", entry.path.string());
+			context_.active_scene->CreatePhongModel(entry.name.c_str(), entry.path.string().c_str());
+			break;
+		default:
+			BR_APP_INFO("Double-clicked a file, without an action assigned: {}", entry);
+			break;
+	}
 }
 
 void FileExplorerPanel::OpenFolder(const std::filesystem::path& folder) {
