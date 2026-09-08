@@ -4,6 +4,7 @@
 #include <string>
 #include <vector>
 
+#include "Core/Icons.h"
 #include "Panels/Panel.h"
 
 namespace bron::editor {
@@ -38,6 +39,9 @@ private:
 
 	/// Moves to a folder and lists it. Anything unreadable leaves us where we are.
 	void OpenFolder(const std::filesystem::path& folder);
+
+	/// The icon standing in for an entry's kind, so the list reads at a glance.
+	static icons::Id IconFor(EntryType type);
 
 	void DrawHeader();
 	void DrawEntries();

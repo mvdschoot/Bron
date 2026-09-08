@@ -20,7 +20,7 @@ struct ProjectSettings {
 	/// Scene opened when the project is, relative to the asset root. Never empty: a
 	/// project always has at least one scene. When there are several this stays the
 	/// one opened at launch.
-	std::filesystem::path startup_scene = "Scenes/Main.json";
+	std::filesystem::path startup_scene = "Scenes/Main.scn";
 };
 
 /// An open project. It owns the asset root - bron::Paths only knows how to resolve a

@@ -2,6 +2,8 @@
 
 #include <cstdio>
 
+#include "Core/Icons.h"
+
 
 namespace bron::editor {
 using namespace ImGui;
@@ -28,8 +30,12 @@ void ProjectPanel::OnImGuiRender() {
 
 	Separator();
 
-	if (Button("Save"))
+	if (icons::Button(icons::Id::kSave, "Save the project and the scenes it has open"))
 		context_.project->Save();
+
+	SameLine();
+	AlignTextToFramePadding();
+	Text("Save");
 
 	End();
 }

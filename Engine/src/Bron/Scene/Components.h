@@ -191,4 +191,18 @@ struct PointLightComponent {
 
 	NLOHMANN_DEFINE_TYPE_INTRUSIVE(PointLightComponent, color)
 };
+
+// --------------------------------------------------------------------
+// Visibility
+// --------------------------------------------------------------------
+
+struct VisibilityComponent {
+	bool visible = true;
+
+	VisibilityComponent() = default;
+	explicit VisibilityComponent(const bool visible) : visible(visible) {}
+
+	NLOHMANN_DEFINE_TYPE_INTRUSIVE(VisibilityComponent, visible)
+};
+
 } // namespace bron

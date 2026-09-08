@@ -4,6 +4,7 @@
 #include <array>
 
 #include "Bron/Util/Paths.h"
+#include "Core/Icons.h"
 #include "Bron/Util/Util.h"
 
 namespace bron::editor {
@@ -42,11 +43,12 @@ void FileExplorerPanel::DrawHeader() {
 	const bool at_root = current_path_ == project_root_;
 
 	BeginDisabled(at_root);
-	if (Button("Up"))
+	if (icons::Button(icons::Id::kUp, "Go up one folder"))
 		OpenFolder(current_path_.parent_path());
 	EndDisabled();
 
 	SameLine();
+	AlignTextToFramePadding();
 	Text("%s", path_label_.c_str());
 }
 
@@ -65,12 +67,13 @@ void FileExplorerPanel::DrawEntryList() {
 	for (int i = 0; i < static_cast<int>(entries_.size()); ++i) {
 		const Entry& entry = entries_[i];
 
-		// Folders read as folders without an icon set to draw from yet.
-		const std::string label = entry.type == kFolder ? entry.name + "/" : entry.name;
-
 		// The index is the id: two entries in one folder cannot share a name.
 		PushID(i);
-		if (Selectable(label.c_str(), i == selected_, ImGuiSelectableFlags_AllowDoubleClick)) {
+
+		icons::Draw(IconFor(entry.type));
+		SameLine();
+
+		if (Selectable(entry.name.c_str(), i == selected_, ImGuiSelectableFlags_AllowDoubleClick)) {
 			selected_ = i;
 
 			if (IsMouseDoubleClicked(ImGuiMouseButton_Left)) {
@@ -89,14 +92,27 @@ void FileExplorerPanel::DrawEntryList() {
 	}
 }
 
+icons::Id FileExplorerPanel::IconFor(const EntryType type) {
+	switch (type) {
+		case kFolder: return icons::Id::kFolder;
+		case kModelFile: return icons::Id::kModel;
+		case kProjectFile: return icons::Id::kProject;
+		case kSceneFile: return icons::Id::kScene;
+		case kOther: break;
+	}
+
+	return icons::Id::kFile;
+}
+
 void FileExplorerPanel::ActivateFile(const Entry& entry) {
 	switch (entry.type) {
-		case kModelFile:
+		case kModelFile: {
+			context_.active_scene->CreatePhongModel(entry.path);
 			BR_APP_INFO("Loaded Phong model: {}", entry.path.string());
-			context_.active_scene->CreatePhongModel(entry.name.c_str(), entry.path.string().c_str());
 			break;
+		}
 		default:
-			BR_APP_INFO("Double-clicked a file, without an action assigned: {}", entry);
+			BR_APP_INFO("Double-clicked a file, without an action assigned: {}", entry.path.string());
 			break;
 	}
 }

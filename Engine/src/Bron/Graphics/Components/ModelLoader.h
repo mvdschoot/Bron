@@ -25,14 +25,14 @@ public:
 	/// Loads a model into the scene. Returns the model root entity: an unparented entity whose children
 	/// are one entity per mesh. The root's transform is the model centroid, each mesh's transform its own
 	/// centroid relative to it.
-	static entt::entity LoadModel(Scene& target, MaterialWorkflow type, const char* model_location);
+	static entt::entity LoadModel(Scene& target, MaterialWorkflow type, std::filesystem::path model_location);
 	/// Walks the node hierarchy. Nodes carry a transform relative to their parent, so the transform handed
 	/// down here is the accumulated transform of everything above this node.
 	static std::vector<entt::entity> ProcessNode(Scene& target, std::vector<Ref<MaterialBase>>* materials,
 												 const aiNode* node, const aiScene* scene,
 												 const aiMatrix4x4& parent_transform);
 	static entt::entity ProcessMesh(Scene& target, const std::vector<Ref<MaterialBase>>* materials,
-									const aiMesh* aiMesh, const aiScene* scene, const aiMatrix4x4& transform);
+									const ::aiMesh* aiMesh, const aiMatrix4x4& transform);
 	static std::vector<Ref<MaterialBase>> ProcessPhongMaterials(const aiScene* scene,
 																const std::filesystem::path& directory);
 

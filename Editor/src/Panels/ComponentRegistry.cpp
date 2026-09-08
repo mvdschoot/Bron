@@ -68,6 +68,10 @@ void DrawPointLight(Scene& scene, const entt::entity entity) {
 	ColorEdit3("Color", value_ptr(scene.reg.get<PointLightComponent>(entity).color));
 }
 
+void DrawVisibility(Scene& scene, const entt::entity entity) {
+	Checkbox("Visible", &scene.reg.get<VisibilityComponent>(entity).visible);
+}
+
 
 // ----------------------------------------------------------------
 // Registration
@@ -93,6 +97,7 @@ std::vector<ComponentMeta> Build() {
 	Register<TagComponent>(components, "Tag", DrawTag, kComponentFlagsNone);
 	Register<TransformComponent>(components, "Transform", DrawTransform, kComponentFlagsNone);
 	Register<HierarchyComponent>(components, "Hierarchy", DrawHierarchy, kComponentFlagsNone);
+	Register<VisibilityComponent>(components, "Visibility", DrawVisibility, kComponentFlagsNone);
 
 	// A mesh without vertices or a material cannot be drawn, so it is built by a loader or a
 	// factory rather than added from the menu.

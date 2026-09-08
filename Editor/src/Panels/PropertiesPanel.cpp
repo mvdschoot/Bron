@@ -1,5 +1,6 @@
 #include "Panels/PropertiesPanel.h"
 
+#include "Core/Icons.h"
 #include "Panels/ComponentRegistry.h"
 
 namespace bron::editor {
@@ -13,8 +14,12 @@ void PropertiesPanel::OnImGuiRender() {
 
 		Separator();
 
-		if (Button("Add Component"))
+		if (icons::Button(icons::Id::kAdd, "Add a component to this entity"))
 			OpenPopup("AddComponent");
+
+		SameLine();
+		AlignTextToFramePadding();
+		Text("Add Component");
 
 		DrawAddComponentMenu(context_.selection);
 	}
@@ -39,8 +44,9 @@ void PropertiesPanel::DrawComponents(const entt::entity entity) {
 		// Remove button on the header row itself, so a collapsed section can still be removed.
 		bool remove_requested = false;
 		if (component.remove) {
-			SameLine(GetWindowWidth() - 30.0f);
-			remove_requested = SmallButton("x");
+			// Right aligned, one icon plus the frame padding either side of it in from the edge.
+			SameLine(GetWindowWidth() - GetFontSize() - 2.0f * GetStyle().FramePadding.x - GetStyle().WindowPadding.x);
+			remove_requested = icons::Button(icons::Id::kDelete, "Remove this component");
 		}
 
 		if (open)

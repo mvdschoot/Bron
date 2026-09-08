@@ -27,10 +27,11 @@ public:
 	// Local transform composed with every parent transform up to the root.
 	glm::mat4 WorldTransform(entt::entity entity);
 
-	// Loads a model from disk and parents it to the root.
-	entt::entity CreatePhongModel(const char* name, const char* location);
+	// Checks all parents for visibility
+	bool IsVisible(entt::entity entity);
 
-	entt::entity CreatePointLight(glm::vec3 pos, glm::vec3 color);
+	// Loads a model from disk and attaches it to the entity.
+	entt::entity CreatePhongModel(const std::filesystem::path& path);
 
 	entt::registry reg;
 	entt::entity root;

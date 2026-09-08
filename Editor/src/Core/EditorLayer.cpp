@@ -2,6 +2,7 @@
 
 #include <ImGuizmo.h>
 
+#include "Core/Icons.h"
 #include "Core/Preferences.h"
 #include "Core/Theme.h"
 #include "Panels/PreferencesPanel.h"
@@ -66,6 +67,10 @@ void EditorLayer::OnAttach() {
 	// there is an ImGui context to apply them to.
 	theme::Apply();
 
+	// The icons are textures, so they wait for the graphics context that Command::Init()
+	// above assumes; panels may draw one on their very first frame.
+	icons::Init();
+
 	for (const auto& panel: panels_)
 		panel->OnAttach();
 }
@@ -73,6 +78,10 @@ void EditorLayer::OnAttach() {
 void EditorLayer::OnDetach() {
 	for (const auto& panel: panels_)
 		panel->OnDetach();
+
+	// While the context is still up: a texture released after the window has gone is a
+	// GL call into nothing.
+	icons::Shutdown();
 }
 
 void EditorLayer::OnEvent(Event& event) {

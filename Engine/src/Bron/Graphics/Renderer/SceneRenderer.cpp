@@ -41,6 +41,10 @@ void SceneRenderer::Draw(Scene& scene) {
 	// makes the sort free compared to keeping a second container in sync.
 	std::map<std::string, std::map<MaterialBase*, std::vector<entt::entity>>> queue;
 	for (auto [entity, mesh]: scene.reg.view<MeshComponent>().each()) {
+		if (!scene.IsVisible(entity)) {
+			continue;
+		}
+
 		BR_CORE_ASSERT(mesh.material != nullptr, "Mesh has no material and cannot be drawn");
 		queue[mesh.material->shader_name][mesh.material.get()].push_back(entity);
 	}

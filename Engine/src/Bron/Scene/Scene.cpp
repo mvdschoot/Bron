@@ -16,6 +16,7 @@ entt::entity Scene::CreateEntity(const std::string& name, const entt::entity par
 	reg.emplace<TagComponent>(entity, name);
 	reg.emplace<TransformComponent>(entity);
 	reg.emplace<HierarchyComponent>(entity);
+	reg.emplace<VisibilityComponent>(entity);
 
 	if (parent != entt::null) {
 		AddChild(parent, entity);
@@ -81,28 +82,33 @@ glm::mat4 Scene::WorldTransform(const entt::entity entity) {
 
 	return transform;
 }
+bool Scene::IsVisible(entt::entity entity) {
 
-entt::entity Scene::CreatePhongModel(const char* name, const char* location) {
-	const entt::entity model = ModelLoader::LoadModel(*this, MaterialWorkflow::kPhong, location);
+	bool is_visible = reg.get<VisibilityComponent>(entity).visible;
 
-	reg.get<TagComponent>(model).name = name;
+	entt::entity parent = reg.get<HierarchyComponent>(entity).parent;
+	while (parent != entt::null) {
+		if (!is_visible) {
+			return false;
+		}
+
+		is_visible &= reg.get<VisibilityComponent>(parent).visible;
+		parent = reg.get<HierarchyComponent>(parent).parent;
+	}
+
+	return is_visible;
+}
+
+entt::entity Scene::CreatePhongModel(const std::filesystem::path& path) {
+	entt::entity model_entity = CreateEntity(path.stem().string());
+	ModelLoader::LoadModel(*this, MaterialWorkflow::kPhong, path);
 
 	// Recorded relative to the asset root so a save file survives the project
 	// being moved. paths::RelativeToAsset keeps a location outside the root as it is;
 	// joining an absolute path back onto the root is a no-op, so loading still works.
-	reg.emplace<ModelSourceComponent>(model, paths::RelativeToAsset(location).generic_string(), MaterialWorkflow::kPhong);
+	reg.emplace<ModelSourceComponent>(model_entity, paths::RelativeToAsset(path).generic_string(), MaterialWorkflow::kPhong);
 
-	AddChild(root, model);
-
-	return model;
+	return model_entity;
 }
 
-entt::entity Scene::CreatePointLight(const glm::vec3 pos, const glm::vec3 color) {
-	const entt::entity light = CreateEntity("Point light " + std::to_string(std::rand()), root);
-
-	reg.get<TransformComponent>(light).Position = pos;
-	reg.emplace<PointLightComponent>(light, color);
-
-	return light;
-}
 } // namespace bron

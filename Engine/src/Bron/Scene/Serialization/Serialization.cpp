@@ -30,6 +30,7 @@ void WriteEntity(const Scene& scene, const entt::entity entity, nlohmann::json& 
 	entry["id"] = reg.get<IDComponent>(entity).id;
 	entry["name"] = reg.get<TagComponent>(entity).name;
 	entry["transform"] = reg.get<TransformComponent>(entity);
+	entry["visible"] = reg.get<VisibilityComponent>(entity).visible;
 	entry["parent"] = hierarchy.parent == entt::null ? nlohmann::json(nullptr)
 													 : nlohmann::json(reg.get<IDComponent>(hierarchy.parent).id);
 
@@ -118,6 +119,7 @@ void Serialization::DeserializeScene(Scene& scene, const std::filesystem::path& 
 		scene.reg.emplace<TagComponent>(entity, entry.at("name").get<std::string>());
 		scene.reg.emplace<TransformComponent>(entity, entry.at("transform").get<TransformComponent>());
 		scene.reg.emplace<HierarchyComponent>(entity);
+		scene.reg.emplace<VisibilityComponent>(entity, entry.value("visible", true));
 
 		if (entry.contains("pointLight")) {
 			scene.reg.emplace<PointLightComponent>(entity, entry.at("pointLight").get<PointLightComponent>());
