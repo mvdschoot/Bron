@@ -17,12 +17,13 @@ void ViewportPanel::OnAttach() {
 }
 
 void ViewportPanel::OnUpdate(const Timestep ts) {
+	// WASD orbit is held-key state scaled by the timestep, so it is polled here rather than
+	// driven by events; the discrete shortcuts live in OnKeyPressed instead.
+	//
 	// OnUpdate runs before ImGui::NewFrame(), so there is no current window to ask here -
 	// the flag is what the panel saw last frame.
-	if (focused_) {
-		PollShortcuts();
+	if (focused_)
 		context_.camera.OnUpdate(ts);
-	}
 
 	framebuffer_->Bind();
 	Command::Clear();
@@ -78,8 +79,36 @@ void ViewportPanel::OnImGuiRender() {
 
 void ViewportPanel::OnEvent(Event& event) {
 	EventDispatcher dispatcher(event);
-	if (hovered_) {
+
+	// Scrolling follows the cursor, the way it does everywhere else; typed shortcuts
+	// need the panel to actually have focus.
+	if (hovered_)
 		dispatcher.Dispatch<MouseScrolledEvent>(BR_BIND_EVENT_FN(ViewportPanel::OnMouseScrolled));
+
+	if (focused_)
+		dispatcher.Dispatch<KeyPressedEvent>(BR_BIND_EVENT_FN(ViewportPanel::OnKeyPressed));
+}
+
+bool ViewportPanel::OnKeyPressed(KeyPressedEvent& event) const {
+	switch (event.GetKey()) {
+		case key::T:
+			context_.gizmo_operation = ImGuizmo::OPERATION::TRANSLATE;
+			return true;
+		case key::R:
+			context_.gizmo_operation = ImGuizmo::OPERATION::ROTATE;
+			return true;
+		case key::H:
+			context_.gizmo_operation = ImGuizmo::OPERATION::SCALE;
+			return true;
+		case key::F:
+			// Framing an empty selection has nothing to aim at, so leave the key unhandled.
+			if (!context_.HasSelection())
+				return false;
+
+			context_.camera.Focus(context_.active_scene->reg.get<TransformComponent>(context_.selection).Position);
+			return true;
+		default:
+			return false;
 	}
 }
 
@@ -135,18 +164,5 @@ void ViewportPanel::DrawGizmo() const {
 
 	// The properties panel caches euler angles; the gizmo just changed the quaternion under it.
 	component_registry::InvalidateEulerCache();
-}
-
-void ViewportPanel::PollShortcuts() {
-	if (Input::IsKeyPressed(key::T))
-		context_.gizmo_operation = ImGuizmo::OPERATION::TRANSLATE;
-	if (Input::IsKeyPressed(key::R))
-		context_.gizmo_operation = ImGuizmo::OPERATION::ROTATE;
-	if (Input::IsKeyPressed(key::H))
-		context_.gizmo_operation = ImGuizmo::OPERATION::SCALE;
-
-	// Frame the selection.
-	if (Input::IsKeyPressed(key::F) && context_.HasSelection())
-		context_.camera.Focus(context_.active_scene->reg.get<TransformComponent>(context_.selection).Position);
 }
 } // namespace bron::editor

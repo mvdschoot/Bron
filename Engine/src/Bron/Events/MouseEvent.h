@@ -47,7 +47,7 @@ public:
 	MouseScrolledEvent(const float offx, const float offy) : offx_(offx), offy_(offy) {};
 
 
-	BR_EVENT_CLASS_CATEGORY(EventCategory::kMouse || EventCategory::kInput);
+	BR_EVENT_CLASS_CATEGORY(EventCategory::kMouse | EventCategory::kInput);
 	BR_EVENT_CLASS_TYPE(MouseScrolled);
 
 	float GetOffsetX() { return offx_; }

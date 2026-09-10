@@ -11,7 +11,7 @@ public:
 
 	virtual KeyCode GetKey() { return key_code_; };
 
-	BR_EVENT_CLASS_CATEGORY(EventCategory::kMouse | EventCategory::kInput);
+	BR_EVENT_CLASS_CATEGORY(EventCategory::kKeyboard | EventCategory::kInput);
 
 protected:
 	KeyCode key_code_;

@@ -85,8 +85,11 @@ void EditorLayer::OnDetach() {
 }
 
 void EditorLayer::OnEvent(Event& event) {
-	for (const auto& panel: panels_)
-		panel->OnEvent(event);
+	for (const auto& panel: panels_) {
+		if (!event.is_handled) {
+			panel->OnEvent(event);
+		}
+	}
 }
 
 void EditorLayer::OnUpdate(const Timestep ts) {

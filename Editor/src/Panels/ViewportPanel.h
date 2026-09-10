@@ -16,12 +16,12 @@ public:
 	void OnEvent(Event& event) override;
 
 	bool OnMouseScrolled(MouseScrolledEvent& event) const;
+	bool OnKeyPressed(KeyPressedEvent& event) const;
 
 private:
 	/// Keeps the framebuffer and the camera projection matching the panel.
 	void Resize(ImVec2 size);
 	void DrawGizmo() const;
-	void PollShortcuts();
 
 	Ref<Framebuffer> framebuffer_;
 	FramebufferSpecification spec_;
