@@ -80,6 +80,9 @@ void SceneRenderer::Draw(Scene& scene) {
 				shader->SetUniformMat4("u_Model", scene.WorldTransform(entity));
 				Statistics.UniformCalls++;
 
+				int entity_id = static_cast<std::uint32_t>(entity);
+				shader->SetUniform1iv("u_EntityId", &entity_id, 1);
+
 				const Ref<VertexArray> vao = GetVao(mesh, PhongVertexLayout);
 				Command::DrawIndexed(vao, vao->GetIndexBuffer()->GetCount());
 

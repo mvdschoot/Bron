@@ -9,11 +9,12 @@ namespace bron::editor {
 void ViewportPanel::OnAttach() {
 	spec_.width = Application::GetWindow()->GetWindowWidth();
 	spec_.height = Application::GetWindow()->GetWindowHeight();
+	spec_.attachments = {FramebufferTextureFormat::kRgba8, FramebufferTextureFormat::kRedInteger, FramebufferTextureFormat::kDepth24Stencil8};
 
 	framebuffer_ = Framebuffer::Create(spec_);
 	framebuffer_->Unbind();
 
-	size_ = {static_cast<float>(spec_.width), static_cast<float>(spec_.height)};
+	viewport_size_ = {static_cast<float>(spec_.width), static_cast<float>(spec_.height)};
 }
 
 void ViewportPanel::OnUpdate(const Timestep ts) {
@@ -27,6 +28,11 @@ void ViewportPanel::OnUpdate(const Timestep ts) {
 
 	framebuffer_->Bind();
 	Command::Clear();
+
+	// Has to come after the clears: glClear covers every enabled draw buffer, so clearing
+	// the id attachment first would just be overwritten. -1 is the "nothing here" value,
+	// since entity 0 is a perfectly valid entity.
+	framebuffer_->ClearAttachmentInt(1, -1);
 
 	Command::EnableBlend();
 	GridRenderer::Draw();
@@ -45,10 +51,12 @@ void ViewportPanel::Resize(const ImVec2 size) {
 	if (size.x <= 0.0f || size.y <= 0.0f)
 		return;
 
-	if (CompareFloat(size.x, size_.x) && CompareFloat(size.y, size_.y))
+	if (CompareFloat(size.x, viewport_size_.x) && CompareFloat(size.y, viewport_size_.y))
 		return;
 
-	size_ = size;
+	viewport_size_ = size;
+	viewport_position_ = ImGui::GetCursorScreenPos();
+
 	spec_.width = static_cast<uint32_t>(size.x);
 	spec_.height = static_cast<uint32_t>(size.y);
 	framebuffer_->Invalidate();
@@ -66,15 +74,38 @@ void ViewportPanel::OnImGuiRender() {
 	focused_ = ImGui::IsWindowFocused();
 	hovered_ = ImGui::IsWindowHovered();
 
+	// The position of these 2 lines in this function is very important,
+	// It sets the viewport position and size, which changes based on location in this function.
 	const ImVec2 available = ImGui::GetContentRegionAvail();
 	Resize(available);
 
-	const uint64_t texture_id = framebuffer_->GetColorAttachId();
-	ImGui::Image(texture_id, available, ImVec2{0, 1}, ImVec2{1, 0});
+	const uint64_t texture_id = framebuffer_->GetColorAttachId(0);
+	ImGui::Image(texture_id, viewport_size_, ImVec2{0, 1}, ImVec2{1, 0});
 
 	DrawGizmo();
 
 	ImGui::End();
+}
+
+// Reports the entity drawn under the cursor, or -1 for empty space. The id attachment is
+// written by the scene pass, so this reads what was rendered last frame.
+entt::entity ViewportPanel::ReadHoveredEntity() const {
+	if (!hovered_)
+		return static_cast<entt::entity>(-1);
+
+	const ImVec2 mouse = ImGui::GetMousePos();
+
+	const int x = static_cast<int>(mouse.x - viewport_position_.x);
+	// ImGui counts down from the top, OpenGL counts up from the bottom.
+	const int y = static_cast<int>(viewport_size_.y - (mouse.y - viewport_position_.y));
+
+	// Hovering the panel is not the same as hovering the image - the cursor can be over
+	// the title bar or the scrollbar, and a read outside the attachment is undefined.
+	if (x < 0 || y < 0 || x >= static_cast<int>(viewport_size_.x) || y >= static_cast<int>(viewport_size_.y))
+		return static_cast<entt::entity>(-1);
+
+	const int entity_id = framebuffer_->ReadPixelInt(1, x, y);
+	return static_cast<entt::entity>(entity_id);
 }
 
 void ViewportPanel::OnEvent(Event& event) {
@@ -84,6 +115,7 @@ void ViewportPanel::OnEvent(Event& event) {
 	// need the panel to actually have focus.
 	if (hovered_)
 		dispatcher.Dispatch<MouseScrolledEvent>(BR_BIND_EVENT_FN(ViewportPanel::OnMouseScrolled));
+		dispatcher.Dispatch<MouseButtonPressedEvent>(BR_BIND_EVENT_FN(ViewportPanel::OnMouseClicked));
 
 	if (focused_)
 		dispatcher.Dispatch<KeyPressedEvent>(BR_BIND_EVENT_FN(ViewportPanel::OnKeyPressed));
@@ -116,6 +148,12 @@ bool ViewportPanel::OnMouseScrolled(MouseScrolledEvent& event) const {
 	return context_.camera.OnMouseScrolled(event);
 }
 
+bool ViewportPanel::OnMouseClicked(MouseButtonPressedEvent& event) const {
+	entt::entity entity = ReadHoveredEntity();
+	context_.selection = entity;
+	return true;
+}
+
 void ViewportPanel::DrawGizmo() const {
 	if (!context_.HasSelection())
 		return;
@@ -128,8 +166,8 @@ void ViewportPanel::DrawGizmo() const {
 
 	const ImVec2 viewport_min_region = ImGui::GetWindowContentRegionMin();
 	const ImVec2 viewport_offset = ImGui::GetWindowPos();
-	ImGuizmo::SetRect(viewport_min_region.x + viewport_offset.x, viewport_min_region.y + viewport_offset.y, size_.x,
-					  size_.y);
+	ImGuizmo::SetRect(viewport_min_region.x + viewport_offset.x, viewport_min_region.y + viewport_offset.y, viewport_size_.x,
+					  viewport_size_.y);
 
 	glm::mat4 proj = scene.camera->GetProjectionMatrix();
 	glm::mat4 view = scene.camera->GetViewMatrix();

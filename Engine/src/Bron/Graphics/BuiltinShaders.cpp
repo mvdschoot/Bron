@@ -92,7 +92,11 @@ in vec3 farPoint; // farPoint calculated in vertex shader
 uniform mat4 uView;
 uniform mat4 uProjection;
 
-out vec4 outColor;
+layout(location = 0) out vec4 outColor;
+// The grid covers the whole viewport, and a fragment output that is never written leaves
+// the attachment undefined - so the grid has to stamp "nothing here" explicitly, or
+// picking on empty space reads garbage instead of -1.
+layout(location = 1) out int EntityId;
 
 const float near = 0.1;
 const float far = 100.0;
@@ -138,6 +142,8 @@ void main() {
 
     outColor = (grid(fragPos3D, 10, true) + grid(fragPos3D, 1, true))* float(t > 0); // adding multiple resolution for the grid
     outColor.a *= fading;
+
+    EntityId = -1;
 }
 )BRON_GLSL";
 
@@ -202,6 +208,7 @@ layout(std140, binding = 0) uniform PointLightBlock {
 uniform int u_NumPointLights;
 uniform vec3 u_ViewPos;
 uniform Material u_Material;
+uniform int u_EntityId;
 
 // Array of textures. Texture 0 = pure white texture.
 uniform sampler2D u_Textures[32];
@@ -213,7 +220,8 @@ in VS_OUT {
 	vec3 NormalRaw;
 } fs_in;
 
-out vec4 FragColor;
+layout(location = 0) out vec4 FragColor;
+layout(location = 1) out int EntityId;
 
 void main()
 {
@@ -248,7 +256,7 @@ void main()
 	}
 
 	FragColor = vec4(result, 1.0);
-	// FragColor = vec4(fs_in.NormalRaw * 0.5 + 0.5, 1.0);
+	EntityId = u_EntityId;
 }
 )BRON_GLSL";
 
