@@ -55,95 +55,156 @@ void main()
 constexpr const char* Grid = R"BRON_GLSL(
 #type vertex
 #version 330 core
-layout(location = 0) in float a_Position; //Dummy
 
-out vec3 nearPoint;
-out vec3 farPoint;
+// The grid has no geometry. This is one screen-filling quad, handed to the GPU already in
+// clip space - there is nothing to transform, the quad *is* the screen. Its only job is to
+// give every fragment the world-space view ray that goes through it.
+layout(location = 0) in vec2 a_ClipPosition;
 
-uniform mat4 uView;
-uniform mat4 uProjection;
-// uniform mat4 uPosition;
+uniform mat4 uInvViewProjection;
 
-// Grid position are in clipped space
-vec3 gridPlane[6] = vec3[] (
-    vec3(1, 1, 0), vec3(-1, -1, 0), vec3(-1, 1, 0),
-    vec3(-1, -1, 0), vec3(1, 1, 0), vec3(1, -1, 0)
-);
+out vec3 v_RayNear; // where this pixel's view ray enters the frustum, in world space
+out vec3 v_RayFar; // and where it leaves it
 
-vec3 UnprojectPoint(float x, float y, float z, mat4 view, mat4 projection) {
-    mat4 viewInv = inverse(view);
-    mat4 projInv = inverse(projection);
-    vec4 unprojectedPoint =  viewInv * projInv * vec4(x, y, z, 1.0);
-    return unprojectedPoint.xyz / unprojectedPoint.w;
+// Clip space -> world space. The perspective divide that the GPU normally does on the way
+// out has to be undone by hand on the way back in.
+vec3 Unproject(vec3 ndc) {
+    vec4 world = uInvViewProjection * vec4(ndc, 1.0);
+    return world.xyz / world.w;
 }
 
 void main() {
-    vec3 p = gridPlane[gl_VertexID].xyz;
-    nearPoint = UnprojectPoint(p.x, p.y, 0.0, uView, uProjection).xyz; // unprojecting on the near plane
-    farPoint = UnprojectPoint(p.x, p.y, 1.0, uView, uProjection).xyz; // unprojecting on the far plane
-    gl_Position = vec4(p, 1.0); // using directly the clipped coordinates
+    // z = -1 is the near plane, z = +1 the far plane, so these two points are the ends of
+    // the segment of the view ray that is actually inside the frustum. Both lie on a plane
+    // of constant depth, which is why interpolating them across the quad stays exact.
+    v_RayNear = Unproject(vec3(a_ClipPosition, -1.0));
+    v_RayFar = Unproject(vec3(a_ClipPosition, 1.0));
+
+    gl_Position = vec4(a_ClipPosition, 0.0, 1.0);
 }
 
 #type fragment
 #version 330 core
-in vec3 nearPoint; // nearPoint calculated in vertex shader
-in vec3 farPoint; // farPoint calculated in vertex shader
 
-uniform mat4 uView;
-uniform mat4 uProjection;
+in vec3 v_RayNear;
+in vec3 v_RayFar;
 
-layout(location = 0) out vec4 outColor;
-// The grid covers the whole viewport, and a fragment output that is never written leaves
-// the attachment undefined - so the grid has to stamp "nothing here" explicitly, or
-// picking on empty space reads garbage instead of -1.
-layout(location = 1) out int EntityId;
+uniform mat4 uViewProjection;
+uniform vec3 uCameraPosition;
 
-const float near = 0.1;
-const float far = 100.0;
+uniform float uCellSize;
+uniform float uPrimaryEvery;
+uniform float uFadeStart;
+uniform float uFadeEnd;
 
-vec4 grid(vec3 fragPos3D, float scale, bool drawAxis) {
-    vec2 coord = fragPos3D.xz * scale;
-    vec2 derivative = fwidth(coord);
-    vec2 grid = abs(fract(coord - 0.5) - 0.5) / derivative;
-    float line = min(grid.x, grid.y);
-    float minimumz = min(derivative.y, 1);
-    float minimumx = min(derivative.x, 1);
-    vec4 color = vec4(0.2, 0.2, 0.2, 1.0 - min(line, 1.0));
-    // z axis
-    if(fragPos3D.x > -0.1 * minimumx && fragPos3D.x < 0.1 * minimumx)
-        color.z = 1.0;
-    // x axis
-    if(fragPos3D.z > -0.1 * minimumz && fragPos3D.z < 0.1 * minimumz)
-        color.x = 1.0;
-    return color;
+uniform vec3 uLineColor;
+uniform vec3 uPrimaryLineColor;
+uniform vec3 uXAxisColor;
+uniform vec3 uZAxisColor;
+uniform int uDrawAxes;
+
+layout(location = 0) out vec4 o_Color;
+// The framebuffer also carries an entity id for mouse picking. The grid covers the whole
+// viewport, and an output that is never written leaves its attachment undefined - so where
+// the grid does draw it has to stamp "nothing here" explicitly, and where it does not it
+// has to discard rather than write, leaving the cleared -1 in place.
+layout(location = 1) out int o_EntityId;
+
+// A level of the grid is at full strength once its cells are this many pixels wide, and
+// has faded away completely once they have shrunk to the second. Cells below a handful of
+// pixels stop reading as lines and start shimmering, so a level is retired well before it
+// gets there.
+const float kFadeInPixels = 40.0;
+const float kFadeOutPixels = 5.0;
+
+// How much of a line pattern of this cell size covers this pixel: 1 on a line, 0 between
+// lines, antialiased in between.
+//
+// fract(coord - 0.5) - 0.5 is the signed distance to the nearest line, in cells. Dividing
+// it by fwidth(coord) - how much the coordinate changes from this pixel to the next -
+// converts that into a distance in *pixels*. That single division is what makes the grid
+// work: lines stay one pixel wide whether the floor is under your nose or at the horizon,
+// because the measurement is always made in screen space.
+float LineCoverage(vec2 position, float cell_size) {
+    vec2 coord = position / cell_size;
+    vec2 pixels_to_line = abs(fract(coord - 0.5) - 0.5) / fwidth(coord);
+
+    return 1.0 - min(min(pixels_to_line.x, pixels_to_line.y), 1.0);
 }
-float computeDepthRaw(vec3 pos) {
-    vec4 clip_space_pos = uProjection * uView * vec4(pos.xyz, 1.0);
-    return (clip_space_pos.z / clip_space_pos.w);
-}
-float computeDepth(vec3 pos) {
-    return ((gl_DepthRange.diff * computeDepthRaw(pos)) +
-                gl_DepthRange.near + gl_DepthRange.far) / 2.0;
-}
 
-float computeLinearDepth(vec3 pos) {
-    float clip_space_depth = computeDepth(pos);
-    float linearDepth = (2.0 * near * far) / (far + near - clip_space_depth * (far - near)); // get linear value between 0.01 and 100
-    return linearDepth / far; // normalize
-}
 void main() {
-    float t = -nearPoint.y / (farPoint.y - nearPoint.y);
-    vec3 fragPos3D = nearPoint + t * (farPoint - nearPoint);
+    vec3 origin = v_RayNear;
+    vec3 direction = v_RayFar - v_RayNear;
 
-    gl_FragDepth = computeDepth(fragPos3D);
+    // Intersect this pixel's view ray with the ground plane y = 0. Solving
+    // origin.y + t * direction.y = 0 gives the t below; because the ray was built from the
+    // near and far plane, t is inside (0, 1) exactly when the hit is inside the frustum.
+    // Written inverted so that a NaN (a ray exactly parallel to the plane) discards too.
+    float t = -origin.y / direction.y;
+    if (!(t > 0.0 && t < 1.0))
+        discard;
 
-    float linearDepth = computeLinearDepth(fragPos3D);
-    float fading = max(0, (0.5 - linearDepth));
+    // The piece of floor this pixel is looking at. Everything below is a function of it.
+    vec3 world = origin + t * direction;
 
-    outColor = (grid(fragPos3D, 10, true) + grid(fragPos3D, 1, true))* float(t > 0); // adding multiple resolution for the grid
-    outColor.a *= fading;
+    // Level of detail. fwidth(world.xz) is how many world units this one pixel covers, so
+    // a cell of size s is s / pixel_size pixels wide here. 'level' is how many times
+    // uCellSize has to be multiplied by uPrimaryEvery before its cells are kFadeInPixels
+    // wide: the finest grid still worth drawing at this distance. Note this is worked out
+    // per pixel, not once per frame, so a floor seen at a grazing angle coarsens towards
+    // the horizon by itself.
+    vec2 world_per_pixel = fwidth(world.xz);
+    float pixel_size = max(world_per_pixel.x, world_per_pixel.y);
+    float level = max(0.0, log(pixel_size * kFadeInPixels / uCellSize) / log(uPrimaryEvery));
 
-    EntityId = -1;
+    float fine = uCellSize * pow(uPrimaryEvery, floor(level));
+    float mid = fine * uPrimaryEvery;
+    float coarse = mid * uPrimaryEvery;
+
+    // How far this level has already handed over to the next one. Driving the hand-over off
+    // the cell's size in pixels - rather than off the fractional part of 'level' - is what
+    // keeps the finest lines from surviving all the way down to a shimmering one-pixel
+    // mush: they are gone once their cells drop below kFadeOutPixels.
+    float blend = 1.0 - smoothstep(kFadeOutPixels, kFadeInPixels, fine / pixel_size);
+
+    // Two tiers are on screen at once: ordinary lines, and every uPrimaryEvery-th line
+    // drawn brighter. As blend runs 0 -> 1 each tier hands its job over to the next coarser
+    // one, so the picture at blend = 1 is exactly the picture at blend = 0 of the next
+    // level up - the seam between levels is invisible because there is no seam.
+    float lines = mix(LineCoverage(world.xz, fine), LineCoverage(world.xz, mid), blend);
+    float primary = mix(LineCoverage(world.xz, mid), LineCoverage(world.xz, coarse), blend);
+
+    vec3 color = mix(uLineColor, uPrimaryLineColor, primary);
+    float alpha = max(lines, primary);
+
+    if (uDrawAxes != 0) {
+        // The X axis is the line z = 0, the Z axis the line x = 0. Measured in pixels the
+        // same way, so they are the same width as every other line.
+        vec2 pixels_to_axis = abs(world.xz) / world_per_pixel;
+        float on_z_axis = 1.0 - min(pixels_to_axis.x, 1.0);
+        float on_x_axis = 1.0 - min(pixels_to_axis.y, 1.0);
+
+        color = mix(color, uZAxisColor, on_z_axis);
+        color = mix(color, uXAxisColor, on_x_axis);
+        alpha = max(alpha, max(on_x_axis, on_z_axis));
+    }
+
+    // Fade with distance instead of ending on a hard edge. The C++ side sizes the fade from
+    // the camera's height and keeps it inside the far plane.
+    alpha *= 1.0 - smoothstep(uFadeStart, uFadeEnd, length(world - uCameraPosition));
+    if (alpha <= 0.0)
+        discard;
+
+    o_Color = vec4(color, alpha);
+
+    // The grid is a surface in the world, so it has to depth-test like one. The quad's own
+    // depth is meaningless (it sits flat across the screen), so project the point that was
+    // actually hit and write that instead: NDC z in [-1, 1], remapped to the [0, 1] the
+    // depth buffer stores.
+    vec4 clip = uViewProjection * vec4(world, 1.0);
+    gl_FragDepth = (clip.z / clip.w) * 0.5 + 0.5;
+
+    o_EntityId = -1;
 }
 )BRON_GLSL";
 
