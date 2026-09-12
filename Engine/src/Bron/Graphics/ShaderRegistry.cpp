@@ -11,6 +11,7 @@ std::map<std::string, Ref<Shader>> ShaderRegistry::shaders_ = std::map<std::stri
 
 void ShaderRegistry::Init() {
 	ShaderRegistry::CreateShaderFromSource(BR_PHONG_SHADER, builtin_shaders::Source(builtin_shaders::Id::kPhong3D));
+	ShaderRegistry::CreateShaderFromSource(BR_OUTLINE_SHADER, builtin_shaders::Source(builtin_shaders::Id::kOutline));
 }
 
 Ref<Shader> ShaderRegistry::GetShader(const char* name) {

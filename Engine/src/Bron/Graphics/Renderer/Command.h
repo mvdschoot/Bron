@@ -16,6 +16,12 @@ public:
 
 	static void EnableBlend();
 	static void EnableDepth();
+	static void DisableDepth();
+
+	static void SetStencil(API::StencilFunction func, u32 reference, u32 write_mask);
+	static void DisableStencil();
+
+	static void SetColorWrite(bool enabled);
 
 	static void DrawIndexed(const Ref<VertexArray>& v_array, u32 count);
 	static void DrawIndexedLines(const Ref<VertexArray>& v_array, u32 count);

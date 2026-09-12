@@ -16,6 +16,16 @@ void Command::EnableBlend() { renderer_api_->EnableBlend(); }
 
 void Command::EnableDepth() { renderer_api_->EnableDepth(); }
 
+void Command::DisableDepth() { renderer_api_->DisableDepth(); }
+
+void Command::SetStencil(API::StencilFunction func, u32 reference, u32 write_mask) {
+	renderer_api_->SetStencil(func, reference, write_mask);
+}
+
+void Command::DisableStencil() { renderer_api_->DisableStencil(); }
+
+void Command::SetColorWrite(const bool enabled) { renderer_api_->SetColorWrite(enabled); }
+
 void Command::DrawIndexed(const Ref<VertexArray>& v_array, u32 count) { renderer_api_->DrawIndexed(v_array, count); }
 
 void Command::DrawIndexedLines(const Ref<VertexArray>& v_array, u32 count) {

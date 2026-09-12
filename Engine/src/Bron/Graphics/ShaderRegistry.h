@@ -8,6 +8,7 @@
 
 
 #define BR_PHONG_SHADER "phong_shader"
+#define BR_OUTLINE_SHADER "outline_shader"
 #define BR_PBR_SHADER "pbr_shader"
 
 namespace bron {

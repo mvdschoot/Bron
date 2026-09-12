@@ -6,6 +6,24 @@
 #include <glm/gtx/matrix_decompose.hpp>
 
 namespace bron::editor {
+namespace {
+// What is selected is not always what is drawn: a loaded model is a parent entity whose
+// meshes hang off it as children, and only the children carry geometry. Outlining a
+// selection means outlining every mesh underneath it.
+void CollectMeshes(Scene& scene, const entt::entity entity, std::vector<entt::entity>& out) {
+	if (entity == entt::null)
+		return;
+
+	if (scene.reg.all_of<MeshComponent>(entity))
+		out.push_back(entity);
+
+	if (const HierarchyComponent* hierarchy = scene.reg.try_get<HierarchyComponent>(entity)) {
+		for (const entt::entity child: hierarchy->children)
+			CollectMeshes(scene, child, out);
+	}
+}
+} // namespace
+
 void ViewportPanel::OnAttach() {
 	spec_.width = Application::GetWindow()->GetWindowWidth();
 	spec_.height = Application::GetWindow()->GetWindowHeight();
@@ -38,8 +56,13 @@ void ViewportPanel::OnUpdate(const Timestep ts) {
 	GridRenderer::Draw();
 
 	Command::EnableDepth();
-	if (context_.HasScene())
+	if (context_.HasScene()) {
 		SceneRenderer::Draw(*context_.active_scene);
+
+		std::vector<entt::entity> selected_meshes;
+		CollectMeshes(*context_.active_scene, context_.selection, selected_meshes);
+		SceneRenderer::DrawOutline(*context_.active_scene, selected_meshes);
+	}
 
 	framebuffer_->Unbind();
 }
@@ -91,7 +114,7 @@ void ViewportPanel::OnImGuiRender() {
 // written by the scene pass, so this reads what was rendered last frame.
 entt::entity ViewportPanel::ReadHoveredEntity() const {
 	if (!hovered_)
-		return static_cast<entt::entity>(-1);
+		return entt::null;
 
 	const ImVec2 mouse = ImGui::GetMousePos();
 
@@ -102,7 +125,7 @@ entt::entity ViewportPanel::ReadHoveredEntity() const {
 	// Hovering the panel is not the same as hovering the image - the cursor can be over
 	// the title bar or the scrollbar, and a read outside the attachment is undefined.
 	if (x < 0 || y < 0 || x >= static_cast<int>(viewport_size_.x) || y >= static_cast<int>(viewport_size_.y))
-		return static_cast<entt::entity>(-1);
+		return entt::null;
 
 	const int entity_id = framebuffer_->ReadPixelInt(1, x, y);
 	return static_cast<entt::entity>(entity_id);
@@ -149,9 +172,12 @@ bool ViewportPanel::OnMouseScrolled(MouseScrolledEvent& event) const {
 }
 
 bool ViewportPanel::OnMouseClicked(MouseButtonPressedEvent& event) const {
-	entt::entity entity = ReadHoveredEntity();
-	context_.selection = entity;
-	return true;
+	if (hovered_) {
+		entt::entity entity = ReadHoveredEntity();
+		context_.selection = entity;
+		return true;
+	}
+	return false;
 }
 
 void ViewportPanel::DrawGizmo() const {

@@ -132,7 +132,7 @@ struct HierarchyComponent {
 // Mesh
 // --------------------------------------------------------------------
 
-enum VertexVariables { kPositions, kNormals, kUvs, kTangents };
+enum VertexVariables { kPositions, kNormals, kUvs, kTangents, kSmoothNormals };
 
 struct MeshData {
 	std::vector<glm::vec3> positions;
@@ -140,8 +140,13 @@ struct MeshData {
 	std::optional<std::vector<glm::vec3>> normals;
 	std::optional<std::vector<glm::vec2>> uvs;
 	std::optional<std::vector<glm::vec3>> tangents;
+
+	// Normals with the hard edges welded shut - see SmoothNormals(). Derived from the
+	// positions and indices, so it is filled in on demand rather than by the importer.
+	std::optional<std::vector<glm::vec3>> smooth_normals;
 };
 
+// TODO: store buffer layout as well, or better define packages of materials, shaders, buffer layouts, etc.
 struct MeshComponent {
 	MeshData vertex_data;
 	Ref<MaterialBase> material;

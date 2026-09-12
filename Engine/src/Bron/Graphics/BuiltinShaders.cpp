@@ -260,6 +260,45 @@ void main()
 }
 )BRON_GLSL";
 
+constexpr const char* Outline3D = R"BRON_GLSL(
+#type vertex
+#version 450 core
+
+layout(location = 0) in vec3 a_Position;
+layout(location = 3) in vec3 a_SmoothNormal;
+
+uniform mat4 u_Model;
+uniform mat4 u_View;
+uniform mat4 u_Projection;
+// In world units, so the outline gets thinner as the camera pulls away.
+uniform float u_OutlineWidth;
+
+void main()
+{
+	// Pushing every vertex out along its normal grows the mesh by a roughly even margin.
+	// It has to be the smoothed normal rather than the shading one: at a hard edge the
+	// shading normals disagree, and the corner comes apart into gaps instead of stretching.
+	vec3 pos = a_Position + normalize(a_SmoothNormal) * u_OutlineWidth;
+	gl_Position = u_Projection * u_View * u_Model * vec4(pos, 1.0);
+}
+
+
+#type fragment
+#version 450 core
+
+// In
+uniform vec3 u_OutlineColor;
+uniform int u_EntityId;
+
+// Out
+layout(location = 0) out vec4 FragColor;
+
+void main()
+{
+	FragColor = vec4(u_OutlineColor, 1.0);
+}
+)BRON_GLSL";
+
 constexpr const char* Text = R"BRON_GLSL(
 #type vertex
 #version 330 core
@@ -311,6 +350,8 @@ std::string Source(Id id) {
 			return Phong3D;
 		case Id::kText:
 			return Text;
+		case Id::kOutline:
+			return Outline3D;
 	}
 
 	BR_CORE_ASSERT(false, "Unknown built-in shader");

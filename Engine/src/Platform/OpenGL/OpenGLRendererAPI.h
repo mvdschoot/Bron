@@ -28,6 +28,19 @@ class OpenGLRendererAPI : public API {
 		return 0;
 	}
 
+	static inline GLint ToOpenGLStencilFunction(const StencilFunction func) {
+		switch (func) {
+			case StencilFunction::kAlways:
+				return GL_ALWAYS;
+				break;
+			case StencilFunction::kNotEqual:
+				return GL_NOTEQUAL;
+				break;
+		}
+		BR_CORE_ASSERT(false, "RENDERER: invalid StencilFunction");
+		return 0;
+	}
+
 public:
 	OpenGLRendererAPI();
 	void Init() override;
@@ -37,12 +50,23 @@ public:
 
 	void EnableBlend() override;
 	void EnableDepth() override;
+	void DisableDepth() override;
+
+	void SetStencil(StencilFunction func, u32 reference, u32 write_mask) override;
+	void DisableStencil() override;
+
+	void SetColorWrite(bool enabled) override;
 
 	void DrawIndexed(const Ref<VertexArray>& v_array, u32 count) override;
 	void DrawIndexedLines(const Ref<VertexArray>& v_array, u32 count) override;
 	void DrawIndexedStripLines(const Ref<VertexArray>& v_array, u32 count) override;
 
 private:
-	bool blend_enabled_;
+	void SetDepthTest(bool enabled);
+
+	// Mirrors the GL defaults, so the first call of each actually reaches the driver.
+	bool blend_enabled_ = false;
+	bool depth_enabled_ = false;
+	bool stencil_enabled_ = false;
 };
 } // namespace bron

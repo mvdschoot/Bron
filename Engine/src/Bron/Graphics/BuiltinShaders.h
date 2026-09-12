@@ -9,7 +9,7 @@ namespace bron {
 // its own translation unit. Nothing is read from disk, and there is no
 // engine asset folder to ship or copy next to the executable.
 namespace builtin_shaders {
-enum class Id { kRenderer2D, kGrid, kPhong3D, kText };
+enum class Id { kRenderer2D, kGrid, kPhong3D, kText, kOutline };
 
 // GLSL source for a built-in shader, ready for Shader::Create.
 std::string Source(Id id);

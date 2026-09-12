@@ -42,7 +42,7 @@ void OpenGLFramebuffer::Destroy() {
 void OpenGLFramebuffer::Bind() {
 	glBindFramebuffer(GL_FRAMEBUFFER, renderer_id_);
 	glViewport(0, 0, spec_.width, spec_.height);
-	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT | GL_STENCIL_BUFFER_BIT);
 }
 
 void OpenGLFramebuffer::Unbind() { glBindFramebuffer(GL_FRAMEBUFFER, 0); }
