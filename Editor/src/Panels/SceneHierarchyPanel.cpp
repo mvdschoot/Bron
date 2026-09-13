@@ -166,15 +166,15 @@ void SceneHierarchyPanel::DrawRenamePopup() {
 }
 
 std::filesystem::path SceneHierarchyPanel::ModelPicker() {
-	NFD::Init();
-
-	NFD::UniquePath out_path;
-	nfdfilteritem_t filter_item[1] = {{"Model files", "glb"}};
-
-	NFD::OpenDialog(out_path, filter_item, 1, nullptr);
-	const std::filesystem::path file = out_path.get();
-
-	NFD_Quit();
+	std::filesystem::path file;
+	if (NFD::Init()) {
+		NFD::UniquePath out_path;
+		nfdfilteritem_t filter_item[1] = {{"Model files", "glb"}};
+		if (NFD::OpenDialog(out_path, filter_item, 1, nullptr) == NFD_OKAY) {
+			file = out_path.get();
+		}
+		NFD_Quit();
+	}
 	return file;
 }
 } // namespace bron::editor
