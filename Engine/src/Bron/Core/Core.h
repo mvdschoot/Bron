@@ -10,7 +10,10 @@
 #define BR_EXPAND_MACRO(x) x
 #define BR_STRINGIFY_MACRO(x) #x
 
-#define BR_FOLD_LAMBDA_WITH_REFERENCE(expr) ([&, this]() expr, ...);
+// Captures as [&] rather than [&, this]: the two are equivalent, but the comma
+// inside the capture list reads as an Objective-C message send to clang-format's
+// language guesser for .h files, which then fails the CI format check.
+#define BR_FOLD_LAMBDA_WITH_REFERENCE(expr) ([&]() expr, ...);
 
 #define GLFW_INCLUDE_NONE
 
@@ -80,49 +83,43 @@ using isize = std::int64_t;
 
 inline constexpr double kPi = 3.14159265358979323846;
 
-template <typename T>
+template<typename T>
 using Ref = std::shared_ptr<T>;
 
-template <typename T, typename... Args>
-constexpr Ref<T> CreateRef(Args&&... args)
-{
+template<typename T, typename... Args>
+constexpr Ref<T> CreateRef(Args&&... args) {
 	return std::make_shared<T>(std::forward<Args>(args)...);
 }
 
-template <typename T>
+template<typename T>
 using Scope = std::unique_ptr<T>;
 
-template <typename T, typename... Args>
-constexpr Scope<T> CreateScope(Args&&... args)
-{
+template<typename T, typename... Args>
+constexpr Scope<T> CreateScope(Args&&... args) {
 	return std::make_unique<T>(std::forward<Args>(args)...);
 }
 
 // Tuple folding helpers.
-template <std::size_t... Idx>
-auto MakeIndexDispatcher(std::index_sequence<Idx...>)
-{
+template<std::size_t... Idx>
+auto MakeIndexDispatcher(std::index_sequence<Idx...>) {
 	return [](auto&& f) { (f(std::integral_constant<std::size_t, Idx>{}), ...); };
 }
 
-template <std::size_t N>
-auto MakeIndexDispatcher()
-{
+template<std::size_t N>
+auto MakeIndexDispatcher() {
 	return MakeIndexDispatcher(std::make_index_sequence<N>{});
 }
 
-template <typename Tuple, typename Func>
-void ForEachInTuple(Tuple&& t, Func&& f)
-{
+template<typename Tuple, typename Func>
+void ForEachInTuple(Tuple&& t, Func&& f) {
 	constexpr auto n = std::tuple_size_v<std::decay_t<Tuple>>;
 	auto dispatcher = MakeIndexDispatcher<n>();
 	dispatcher([&f, &t](auto idx) { f(std::get<idx>(std::forward<Tuple>(t))); });
 }
 
-template <typename Tuple, typename F>
-void ApplyToTuple(const Tuple& t, F func)
-{
+template<typename Tuple, typename F>
+void ApplyToTuple(const Tuple& t, F func) {
 	std::apply([&](const auto&... args) { (func(args), ...); }, t);
 }
 
-}  // namespace bron
+} // namespace bron

@@ -54,11 +54,14 @@ jobs:
       - name: Install Linux dependencies
         if: runner.os == 'Linux'
         run: |
+          # Most of these are GLFW's X11/Wayland deps. libgtk-3-dev is for
+          # nativefiledialog-extended (nfd), whose default Linux backend is GTK.
           sudo apt-get update
           sudo apt-get install -y ninja-build \
             libgl1-mesa-dev libx11-dev libxrandr-dev libxinerama-dev \
             libxcursor-dev libxi-dev libxkbcommon-dev \
-            libwayland-dev wayland-protocols extra-cmake-modules
+            libwayland-dev wayland-protocols extra-cmake-modules \
+            libgtk-3-dev
 
       - name: Set up MSVC environment
         if: runner.os == 'Windows'
