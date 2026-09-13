@@ -12,6 +12,17 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      # Pinned on purpose: clang-format's output is not stable across major
+      # versions, so an unpinned runner default would drift away from what the
+      # pre-commit hook and CLion produce locally. 22.x matches CLion's bundled
+      # build; bump this and tools/git-hooks/pre-commit together.
+      - name: Install clang-format
+        run: pip install clang-format==22.1.8
+
       - name: Check formatting
         # Engine/vendor holds third-party sources (glad, stb, imgui_extra) that
         # are not ours to reformat.

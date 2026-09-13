@@ -6,7 +6,7 @@
 #include <vector>
 
 namespace bron {
-enum class FramebufferTextureFormat {kNone, kRgba8, kRedInteger, kDepth24Stencil8};
+enum class FramebufferTextureFormat { kNone, kRgba8, kRedInteger, kDepth24Stencil8 };
 
 struct FramebufferSpecification {
 	u32 width;

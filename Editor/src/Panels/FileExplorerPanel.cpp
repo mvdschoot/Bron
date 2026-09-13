@@ -94,11 +94,16 @@ void FileExplorerPanel::DrawEntryList() {
 
 icons::Id FileExplorerPanel::IconFor(const EntryType type) {
 	switch (type) {
-		case kFolder: return icons::Id::kFolder;
-		case kModelFile: return icons::Id::kModel;
-		case kProjectFile: return icons::Id::kProject;
-		case kSceneFile: return icons::Id::kScene;
-		case kOther: break;
+		case kFolder:
+			return icons::Id::kFolder;
+		case kModelFile:
+			return icons::Id::kModel;
+		case kProjectFile:
+			return icons::Id::kProject;
+		case kSceneFile:
+			return icons::Id::kScene;
+		case kOther:
+			break;
 	}
 
 	return icons::Id::kFile;

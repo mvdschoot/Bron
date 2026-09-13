@@ -37,7 +37,8 @@ static glm::vec3 ModelCentroid(entt::registry& reg, const std::vector<entt::enti
 entt::entity ModelLoader::LoadModel(Scene& target, MaterialWorkflow type, std::filesystem::path model_location) {
 	// Assimp load model
 	Assimp::Importer importer;
-	const aiScene* scene = importer.ReadFile(model_location.string(), aiProcess_Triangulate | aiProcess_GenSmoothNormals);
+	const aiScene* scene =
+			importer.ReadFile(model_location.string(), aiProcess_Triangulate | aiProcess_GenSmoothNormals);
 
 	std::string error = "ERROR::ASSIMP::";
 	error.append(importer.GetErrorString());
@@ -201,7 +202,8 @@ std::vector<Ref<MaterialBase>> ModelLoader::ProcessPhongMaterials(const aiScene*
 			phong_material->Set(PhongMaterialVariables::kShininess, 5.0f);
 
 		// Retrieve shininess strength
-		if (float shininess_strength; material->Get(AI_MATKEY_SHININESS_STRENGTH, shininess_strength) == aiReturn_SUCCESS)
+		if (float shininess_strength;
+			material->Get(AI_MATKEY_SHININESS_STRENGTH, shininess_strength) == aiReturn_SUCCESS)
 			phong_material->Set(PhongMaterialVariables::kShininessStrength, shininess_strength);
 		else
 			phong_material->Set(PhongMaterialVariables::kShininessStrength, 1.0f);

@@ -23,8 +23,8 @@ public:
 	/// geometry: one to mark where they are, one to draw an enlarged copy everywhere they
 	/// are not. 'width' is in world units. Expects the scene pass to have run first - it
 	/// reads the depth buffer that pass left behind.
-	static void DrawOutline(Scene& scene, const std::vector<entt::entity>& meshes,
-							glm::vec3 color = {0.8f, 0.5f, 0.1f}, float width = 0.05f);
+	static void DrawOutline(Scene& scene, const std::vector<entt::entity>& meshes, glm::vec3 color = {0.8f, 0.5f, 0.1f},
+							float width = 0.05f);
 
 	static RenderStatistics Statistics;
 };

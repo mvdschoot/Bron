@@ -1,0 +1,90 @@
+#!/bin/sh
+#
+# Reformats staged C++ sources with clang-format before the commit is created,
+# so the clang-format job in .github/workflows/ci.yml cannot fail on a push.
+#
+# Enable (once per clone):   git config core.hooksPath tools/git-hooks
+# Skip for a single commit:  git commit --no-verify
+#
+# Engine/vendor holds third-party sources (glad, stb, imgui_extra) that are not
+# ours to reformat, so it is excluded here exactly as it is in CI.
+
+set -e
+
+# Keep in step with the pinned install in .github/workflows/ci.yml.
+PINNED_VERSION=22.1.8
+
+# CLion's bundled build is a 22.x snapshot and agrees with the version CI pins,
+# so prefer it over whatever happens to be on PATH. $CLANG_FORMAT overrides all.
+resolve_clang_format() {
+    if [ -n "$CLANG_FORMAT" ]; then
+        echo "$CLANG_FORMAT"
+        return 0
+    fi
+    for candidate in \
+        /c/Program\ Files/JetBrains/CLion*/plugins/clion-radler/DotFiles/windows-x64/clang-format.exe \
+        /c/Program\ Files/JetBrains/CLion*/bin/clang/win/x64/clang-format.exe \
+        "$LOCALAPPDATA"/JetBrains/Toolbox/apps/CLion/*/*/plugins/clion-radler/DotFiles/windows-x64/clang-format.exe
+    do
+        [ -x "$candidate" ] && { echo "$candidate"; return 0; }
+    done
+    command -v clang-format 2>/dev/null && return 0
+    return 1
+}
+
+CF=$(resolve_clang_format) || {
+    echo "pre-commit: no clang-format found." >&2
+    echo "  Install the pinned build:  pip install clang-format==$PINNED_VERSION" >&2
+    echo "  Or set CLANG_FORMAT to the full path of one." >&2
+    exit 1
+}
+
+# clang-format's output is not stable across major versions. A mismatch here
+# means the commit can still fail the format job in CI, so say so loudly.
+major=$("$CF" --version | awk '{for (i = 1; i <= NF; i++) if ($i == "version") { split($(i+1), v, "."); print v[1]; exit } }')
+if [ "$major" != "${PINNED_VERSION%%.*}" ]; then
+    echo "pre-commit: warning: $CF is version $major, but CI pins $PINNED_VERSION." >&2
+    echo "  Formatting may differ from what CI accepts." >&2
+    echo "  Fix with: pip install clang-format==$PINNED_VERSION" >&2
+fi
+
+staged=$(git diff --cached --name-only --diff-filter=ACMR -- Engine/src Editor/src \
+    | grep -E '\.(h|cpp)$' | grep -v '/vendor/' || true)
+
+[ -z "$staged" ] && exit 0
+
+formatted=""
+blocked=""
+
+# A file with unstaged changes is only partly in this commit; reformatting the
+# worktree would not fix what is actually being committed, and re-adding it
+# would sweep up work that was deliberately left out. Check those instead.
+for file in $staged; do
+    if [ -n "$(git diff --name-only -- "$file")" ]; then
+        if ! git show ":$file" | "$CF" --style=file --assume-filename="$file" --dry-run --Werror >/dev/null 2>&1; then
+            blocked="$blocked $file"
+        fi
+        continue
+    fi
+
+    before=$(git hash-object "$file")
+    "$CF" --style=file -i "$file"
+    if [ "$(git hash-object "$file")" != "$before" ]; then
+        git add -- "$file"
+        formatted="$formatted $file"
+    fi
+done
+
+if [ -n "$formatted" ]; then
+    echo "pre-commit: clang-format reformatted and re-staged:"
+    for file in $formatted; do echo "  $file"; done
+fi
+
+if [ -n "$blocked" ]; then
+    echo "pre-commit: these files are only partly staged and the staged content is not formatted:" >&2
+    for file in $blocked; do echo "  $file" >&2; done
+    echo "Run '$CF --style=file -i <file>' and stage the result, or commit with --no-verify." >&2
+    exit 1
+fi
+
+exit 0

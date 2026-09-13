@@ -157,6 +157,6 @@ std::string FormatFields(const std::string_view type_name, const std::string_vie
 /// is labelled with the text as written. format_as is fmt's own hook, found by ADL, so
 /// this works in any access section and nested loggable structs format through theirs.
 #define BR_LOGGABLE(Type, ...)                                                                                         \
-	std::string ToLogString() const { return ::bron::logging::FormatFields(#Type, #__VA_ARGS__, __VA_ARGS__); }           \
-	friend std::string format_as(const Type& self) { return self.ToLogString(); }                                         \
+	std::string ToLogString() const { return ::bron::logging::FormatFields(#Type, #__VA_ARGS__, __VA_ARGS__); }        \
+	friend std::string format_as(const Type& self) { return self.ToLogString(); }                                      \
 	friend std::ostream& operator<<(std::ostream& os, const Type& self) { return os << self.ToLogString(); }

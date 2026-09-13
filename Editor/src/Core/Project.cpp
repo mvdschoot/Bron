@@ -38,7 +38,7 @@ Scope<Project> Project::Load(const std::filesystem::path& file) {
 	const int version = document.value("version", 0);
 	if (version != kProjectVersion) {
 		BR_APP_ERROR("{} is a version {} project, this build reads version {}", file.string(), version,
-					  kProjectVersion);
+					 kProjectVersion);
 		return nullptr;
 	}
 

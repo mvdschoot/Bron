@@ -107,11 +107,11 @@ void GridRenderer::Draw() {
 
 	g_data.shader->SetUniform3f("uLineColor", settings.line_color.r, settings.line_color.g, settings.line_color.b);
 	g_data.shader->SetUniform3f("uPrimaryLineColor", settings.primary_line_color.r, settings.primary_line_color.g,
-							   settings.primary_line_color.b);
+								settings.primary_line_color.b);
 	g_data.shader->SetUniform3f("uXAxisColor", settings.x_axis_color.r, settings.x_axis_color.g,
-							   settings.x_axis_color.b);
+								settings.x_axis_color.b);
 	g_data.shader->SetUniform3f("uZAxisColor", settings.z_axis_color.r, settings.z_axis_color.g,
-							   settings.z_axis_color.b);
+								settings.z_axis_color.b);
 	g_data.shader->SetUniform1i("uDrawAxes", settings.draw_axes ? 1 : 0);
 
 	Command::DrawIndexed(g_data.vao, 6);

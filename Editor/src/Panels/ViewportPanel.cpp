@@ -27,7 +27,8 @@ void CollectMeshes(Scene& scene, const entt::entity entity, std::vector<entt::en
 void ViewportPanel::OnAttach() {
 	spec_.width = Application::GetWindow()->GetWindowWidth();
 	spec_.height = Application::GetWindow()->GetWindowHeight();
-	spec_.attachments = {FramebufferTextureFormat::kRgba8, FramebufferTextureFormat::kRedInteger, FramebufferTextureFormat::kDepth24Stencil8};
+	spec_.attachments = {FramebufferTextureFormat::kRgba8, FramebufferTextureFormat::kRedInteger,
+						 FramebufferTextureFormat::kDepth24Stencil8};
 
 	framebuffer_ = Framebuffer::Create(spec_);
 	framebuffer_->Unbind();
@@ -138,7 +139,7 @@ void ViewportPanel::OnEvent(Event& event) {
 	// need the panel to actually have focus.
 	if (hovered_)
 		dispatcher.Dispatch<MouseScrolledEvent>(BR_BIND_EVENT_FN(ViewportPanel::OnMouseScrolled));
-		dispatcher.Dispatch<MouseButtonPressedEvent>(BR_BIND_EVENT_FN(ViewportPanel::OnMouseClicked));
+	dispatcher.Dispatch<MouseButtonPressedEvent>(BR_BIND_EVENT_FN(ViewportPanel::OnMouseClicked));
 
 	if (focused_)
 		dispatcher.Dispatch<KeyPressedEvent>(BR_BIND_EVENT_FN(ViewportPanel::OnKeyPressed));
@@ -167,9 +168,7 @@ bool ViewportPanel::OnKeyPressed(KeyPressedEvent& event) const {
 	}
 }
 
-bool ViewportPanel::OnMouseScrolled(MouseScrolledEvent& event) const {
-	return context_.camera.OnMouseScrolled(event);
-}
+bool ViewportPanel::OnMouseScrolled(MouseScrolledEvent& event) const { return context_.camera.OnMouseScrolled(event); }
 
 bool ViewportPanel::OnMouseClicked(MouseButtonPressedEvent& event) const {
 	if (hovered_) {
@@ -192,8 +191,8 @@ void ViewportPanel::DrawGizmo() const {
 
 	const ImVec2 viewport_min_region = ImGui::GetWindowContentRegionMin();
 	const ImVec2 viewport_offset = ImGui::GetWindowPos();
-	ImGuizmo::SetRect(viewport_min_region.x + viewport_offset.x, viewport_min_region.y + viewport_offset.y, viewport_size_.x,
-					  viewport_size_.y);
+	ImGuizmo::SetRect(viewport_min_region.x + viewport_offset.x, viewport_min_region.y + viewport_offset.y,
+					  viewport_size_.x, viewport_size_.y);
 
 	glm::mat4 proj = scene.camera->GetProjectionMatrix();
 	glm::mat4 view = scene.camera->GetViewMatrix();

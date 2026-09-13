@@ -21,17 +21,27 @@ std::size_t Index(const Id id) { return static_cast<std::size_t>(id); }
 /// instead of drawing whatever happened to sit at that index.
 const embedded::Resource& SourceFor(const Id id) {
 	switch (id) {
-		case Id::kAdd: return embedded::kAdd;
-		case Id::kDelete: return embedded::kDelete;
-		case Id::kSave: return embedded::kSave;
-		case Id::kUp: return embedded::kUp;
-		case Id::kFolder: return embedded::kFolder;
-		case Id::kFile: return embedded::kFile;
-		case Id::kModel: return embedded::kModel;
-		case Id::kScene: return embedded::kScene;
-		case Id::kProject: return embedded::kProject;
+		case Id::kAdd:
+			return embedded::kAdd;
+		case Id::kDelete:
+			return embedded::kDelete;
+		case Id::kSave:
+			return embedded::kSave;
+		case Id::kUp:
+			return embedded::kUp;
+		case Id::kFolder:
+			return embedded::kFolder;
+		case Id::kFile:
+			return embedded::kFile;
+		case Id::kModel:
+			return embedded::kModel;
+		case Id::kScene:
+			return embedded::kScene;
+		case Id::kProject:
+			return embedded::kProject;
 
-		case Id::kCount: break;
+		case Id::kCount:
+			break;
 	}
 
 	BR_APP_ASSERT(false, "No art for icon {}", Index(id));
@@ -41,17 +51,27 @@ const embedded::Resource& SourceFor(const Id id) {
 /// Names the button to ImGui and, with "##" in front of it, stays out of the label.
 const char* NameFor(const Id id) {
 	switch (id) {
-		case Id::kAdd: return "##icon.add";
-		case Id::kDelete: return "##icon.delete";
-		case Id::kSave: return "##icon.save";
-		case Id::kUp: return "##icon.up";
-		case Id::kFolder: return "##icon.folder";
-		case Id::kFile: return "##icon.file";
-		case Id::kModel: return "##icon.model";
-		case Id::kScene: return "##icon.scene";
-		case Id::kProject: return "##icon.project";
+		case Id::kAdd:
+			return "##icon.add";
+		case Id::kDelete:
+			return "##icon.delete";
+		case Id::kSave:
+			return "##icon.save";
+		case Id::kUp:
+			return "##icon.up";
+		case Id::kFolder:
+			return "##icon.folder";
+		case Id::kFile:
+			return "##icon.file";
+		case Id::kModel:
+			return "##icon.model";
+		case Id::kScene:
+			return "##icon.scene";
+		case Id::kProject:
+			return "##icon.project";
 
-		case Id::kCount: break;
+		case Id::kCount:
+			break;
 	}
 
 	return "##icon.unknown";

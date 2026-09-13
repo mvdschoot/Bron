@@ -106,7 +106,8 @@ entt::entity Scene::CreatePhongModel(const std::filesystem::path& path) {
 	// Recorded relative to the asset root so a save file survives the project
 	// being moved. paths::RelativeToAsset keeps a location outside the root as it is;
 	// joining an absolute path back onto the root is a no-op, so loading still works.
-	reg.emplace<ModelSourceComponent>(model_entity, paths::RelativeToAsset(path).generic_string(), MaterialWorkflow::kPhong);
+	reg.emplace<ModelSourceComponent>(model_entity, paths::RelativeToAsset(path).generic_string(),
+									  MaterialWorkflow::kPhong);
 
 	return model_entity;
 }

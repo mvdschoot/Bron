@@ -11,10 +11,9 @@
 
 namespace bron {
 
-inline const auto kPhongVertexLayout =
-		NamedBufferLayout<VertexVariables>({{VertexVariables::kPositions, {"a_Position", ShaderDataType::kFloat3}},
-											{VertexVariables::kNormals, {"a_Normal", ShaderDataType::kFloat3}},
-											{VertexVariables::kUvs, {"a_TexCoords", ShaderDataType::kFloat2}},
-											{VertexVariables::kSmoothNormals,
-											 {"a_SmoothNormal", ShaderDataType::kFloat3}}});
+inline const auto kPhongVertexLayout = NamedBufferLayout<VertexVariables>(
+		{{VertexVariables::kPositions, {"a_Position", ShaderDataType::kFloat3}},
+		 {VertexVariables::kNormals, {"a_Normal", ShaderDataType::kFloat3}},
+		 {VertexVariables::kUvs, {"a_TexCoords", ShaderDataType::kFloat2}},
+		 {VertexVariables::kSmoothNormals, {"a_SmoothNormal", ShaderDataType::kFloat3}}});
 }
