@@ -19,21 +19,16 @@ void Application::Run() {
 		last_frame_time_ = time;
 
 		if (!minimized_) {
-			for (Overlay* overlay: overlay_stack_.GetOverlays()) {
-				for (Layer* layer: overlay->GetLayers()) {
-					layer->OnUpdate(ts);
-				}
-			}
+			// Front to back, so an overlay draws over what it covers.
+			for (Layer* layer: layer_stack_)
+				layer->OnUpdate(ts);
 		}
 
 		{
 			BR_PROFILE_SCOPE("IMGUI_LAYER");
 			imgui_layer_->Begin();
-			for (Overlay* overlay: overlay_stack_.GetOverlays()) {
-				for (Layer* layer: overlay->GetLayers()) {
-					layer->OnImGuiRender();
-				}
-			}
+			for (Layer* layer: layer_stack_)
+				layer->OnImGuiRender();
 			imgui_layer_->End();
 		}
 
@@ -43,6 +38,10 @@ void Application::Run() {
 			BR_PROFILE_END_SESSION();
 		}
 	}
+
+	// Here rather than in a destructor: the window and its graphics context are still up
+	// at this point, and a layer releasing a texture needs them to be.
+	layer_stack_.DetachAll();
 }
 
 void Application::Init() {
@@ -56,14 +55,11 @@ void Application::Init() {
 
 	ShaderRegistry::Init();
 
-	auto imgui_overlay = new Overlay;
-	auto profiling_overlay = new Overlay;
+	imgui_layer_ = CreateScope<ImGuiLayer>(window_);
 
-	imgui_layer_ = new ImGuiLayer(window_);
-	imgui_overlay->InsertLayer(imgui_layer_);
-
-	overlay_stack_.InsertOverlay(imgui_overlay);
-	overlay_stack_.InsertOverlay(profiling_overlay);
+	// An overlay, so it covers whatever the application pushes later and is offered
+	// every event before that layer is.
+	layer_stack_.PushOverlay(imgui_layer_.get());
 
 	BR_CORE_INFO("Is initialised");
 }
@@ -84,19 +80,22 @@ bool Application::OnWindowResize(WindowResizeEvent& event) {
 	return true;
 }
 
-void Application::AddOverlay(Overlay* overlay) { overlay_stack_.InsertOverlay(overlay); }
+void Application::PushLayer(Layer* layer) { layer_stack_.PushLayer(layer); }
+
+void Application::PushOverlay(Layer* overlay) { layer_stack_.PushOverlay(overlay); }
 
 void Application::OnEvent(Event& event) {
 	EventDispatcher disp(event);
 	disp.Dispatch<WindowCloseEvent>(BR_BIND_EVENT_FN(Application::OnWindowClose));
 	disp.Dispatch<WindowResizeEvent>(BR_BIND_EVENT_FN(Application::OnWindowResize));
 
-	for (auto x = overlay_stack_.GetBegin(); x != overlay_stack_.GetEnd(); ++x) {
-		for (auto y = (*x)->GetBegin(); y != (*x)->GetEnd(); ++y) {
-			if (event.is_handled)
-				return;
-			(*y)->OnEvent(event);
-		}
+	// Back to front, the reverse of the draw order: what is on top is offered the event
+	// first, and once it marks the event handled nothing underneath it sees it.
+	for (auto it = layer_stack_.rbegin(); it != layer_stack_.rend(); ++it) {
+		if (event.is_handled)
+			return;
+
+		(*it)->OnEvent(event);
 	}
 }
 } // namespace bron

@@ -7,9 +7,7 @@ add_library(Bron STATIC
 	Bron/Core/Window.cpp
 
 	# Layers
-	Bron/Layers/Layer.cpp
-	Bron/Layers/Overlay.cpp
-	Bron/Layers/OverlayStack.cpp
+	Bron/Layers/LayerStack.cpp
 	Bron/Layers/ImGuiLayer.cpp
 
 	# Graphics

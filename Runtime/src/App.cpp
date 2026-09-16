@@ -8,14 +8,12 @@ namespace bron::editor {
 App::App() {
 	BR_PROFILE_FUNCTION();
 
-	// A layer rather than an overlay: the ImGui layer has to stay on top of it, both to
-	// draw the panels this fills and to get at the input first.
-	PushLayer(&editor_layer);
+	overlay.InsertLayer(&editor_layer);
+	AddOverlay(&overlay);
 }
 
 App::~App() {
-	// Anything the editor layer holds is released in its OnDetach, which Run() has
-	// already called. This is only what belongs to the application itself.
+	// Application never calls Layer::OnDetach, so shutdown work hangs off the app itself.
 	Preferences::Save();
 }
 } // namespace bron::editor

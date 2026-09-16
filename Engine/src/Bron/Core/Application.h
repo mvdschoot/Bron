@@ -6,8 +6,7 @@
 #include "Bron/Core/Timestep.h"
 #include "Bron/Core/Profiling.h"
 
-#include "Bron/Layers/OverlayStack.h"
-#include "Bron/Layers/Overlay.h"
+#include "Bron/Layers/LayerStack.h"
 #include "Bron/Layers/Layer.h"
 #include "Bron/Layers/ImGuiLayer.h"
 
@@ -40,14 +39,24 @@ public:
 	static Ref<Window> GetWindow() { return window_; }
 
 protected:
-	void AddOverlay(Overlay* overlay);
+	/// Adds a layer under every overlay: it draws first and is the last to be offered an
+	/// event. Where the thing the application is actually for goes - the editor, a game.
+	void PushLayer(Layer* layer);
+
+	/// Adds a layer over everything: it draws last and is the first to be offered an
+	/// event. For what covers the application rather than being it - the ImGui layer,
+	/// a pause menu, a debug HUD.
+	void PushOverlay(Layer* overlay);
 
 private:
 	static Ref<Window> window_;
 	GraphicsContext* graphics_context_;
 
-	OverlayStack overlay_stack_;
-	ImGuiLayer* imgui_layer_;
+	LayerStack layer_stack_;
+
+	// Owned here rather than pushed and forgotten: Run() drives Begin/End around the
+	// whole stack, which is not something the stack itself can do.
+	Scope<ImGuiLayer> imgui_layer_;
 
 	bool running_, minimized_;
 	float last_frame_time_;

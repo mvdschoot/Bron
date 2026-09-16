@@ -11,7 +11,8 @@
 #include "Bron/Events/WindowEvent.h"
 #include "Bron/Events/MouseEvent.h"
 
-#include "Bron/Layers/OverlayStack.h"
+#include "Bron/Layers/Layer.h"
+#include "Bron/Layers/LayerStack.h"
 
 #include "Bron/Graphics/Renderer/2D.h"
 #include "Bron/Graphics/Renderer/Command.h"

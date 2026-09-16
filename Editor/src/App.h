@@ -12,7 +12,8 @@ public:
 	~App() override;
 
 private:
-	Overlay overlay;
+	// Owned here, not by the layer stack - Application's stack only orders what it is
+	// given. It outlives the stack, which is detached at the end of Application::Run().
 	EditorLayer editor_layer;
 };
 } // namespace bron::editor
