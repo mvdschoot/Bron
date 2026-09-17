@@ -11,6 +11,5 @@ public:
 	~App() override;
 
 private:
-	Overlay overlay;
 };
 } // namespace bron::editor

@@ -8,8 +8,7 @@ namespace bron::editor {
 App::App() {
 	BR_PROFILE_FUNCTION();
 
-	overlay.InsertLayer(&editor_layer);
-	AddOverlay(&overlay);
+	PushLayer()
 }
 
 App::~App() {
