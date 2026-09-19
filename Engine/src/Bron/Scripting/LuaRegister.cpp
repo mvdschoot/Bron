@@ -20,18 +20,19 @@
 
 namespace bron::lua {
 
-bool Entity::IsValid() const {
-	return scene != nullptr && scene->reg.valid(handle) && !scene->reg.all_of<PendingDestroyComponent>(handle);
+namespace {
+// False once the entity is destroyed, or queued for destruction by a script.
+bool IsValid(const Scene& scene, const Entity& entity) {
+	return scene.reg.valid(entity.handle) && !scene.reg.all_of<PendingDestroyComponent>(entity.handle);
 }
 
-namespace {
-// The registry behind a script's entity, or a Lua error when the entity is gone.
-// Every binding that touches an entity goes through here, so a script holding on to
-// a destroyed entity gets an error rather than reading a recycled slot.
-entt::registry& Registry(const Entity& entity) {
-	if (!entity.IsValid())
+// The scene's registry, or a Lua error when the entity is gone. Every binding that
+// touches an entity goes through here, so a script holding on to a destroyed entity
+// gets an error rather than reading a recycled slot.
+entt::registry& Registry(Scene& scene, const Entity& entity) {
+	if (!IsValid(scene, entity))
 		throw sol::error("attempt to use a destroyed entity");
-	return entity.scene->reg;
+	return scene.reg;
 }
 
 void MarkForDestroy(entt::registry& reg, const entt::entity entity) {
@@ -78,18 +79,18 @@ void AddVectorOperations(sol::usertype<V>& type) {
 // Components every entity has (Scene::CreateEntity adds them, and the engine reads
 // them unchecked), so a script may read them but not add or remove them.
 template<typename T>
-void BindRequiredComponent(sol::usertype<Entity>& type, const std::string& name) {
-	type["get_" + name] = [](const Entity& self) -> T& { return Registry(self).get<T>(self.handle); };
+void BindRequiredComponent(sol::usertype<Entity>& type, Scene* s, const std::string& name) {
+	type["get_" + name] = [s](const Entity& self) -> T& { return Registry(*s, self).get<T>(self.handle); };
 }
 
 template<typename T>
-void BindOptionalComponent(sol::usertype<Entity>& type, const std::string& name) {
+void BindOptionalComponent(sol::usertype<Entity>& type, Scene* s, const std::string& name) {
 	// nil when the entity does not have one.
-	type["get_" + name] = [](const Entity& self) -> T* { return Registry(self).try_get<T>(self.handle); };
-	type["has_" + name] = [](const Entity& self) { return Registry(self).all_of<T>(self.handle); };
+	type["get_" + name] = [s](const Entity& self) -> T* { return Registry(*s, self).try_get<T>(self.handle); };
+	type["has_" + name] = [s](const Entity& self) { return Registry(*s, self).all_of<T>(self.handle); };
 	// Returns the existing component when there already is one.
-	type["add_" + name] = [](const Entity& self) -> T& { return Registry(self).get_or_emplace<T>(self.handle); };
-	type["remove_" + name] = [](const Entity& self) { Registry(self).remove<T>(self.handle); };
+	type["add_" + name] = [s](const Entity& self) -> T& { return Registry(*s, self).get_or_emplace<T>(self.handle); };
+	type["remove_" + name] = [s](const Entity& self) { Registry(*s, self).remove<T>(self.handle); };
 }
 
 // ============================================================
@@ -425,56 +426,54 @@ void RegisterComponents(sol::state& state) {
 // Entity
 // ============================================================
 
-void RegisterEntity(sol::state& state) {
+void RegisterEntity(sol::state& state, Scene& scene) {
+	Scene* s = &scene;
 	sol::usertype<Entity> type = state.new_usertype<Entity>("Entity", sol::no_constructor);
 
-	type["is_valid"] = &Entity::IsValid;
+	type["is_valid"] = [s](const Entity& self) { return IsValid(*s, self); };
 	type["id"] = sol::readonly_property(
-			[](const Entity& self) { return std::string(Registry(self).get<IDComponent>(self.handle).id.value); });
-	type["name"] = sol::property([](const Entity& self) { return Registry(self).get<TagComponent>(self.handle).name; },
-								 [](const Entity& self, const std::string& name) {
-									 Registry(self).get<TagComponent>(self.handle).name = name;
-								 });
+			[s](const Entity& self) { return std::string(Registry(*s, self).get<IDComponent>(self.handle).id.value); });
+	type["name"] =
+			sol::property([s](const Entity& self) { return Registry(*s, self).get<TagComponent>(self.handle).name; },
+						  [s](const Entity& self, const std::string& name) {
+							  Registry(*s, self).get<TagComponent>(self.handle).name = name;
+						  });
 
-	type[sol::meta_function::equal_to] = [](const Entity& a, const Entity& b) {
-		return a.scene == b.scene && a.handle == b.handle;
-	};
-	type[sol::meta_function::to_string] = [](const Entity& self) {
-		if (!self.IsValid())
+	type[sol::meta_function::equal_to] = [](const Entity& a, const Entity& b) { return a.handle == b.handle; };
+	type[sol::meta_function::to_string] = [s](const Entity& self) {
+		if (!IsValid(*s, self))
 			return std::string("Entity(destroyed)");
-		return fmt::format("Entity({})", self.scene->reg.get<TagComponent>(self.handle).name);
+		return fmt::format("Entity({})", s->reg.get<TagComponent>(self.handle).name);
 	};
 
 	// Components
-	BindRequiredComponent<TagComponent>(type, "tag");
-	BindRequiredComponent<TransformComponent>(type, "transform");
-	BindRequiredComponent<VisibilityComponent>(type, "visibility");
-	BindOptionalComponent<PointLightComponent>(type, "point_light");
+	BindRequiredComponent<TagComponent>(type, s, "tag");
+	BindRequiredComponent<TransformComponent>(type, s, "transform");
+	BindRequiredComponent<VisibilityComponent>(type, s, "visibility");
+	BindOptionalComponent<PointLightComponent>(type, s, "point_light");
 
 	// Hierarchy - through Scene so the parent and child lists stay in sync.
-	type["get_parent"] = [](const Entity& self) -> sol::optional<Entity> {
-		const entt::entity parent = Registry(self).get<HierarchyComponent>(self.handle).parent;
+	type["get_parent"] = [s](const Entity& self) -> sol::optional<Entity> {
+		const entt::entity parent = Registry(*s, self).get<HierarchyComponent>(self.handle).parent;
 		if (parent == entt::null)
 			return sol::nullopt;
-		return Entity{self.scene, parent};
+		return Entity{parent};
 	};
-	type["get_children"] = [](const Entity& self) {
+	type["get_children"] = [s](const Entity& self) {
 		std::vector<Entity> children;
-		for (const entt::entity child: Registry(self).get<HierarchyComponent>(self.handle).children)
-			children.push_back(Entity{self.scene, child});
+		for (const entt::entity child: Registry(*s, self).get<HierarchyComponent>(self.handle).children)
+			children.push_back(Entity{child});
 		return sol::as_table(std::move(children));
 	};
 	// set_parent(nil) moves the entity back under the scene root.
-	type["set_parent"] = [](const Entity& self, sol::optional<Entity> parent) {
-		entt::registry& reg = Registry(self);
-		if (self.handle == self.scene->root)
+	type["set_parent"] = [s](const Entity& self, sol::optional<Entity> parent) {
+		entt::registry& reg = Registry(*s, self);
+		if (self.handle == s->root)
 			throw sol::error("the scene root cannot be re-parented");
 
-		entt::entity new_parent = self.scene->root;
+		entt::entity new_parent = s->root;
 		if (parent) {
-			Registry(*parent);
-			if (parent->scene != self.scene)
-				throw sol::error("cannot parent an entity to an entity from another scene");
+			Registry(*s, *parent);
 			new_parent = parent->handle;
 		}
 
@@ -485,21 +484,21 @@ void RegisterEntity(sol::state& state) {
 				throw sol::error("cannot parent an entity to itself or one of its descendants");
 		}
 
-		self.scene->AddChild(new_parent, self.handle);
+		s->AddChild(new_parent, self.handle);
 	};
 
-	type["world_transform"] = [](const Entity& self) {
-		Registry(self);
-		return self.scene->WorldTransform(self.handle);
+	type["world_transform"] = [s](const Entity& self) {
+		Registry(*s, self);
+		return s->WorldTransform(self.handle);
 	};
-	type["world_position"] = [](const Entity& self) {
-		Registry(self);
-		return glm::vec3(self.scene->WorldTransform(self.handle)[3]);
+	type["world_position"] = [s](const Entity& self) {
+		Registry(*s, self);
+		return glm::vec3(s->WorldTransform(self.handle)[3]);
 	};
 	// Visible only when it and every parent are.
-	type["is_visible"] = [](const Entity& self) {
-		Registry(self);
-		return self.scene->IsVisible(self.handle);
+	type["is_visible"] = [s](const Entity& self) {
+		Registry(*s, self);
+		return s->IsVisible(self.handle);
 	};
 }
 
@@ -511,22 +510,22 @@ void RegisterScene(sol::state& state, Scene& scene) {
 	Scene* s = &scene;
 	sol::table table = state.create_named_table("scene");
 
-	table["get_root"] = [s] { return Entity{s, s->root}; };
+	table["get_root"] = [s] { return Entity{s->root}; };
 
 	// Parented to the scene root when no parent is given, so it shows up in the editor.
 	table["create_entity"] = [s](const std::string& name, sol::optional<Entity> parent) {
 		entt::entity parent_handle = s->root;
 		if (parent) {
-			Registry(*parent);
+			Registry(*s, *parent);
 			parent_handle = parent->handle;
 		}
-		return Entity{s, s->CreateEntity(name, parent_handle)};
+		return Entity{s->CreateEntity(name, parent_handle)};
 	};
 
 	// Destroys the entity and its children at the end of the frame; they stop being
 	// valid straight away.
 	table["destroy_entity"] = [s](const Entity& entity) {
-		entt::registry& reg = Registry(entity);
+		entt::registry& reg = Registry(*s, entity);
 		if (entity.handle == s->root)
 			throw sol::error("the scene root cannot be destroyed");
 		MarkForDestroy(reg, entity.handle);
@@ -536,7 +535,7 @@ void RegisterScene(sol::state& state, Scene& scene) {
 	table["find_entity"] = [s](const std::string& name) -> sol::optional<Entity> {
 		for (auto [entity, tag]: s->reg.view<TagComponent>(entt::exclude<PendingDestroyComponent>).each()) {
 			if (tag.name == name)
-				return Entity{s, entity};
+				return Entity{entity};
 		}
 		return sol::nullopt;
 	};
@@ -547,7 +546,7 @@ void RegisterAll(sol::state& state, Scene& scene) {
 	RegisterLog(state);
 	RegisterInput(state);
 	RegisterComponents(state);
-	RegisterEntity(state);
+	RegisterEntity(state, scene);
 	RegisterScene(state, scene);
 }
 

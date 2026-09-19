@@ -6,15 +6,21 @@
 
 #include "Bron/Core/Core.h"
 #include "Bron/Core/Timestep.h"
+#include "Bron/Core/UUID.h"
 #include "Bron/Events/Event.h"
 
 #include "entt/entity/entity.hpp"
 
-#include <string>
+#include <filesystem>
 
 
 namespace bron {
 class Scene;
+
+namespace lua {
+struct State;
+struct Script;
+struct ScriptInstance;
 
 class LuaManager {
 public:
@@ -25,19 +31,17 @@ public:
 	LuaManager(const LuaManager&) = delete;
 	LuaManager& operator=(const LuaManager&) = delete;
 
-	void RegisterScript(std::string location, entt::entity entity);
-	void OnUpdate(Timestep ts);
-	void OnAttach();
-	void OnDetach();
+	UUID RegisterScript(const std::filesystem::path& location) const;
+	void AttachScript(UUID script_id, entt::entity entity) const;
+
+	void OnUpdate(Timestep ts) const;
+	void OnStart();
+	void OnDestroy();
 	void OnEvent(Event& event);
 
 private:
-	// Holds the sol::state and everything else of sol's. Defined in LuaManager.cpp,
-	// so including this header does not pull sol.hpp into the rest of the engine.
-	struct State;
-
 	Scene* scene_;
 	Scope<State> state_;
 };
-
+} // namespace lua
 } // namespace bron

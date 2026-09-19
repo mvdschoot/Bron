@@ -5,6 +5,8 @@
 
 #include "Bron/Core/Core.h"
 
+#include <optional>
+
 namespace bron {
 bool CompareFloat(float x, float y, float epsilon = 0.01f);
 bool CompareFloats(glm::vec3 a, glm::vec3 b, float epsilon = 0.01f);
@@ -20,4 +22,15 @@ std::tuple<glm::vec3*, glm::vec3*, uint32_t*, u32, u32> GenSphereSmoothVertices(
 																				u32 accuracy);
 
 std::string ToLowerCase(const std::string& str);
+
+template<std::ranges::range T, typename Pred>
+auto* Find(T& container, Pred&& predicate) {
+	for (auto& item: container) {
+		if (predicate(item)) {
+			return &item;
+		}
+	}
+	return static_cast<std::ranges::range_value_t<T>*>(nullptr);
+}
+
 } // namespace bron

@@ -8,14 +8,11 @@ namespace bron {
 class Scene;
 
 namespace lua {
-// What a script holds instead of a raw entt::entity: the handle alone does not say
-// which registry it belongs to, and it cannot tell a script the entity is gone.
+// What a script holds instead of a raw entt::entity, which sol would push as a plain
+// number with no methods. There is one scene per Lua state, so the bindings capture
+// it when they are registered and the handle is all an entity needs to carry.
 struct Entity {
-	Scene* scene = nullptr;
 	entt::entity handle = entt::null;
-
-	// False once the entity is destroyed, or queued for destruction by a script.
-	bool IsValid() const;
 };
 
 // Marks an entity a script destroyed. Destroying straight away would swap another
@@ -27,7 +24,7 @@ void RegisterMath(sol::state& state);
 void RegisterLog(sol::state& state);
 void RegisterInput(sol::state& state);
 void RegisterComponents(sol::state& state);
-void RegisterEntity(sol::state& state);
+void RegisterEntity(sol::state& state, Scene& scene);
 void RegisterScene(sol::state& state, Scene& scene);
 
 // Everything above, in dependency order.

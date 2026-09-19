@@ -12,6 +12,9 @@ public:
 	BR_EVENT_CLASS_CATEGORY(EventCategory::kMouse | EventCategory::kInput);
 	BR_EVENT_CLASS_TYPE(MouseMoved);
 
+	float GetX() const { return mouse_x_; }
+	float GetY() const { return mouse_y_; }
+
 private:
 	float mouse_x_, mouse_y_;
 };
@@ -21,6 +24,8 @@ public:
 	MouseButtonEvent(int key) : key_(static_cast<MouseCode>(key)) {};
 
 	BR_EVENT_CLASS_CATEGORY(EventCategory::kMouseButton | EventCategory::kInput);
+
+	MouseCode GetButton() const { return key_; }
 
 private:
 	MouseCode key_;

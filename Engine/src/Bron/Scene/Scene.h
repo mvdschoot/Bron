@@ -10,7 +10,9 @@
 #include "Bron/Graphics/LightManagement.h"
 
 namespace bron {
+namespace lua {
 class LuaManager;
+}
 
 class Scene {
 public:
@@ -43,6 +45,6 @@ public:
 
 	LightManagement light_management;
 	Camera* camera = nullptr;
-	Scope<LuaManager> lua_manager;
+	Scope<lua::LuaManager> lua_manager;
 };
 } // namespace bron

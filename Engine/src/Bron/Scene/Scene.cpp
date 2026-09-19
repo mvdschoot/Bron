@@ -7,7 +7,7 @@
 #include "Bron/Scripting/LuaManager.h"
 
 namespace bron {
-Scene::Scene() : light_management(*this), lua_manager(CreateScope<LuaManager>(this)) {
+Scene::Scene() : light_management(*this), lua_manager(CreateScope<lua::LuaManager>(this)) {
 	root = CreateEntity("Root node");
 }
 
