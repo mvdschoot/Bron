@@ -137,12 +137,14 @@ void ViewportPanel::OnEvent(Event& event) {
 
 	// Scrolling follows the cursor, the way it does everywhere else; typed shortcuts
 	// need the panel to actually have focus.
-	if (hovered_)
+	if (hovered_) {
 		dispatcher.Dispatch<MouseScrolledEvent>(BR_BIND_EVENT_FN(ViewportPanel::OnMouseScrolled));
-	dispatcher.Dispatch<MouseButtonPressedEvent>(BR_BIND_EVENT_FN(ViewportPanel::OnMouseClicked));
+		dispatcher.Dispatch<MouseButtonPressedEvent>(BR_BIND_EVENT_FN(ViewportPanel::OnMouseClicked));
+	}
 
-	if (focused_)
+	if (focused_) {
 		dispatcher.Dispatch<KeyPressedEvent>(BR_BIND_EVENT_FN(ViewportPanel::OnKeyPressed));
+	}
 }
 
 bool ViewportPanel::OnKeyPressed(KeyPressedEvent& event) const {
@@ -171,7 +173,7 @@ bool ViewportPanel::OnKeyPressed(KeyPressedEvent& event) const {
 bool ViewportPanel::OnMouseScrolled(MouseScrolledEvent& event) const { return context_.camera.OnMouseScrolled(event); }
 
 bool ViewportPanel::OnMouseClicked(MouseButtonPressedEvent& event) const {
-	if (hovered_) {
+	if (hovered_ && !guizmo_hovered_) {
 		entt::entity entity = ReadHoveredEntity();
 		context_.selection = entity;
 		return true;
@@ -179,7 +181,7 @@ bool ViewportPanel::OnMouseClicked(MouseButtonPressedEvent& event) const {
 	return false;
 }
 
-void ViewportPanel::DrawGizmo() const {
+void ViewportPanel::DrawGizmo() {
 	if (!context_.HasSelection())
 		return;
 
@@ -203,6 +205,7 @@ void ViewportPanel::DrawGizmo() const {
 	ImGuizmo::Manipulate(glm::value_ptr(view), glm::value_ptr(proj), context_.gizmo_operation, ImGuizmo::LOCAL,
 						 glm::value_ptr(transform));
 
+	guizmo_hovered_ = ImGuizmo::IsOver();
 	if (!ImGuizmo::IsUsing()) // only update if the user is manipulating
 		return;
 

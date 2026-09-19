@@ -10,9 +10,14 @@
 #include "Bron/Graphics/LightManagement.h"
 
 namespace bron {
+class LuaManager;
+
 class Scene {
 public:
 	Scene();
+	// Out of line: lua_manager is only forward declared here, and destroying it needs
+	// the full type.
+	~Scene();
 
 	// Creates an entity with a Tag, a Transform and a Hierarchy. Parents it to 'parent'
 	// when one is given, otherwise it is left unparented.
@@ -38,5 +43,6 @@ public:
 
 	LightManagement light_management;
 	Camera* camera = nullptr;
+	Scope<LuaManager> lua_manager;
 };
 } // namespace bron

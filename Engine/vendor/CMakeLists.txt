@@ -3,6 +3,12 @@ project(VendorLibraries)
 
 include(FetchContent)
 
+# Give files extracted from URL archives the time of extraction rather than
+# the archive's own timestamps, so bumping a version always triggers a rebuild.
+if (POLICY CMP0135)
+    cmake_policy(SET CMP0135 NEW)
+endif ()
+
 add_library(VendorLibrary INTERFACE)
 
 # --------------------
@@ -176,6 +182,33 @@ FetchContent_Declare(
 FetchContent_MakeAvailable(nfd)
 
 # --------------------
+# Lua
+# --------------------
+add_subdirectory(lua)
+
+
+# --------------------
+# sol2
+#
+# Header only. Its own CMakeLists goes looking for (or downloads) a Lua of its
+# own, so SOURCE_SUBDIR points at a directory without one: the archive is
+# unpacked but not configured, and the target is defined here against the
+# Lua from lua/.
+# --------------------
+FetchContent_Declare(
+        sol2
+        URL https://github.com/ThePhD/sol2/archive/refs/tags/v3.5.0.tar.gz
+        URL_HASH SHA256=86c0f6d2836b184a250fc2907091c076bf53c9603dd291eaebade36cc342e13c
+        SOURCE_SUBDIR include
+)
+FetchContent_MakeAvailable(sol2)
+
+add_library(sol2 INTERFACE)
+target_include_directories(sol2 INTERFACE ${sol2_SOURCE_DIR}/include)
+target_link_libraries(sol2 INTERFACE lua)
+target_compile_features(sol2 INTERFACE cxx_std_17)
+
+# --------------------
 # Vendor library
 # --------------------
 target_link_libraries(VendorLibrary INTERFACE
@@ -192,4 +225,6 @@ target_link_libraries(VendorLibrary INTERFACE
         EnTT::EnTT
         nlohmann_json
         nfd
+        lua
+        sol2
 )

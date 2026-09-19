@@ -1,13 +1,17 @@
 #include "Scene.h"
 
 #include <algorithm>
-#include <cstdlib>
 
 #include "Bron/Graphics/Components/ModelLoader.h"
 #include "Bron/Util/Paths.h"
+#include "Bron/Scripting/LuaManager.h"
 
 namespace bron {
-Scene::Scene() : light_management(*this) { root = CreateEntity("Root node"); }
+Scene::Scene() : light_management(*this), lua_manager(CreateScope<LuaManager>(this)) {
+	root = CreateEntity("Root node");
+}
+
+Scene::~Scene() = default;
 
 entt::entity Scene::CreateEntity(const std::string& name, const entt::entity parent) {
 	const entt::entity entity = reg.create();

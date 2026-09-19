@@ -22,7 +22,7 @@ public:
 private:
 	/// Keeps the framebuffer and the camera projection matching the panel.
 	void Resize(ImVec2 size);
-	void DrawGizmo() const;
+	void DrawGizmo();
 	/// Logs the entity under the cursor, read back from the id attachment.
 	entt::entity ReadHoveredEntity() const;
 
@@ -40,5 +40,7 @@ private:
 	/// it cannot query focus itself.
 	bool focused_ = false;
 	bool hovered_ = false;
+
+	bool guizmo_hovered_ = false;
 };
 } // namespace bron::editor
