@@ -26,7 +26,7 @@ struct EditorContext {
 
 	[[nodiscard]] bool HasScene() const { return active_scene != nullptr; }
 
-	EditorCamera camera{glm::radians(80.0f), 16.0f / 9.0f, 0.1f, 100.0f};
+	EditorCamera camera{glm::radians(80.0f), 0.1f, 100.0f};
 
 	/// The entity the inspector and the gizmo act on, or entt::null for "nothing selected".
 	entt::entity selection = entt::null;
@@ -38,13 +38,10 @@ struct EditorContext {
 	[[nodiscard]] bool HasSelection() const { return selection != entt::null; }
 	void ClearSelection() { selection = entt::null; }
 
-	/// Points the editor at a scene and hands it the camera the viewport renders through.
-	/// The old selection belonged to the old scene, so it goes.
+	/// Points the editor at a scene. The old selection belonged to the old scene, so it
+	/// goes.
 	void SetActiveScene(Scene* scene) {
 		active_scene = scene;
-		if (active_scene)
-			active_scene->camera = &camera;
-
 		ClearSelection();
 	}
 };

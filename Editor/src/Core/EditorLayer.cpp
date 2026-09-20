@@ -57,7 +57,7 @@ void EditorLayer::OnAttach() {
 	Command::Init();
 	SceneRenderer::Init();
 	Command::ClearColor({0.0, 0.0, 0.0, 0.5});
-	GridRenderer::Init(&context_.camera);
+	GridRenderer::Init();
 
 	// Reopen where the last session left off. Nothing to reopen is fine: the editor
 	// starts with no project, and no asset root, until one is created or opened.

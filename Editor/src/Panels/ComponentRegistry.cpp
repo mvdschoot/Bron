@@ -72,6 +72,35 @@ void DrawVisibility(Scene& scene, const entt::entity entity) {
 	Checkbox("Visible", &scene.reg.get<VisibilityComponent>(entity).visible);
 }
 
+void DrawCamera(Scene& scene, const entt::entity entity) {
+	CameraComponent& camera = scene.reg.get<CameraComponent>(entity);
+	constexpr const char* kProjectionTypes[]{"Perspective", "Orthographic"};
+	static int selected_projection_type = camera.projection == kPerspective ? 0 : 1;
+	static bool is_primary = camera.primary;
+
+	Combo("Projection type", &selected_projection_type, *kProjectionTypes, 2);
+	Checkbox("Primary camera", &is_primary);
+
+	Separator();
+
+	InputFloat("FOV", &camera.fov_y);
+	InputFloat("Near plane", &camera.near_plane);
+	InputFloat("Far plane", &camera.far_plane);
+
+	if (selected_projection_type == kOrthographic) {
+		InputFloat("Orthographic size", &camera.ortho_size);
+	}
+
+	if (is_primary != camera.primary) {
+		for (auto [other_entity, other_cameras]: scene.reg.view<CameraComponent>().each()) {
+			other_cameras.primary = false;
+		}
+		camera.primary = is_primary;
+	}
+
+	camera.projection = selected_projection_type == 0 ? kPerspective : kOrthographic;
+}
+
 
 // ----------------------------------------------------------------
 // Registration
@@ -104,6 +133,8 @@ std::vector<ComponentMeta> Build() {
 	Register<MeshComponent>(components, "Mesh", DrawMesh, kComponentFlagsRemovable);
 
 	Register<PointLightComponent>(components, "Light", DrawPointLight);
+
+	Register<CameraComponent>(components, "Camera", DrawCamera);
 
 	return components;
 }

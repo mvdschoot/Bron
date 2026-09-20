@@ -18,7 +18,6 @@ struct GridData {
 	Ref<IndexBuffer> ibo;
 
 	Ref<Shader> shader;
-	Camera* camera = nullptr;
 
 	GridSettings settings;
 };
@@ -36,7 +35,7 @@ constexpr float kClipSpaceQuad[8] = {
 };
 constexpr u32 kQuadIndices[6] = {0, 1, 2, 2, 3, 0};
 
-// The camera interface does not carry its clip planes, but a perspective projection does:
+// A CameraView does not carry its clip planes, but a perspective projection does:
 // glm::perspective stores -(f+n)/(f-n) at [2][2] and -2fn/(f-n) at [3][2], and those two
 // invert to the distance below. The grid needs it so its fade can finish just before the
 // far plane - past that the floor is clipped away, and a fade that has not finished yet
@@ -50,10 +49,9 @@ float FarPlaneOf(const glm::mat4& projection) {
 }
 } // namespace
 
-void GridRenderer::Init(Camera* camera) {
+void GridRenderer::Init() {
 	BR_PROFILE_FUNCTION();
 
-	g_data.camera = camera;
 	g_data.shader = Shader::Create(builtin_shaders::Source(builtin_shaders::Id::kGrid));
 
 	float vertices[8];
@@ -73,15 +71,15 @@ void GridRenderer::Init(Camera* camera) {
 
 GridSettings& GridRenderer::Settings() { return g_data.settings; }
 
-void GridRenderer::Draw() {
+void GridRenderer::Draw(const CameraView& view) {
 	BR_PROFILE_FUNCTION();
-	BR_CORE_ASSERT(g_data.camera, "GridRenderer::Draw before Init");
+	BR_CORE_ASSERT(g_data.shader, "GridRenderer::Draw before Init");
 
 	const GridSettings& settings = g_data.settings;
 
-	const glm::mat4 projection = g_data.camera->GetProjectionMatrix();
-	const glm::mat4 view_projection = projection * g_data.camera->GetViewMatrix();
-	const glm::vec3 camera_position = g_data.camera->GetPosition();
+	const glm::mat4 projection = view.projection;
+	const glm::mat4 view_projection = view.ViewProjection();
+	const glm::vec3 camera_position = view.position;
 
 	// How far the grid should reach. Tying it to the camera's height above the plane keeps
 	// the amount of grid on screen roughly constant while you zoom, and the far plane is a

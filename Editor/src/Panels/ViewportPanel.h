@@ -20,7 +20,7 @@ public:
 	bool OnKeyPressed(KeyPressedEvent& event) const;
 
 private:
-	/// Keeps the framebuffer and the camera projection matching the panel.
+	/// Keeps the framebuffer matching the panel.
 	void Resize(ImVec2 size);
 	void DrawGizmo();
 	/// Logs the entity under the cursor, read back from the id attachment.
@@ -28,6 +28,11 @@ private:
 
 	Ref<Framebuffer> framebuffer_;
 	FramebufferSpecification spec_;
+
+	/// What this frame was drawn through, rebuilt at the top of OnUpdate. Kept because
+	/// the gizmo needs the same matrices during OnImGuiRender, and recomputing them
+	/// there would let the two disagree for a frame.
+	CameraView view_;
 
 	/// Exludes the top bar, this is the actual drawable size in pixels.
 	ImVec2 viewport_size_{0.0f, 0.0f};

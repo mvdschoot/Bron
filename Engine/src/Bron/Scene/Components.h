@@ -19,6 +19,7 @@
 #include <vector>
 
 #include "Bron/Graphics/Components/BufferExtentions.h"
+#include "Bron/Graphics/CameraView.h"
 #include "Bron/Graphics/MaterialBase.h"
 #include "Bron/Graphics/VertexArray.h"
 #include "Serialization/GlmJson.h"
@@ -28,10 +29,17 @@ namespace bron {
 // nlohmann has no idea what a UUID is; it round trips as its string form.
 inline void to_json(nlohmann::json& j, const UUID& uuid) { j = uuid.value; }
 
-inline void from_json(const nlohmann::json& j, UUID& uuid) {
+inline void from_json(const nlohmann::json& j, UUID& path) {
 	const std::string text = j.get<std::string>();
-	std::strncpy(uuid.value, text.c_str(), sizeof(uuid.value) - 1);
-	uuid.value[sizeof(uuid.value) - 1] = '\0';
+	std::strncpy(path.value, text.c_str(), sizeof(path.value) - 1);
+	path.value[sizeof(path.value) - 1] = '\0';
+}
+
+inline void to_json(nlohmann::json& j, const std::filesystem::path& path) { j = path.generic_string(); }
+
+inline void from_json(const nlohmann::json& j, std::filesystem::path& path) {
+	const std::string text = j.get<std::string>();
+	path = std::filesystem::path(text);
 }
 
 // A save file cannot key entities by entt::entity: those are positions in a
@@ -208,6 +216,67 @@ struct VisibilityComponent {
 	explicit VisibilityComponent(const bool visible) : visible(visible) {}
 
 	NLOHMANN_DEFINE_TYPE_INTRUSIVE(VisibilityComponent, visible)
+};
+
+// --------------------------------------------------------------------
+// Camera
+// --------------------------------------------------------------------
+
+enum ProjectionType { kPerspective, kOrthographic };
+
+NLOHMANN_JSON_SERIALIZE_ENUM(ProjectionType, {
+													 {kPerspective, "perspective"},
+													 {kOrthographic, "orthographic"},
+											 })
+
+// A point of view that belongs to the scene rather than to the editor.
+//
+// Data only: where the camera is and which way it faces is its entity's
+// TransformComponent, and the matrices a shader wants are a CameraView, derived from
+// the two whenever something draws. Nothing here is a Camera object, so there is no
+// second copy of a pose to keep in step.
+//
+// The aspect ratio is deliberately absent. It belongs to whatever is being drawn into -
+// the editor's viewport panel, the game's window - and the same scene has a different
+// one in each, so storing it in the file would be storing one caller's accident.
+struct CameraComponent {
+	ProjectionType projection = kPerspective;
+
+	// Vertical field of view, radians. Perspective only, but kept across a switch to
+	// orthographic so toggling back does not lose it.
+	float fov_y = glm::radians(45.0f);
+
+	// Vertical extent in world units; the horizontal one follows from the aspect of the
+	// render target. Orthographic only.
+	float ortho_size = 10.0f;
+
+	// Not 'near' and 'far': both are macros in windef.h, and the errors that causes are
+	// a long way from the cause.
+	float near_plane = 0.1f;
+	float far_plane = 1000.0f;
+
+	// The camera the runtime looks through. A scene has exactly one - see
+	// Scene::PrimaryCamera(), and the editor clears the flag on the others when one is
+	// set.
+	bool primary = false;
+
+	NLOHMANN_DEFINE_TYPE_INTRUSIVE(CameraComponent, projection, fov_y, ortho_size, near_plane, far_plane, primary)
+};
+
+// The view matrix and projection for looking through 'camera', whose entity sits at
+// 'world_transform'. 'aspect' is the render target's width over its height.
+CameraView ViewFrom(const CameraComponent& camera, const glm::mat4& world_transform, float aspect);
+
+// --------------------------------------------------------------------
+// Script
+// --------------------------------------------------------------------
+struct ScriptComponent {
+	std::vector<std::filesystem::path> scripts;
+
+	ScriptComponent() = default;
+	explicit ScriptComponent(const std::filesystem::path& location) : scripts({location}) {}
+
+	NLOHMANN_DEFINE_TYPE_INTRUSIVE(ScriptComponent, scripts)
 };
 
 } // namespace bron

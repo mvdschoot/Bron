@@ -45,6 +45,10 @@ void ViewportPanel::OnUpdate(const Timestep ts) {
 	if (focused_)
 		context_.camera.OnUpdate(ts);
 
+	// The aspect comes from the panel, not the camera: the projection has to follow
+	// whatever the framebuffer currently is, or the scene is stretched to fit it.
+	view_ = context_.camera.View(viewport_size_.y > 0.0f ? viewport_size_.x / viewport_size_.y : 1.0f);
+
 	framebuffer_->Bind();
 	Command::Clear();
 
@@ -54,15 +58,15 @@ void ViewportPanel::OnUpdate(const Timestep ts) {
 	framebuffer_->ClearAttachmentInt(1, -1);
 
 	Command::EnableBlend();
-	GridRenderer::Draw();
+	GridRenderer::Draw(view_);
 
 	Command::EnableDepth();
 	if (context_.HasScene()) {
-		SceneRenderer::Draw(*context_.active_scene);
+		SceneRenderer::Draw(*context_.active_scene, view_);
 
 		std::vector<entt::entity> selected_meshes;
 		CollectMeshes(*context_.active_scene, context_.selection, selected_meshes);
-		SceneRenderer::DrawOutline(*context_.active_scene, selected_meshes);
+		SceneRenderer::DrawOutline(*context_.active_scene, view_, selected_meshes);
 	}
 
 	framebuffer_->Unbind();
@@ -84,9 +88,6 @@ void ViewportPanel::Resize(const ImVec2 size) {
 	spec_.width = static_cast<uint32_t>(size.x);
 	spec_.height = static_cast<uint32_t>(size.y);
 	framebuffer_->Invalidate();
-
-	// The projection has to follow the panel, otherwise the scene is stretched to fit it.
-	context_.camera.SetAspectRatio(size.x / size.y);
 }
 
 void ViewportPanel::OnImGuiRender() {
@@ -196,8 +197,8 @@ void ViewportPanel::DrawGizmo() {
 	ImGuizmo::SetRect(viewport_min_region.x + viewport_offset.x, viewport_min_region.y + viewport_offset.y,
 					  viewport_size_.x, viewport_size_.y);
 
-	glm::mat4 proj = scene.camera->GetProjectionMatrix();
-	glm::mat4 view = scene.camera->GetViewMatrix();
+	glm::mat4 proj = view_.projection;
+	glm::mat4 view = view_.view;
 
 	// The gizmo manipulates a world transform; the component stores a local one.
 	glm::mat4 transform = scene.WorldTransform(selected);

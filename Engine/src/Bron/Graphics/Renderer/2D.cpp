@@ -36,7 +36,9 @@ struct Renderer2DData {
 	std::array<Ref<Texture>, kMaxTexUnits> texture_slots;
 	u32 current_tex_slot = 1;
 
-	Camera* camera;
+	// Copied rather than pointed at: a batch is flushed after BeginScene returns, so
+	// the view it was begun with has to outlive the caller's frame-local value.
+	CameraView view;
 
 	// Everything to graphics
 	// to_render[0] == standard rendering
@@ -61,9 +63,9 @@ void R2D::Init() {
 	s_data_2d.white_texture->SetData(&white_data, sizeof(u32));
 }
 
-void R2D::BeginScene(Camera* camera) {
+void R2D::BeginScene(const CameraView& view) {
 	BR_PROFILE_FUNCTION();
-	s_data_2d.camera = camera;
+	s_data_2d.view = view;
 	s_data_2d.quad_index_count = 0;
 	s_data_2d.quad_vertex_count = 0;
 
@@ -310,7 +312,7 @@ void R2D::Flush() {
 
 		const u32 size = static_cast<u32>((uint8_t*) quad_vertex_buffer_ptr - (uint8_t*) quad_vertex_buffer_base);
 		quad_buffer->SetBufferData(quad_vertex_buffer_base, size);
-		shader->SetUniformMat4("uVPmatrix", s_data_2d.camera->GetVPmatrix());
+		shader->SetUniformMat4("uVPmatrix", s_data_2d.view.ViewProjection());
 		Command::DrawIndexed(quad_vertex_array, quad_count * 6);
 	}
 }

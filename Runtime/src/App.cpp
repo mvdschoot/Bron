@@ -1,26 +1,16 @@
 #include "App.h"
 
 #include "Bron/Core/EntryPoint.h"
-
-#include "Core/Preferences.h"
+#include "Layers/WorldLayer.h"
 
 namespace bron::editor {
 App::App() {
 	BR_PROFILE_FUNCTION();
 
-	PushLayer()
+	PushLayer(WorldLayer)
 }
 
-App::~App() {
-	// Application never calls Layer::OnDetach, so shutdown work hangs off the app itself.
-	Preferences::Save();
-}
+App::~App() {}
 } // namespace bron::editor
 
-bron::Application* bron::CreateApplication() {
-	// Before the Application constructor, which is what creates the window: the theme and
-	// the UI scale have to be known by the time anything is drawn.
-	bron::editor::Preferences::Load();
-
-	return new bron::editor::App();
-}
+bron::Application* bron::CreateApplication() { return new bron::editor::App(); }

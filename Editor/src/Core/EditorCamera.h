@@ -3,12 +3,17 @@
 #include "Bron.h"
 
 namespace bron::editor {
-/// The camera the editor viewport looks through: an Orbit("turntable") camera that
+/// The camera the editor viewport looks through: an orbit ("turntable") camera that
 /// always points at a focus point and is moved by changing the two angles and the
 /// distance around it, never by writing a position directly.
-class EditorCamera final : public FrustumCamera {
+///
+/// It is a controller, not something the renderer knows about. It holds the state a
+/// person edits and hands out a CameraView on request; nothing downstream sees this
+/// class. It is also editor-only - a scene's own cameras are entities carrying a
+/// CameraComponent, and are not this.
+class EditorCamera final {
 public:
-	EditorCamera(float fov_y, float aspect_ratio, float near_plane, float far_plane);
+	EditorCamera(float fov_y, float near_plane, float far_plane);
 
 	/// Applies the held-key orbit controls. Called once per frame.
 	void OnUpdate(Timestep ts);
@@ -19,9 +24,19 @@ public:
 	/// Re-centres the orbit on a point in the world, looking at it from a fixed angle.
 	void Focus(const glm::vec3& point);
 
+	/// What the viewport is drawn through. 'aspect' is the render target's, which is why
+	/// it is an argument: the camera has no idea how big the panel showing it is, and the
+	/// same camera would give a different projection in a differently shaped one.
+	[[nodiscard]] CameraView View(float aspect) const;
+
+	/// Derived from the focus point and the orbit parameters; there is nowhere else the
+	/// position is kept.
+	[[nodiscard]] glm::vec3 Position() const;
+
 private:
-	/// Derives the world position from the focus point and the orbit parameters.
-	void UpdatePosition();
+	float fov_y_; // Vertical, radians.
+	float near_plane_;
+	float far_plane_;
 
 	glm::vec3 focus_{0.0f};
 

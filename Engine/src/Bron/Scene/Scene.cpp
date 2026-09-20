@@ -7,9 +7,7 @@
 #include "Bron/Scripting/LuaManager.h"
 
 namespace bron {
-Scene::Scene() : light_management(*this), lua_manager(CreateScope<lua::LuaManager>(this)) {
-	root = CreateEntity("Root node");
-}
+Scene::Scene() : light_management(*this) { root = CreateEntity("Root node"); }
 
 Scene::~Scene() = default;
 
@@ -116,4 +114,21 @@ entt::entity Scene::CreatePhongModel(const std::filesystem::path& path) {
 	return model_entity;
 }
 
+
+entt::entity Scene::PrimaryCamera() const {
+	entt::entity fallback = entt::null;
+
+	for (const auto [entity, camera]: reg.view<const CameraComponent>().each()) {
+		if (camera.primary)
+			return entity;
+
+		if (fallback == entt::null)
+			fallback = entity;
+	}
+
+	if (fallback != entt::null)
+		BR_CORE_WARN("No camera in this scene is marked primary; using the first one found.");
+
+	return fallback;
+}
 } // namespace bron

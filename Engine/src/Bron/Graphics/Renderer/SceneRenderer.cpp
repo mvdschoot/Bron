@@ -39,17 +39,16 @@ void Enqueue(Scene& scene, const entt::entity entity, RenderQueue& queue) {
 // Walks the queue and draws it with each entity's own shader and material. Shared by the
 // main pass and by the outline's stencil pass, which needs the same geometry under the
 // same shader - only the write masks around it differ.
-void Submit(Scene& scene, const RenderQueue& queue) {
+void Submit(Scene& scene, const CameraView& view, const RenderQueue& queue) {
 	for (const auto& [shader_name, materials]: queue) {
 		SceneRenderer::Statistics.Shaders++;
 		const Ref<Shader> shader = ShaderRegistry::GetShader(shader_name.c_str());
 		shader->Bind();
 
 		shader->SetUniform1iv("u_Textures", (i32*) s_data.texture_array, s_data.kTextureSlots);
-		shader->SetUniformMat4("u_Projection", scene.camera->GetProjectionMatrix());
-		shader->SetUniformMat4("u_View", scene.camera->GetViewMatrix());
-		shader->SetUniform3f("u_ViewPos", scene.camera->GetPosition().x, scene.camera->GetPosition().y,
-							 scene.camera->GetPosition().z);
+		shader->SetUniformMat4("u_Projection", view.projection);
+		shader->SetUniformMat4("u_View", view.view);
+		shader->SetUniform3f("u_ViewPos", view.position.x, view.position.y, view.position.z);
 		SceneRenderer::Statistics.UniformCalls += 4;
 
 		shader->SetUniform1i("u_NumPointLights", scene.light_management.NumberPointLights());
@@ -93,12 +92,10 @@ void SceneRenderer::Init() {
 	}
 }
 
-void SceneRenderer::Draw(Scene& scene) {
+void SceneRenderer::Draw(Scene& scene, const CameraView& view) {
 	BR_PROFILE_FUNCTION();
 
 	Statistics = {0, 0, 0, 0, 0};
-
-	BR_CORE_ASSERT(scene.camera != nullptr, "This scene has no camera attached");
 
 	RenderQueue queue;
 	for (auto [entity, mesh]: scene.reg.view<MeshComponent>().each())
@@ -107,14 +104,12 @@ void SceneRenderer::Draw(Scene& scene) {
 	// Light data is shared by every shader, so upload and bind it once for the whole frame.
 	scene.light_management.Bind();
 
-	Submit(scene, queue);
+	Submit(scene, view, queue);
 }
 
-void SceneRenderer::DrawOutline(Scene& scene, const std::vector<entt::entity>& meshes, const glm::vec3 color,
-								const float width) {
+void SceneRenderer::DrawOutline(Scene& scene, const CameraView& view, const std::vector<entt::entity>& meshes,
+								const glm::vec3 color, const float width) {
 	BR_PROFILE_FUNCTION();
-
-	BR_CORE_ASSERT(scene.camera != nullptr, "This scene has no camera attached");
 
 	if (meshes.empty())
 		return;
@@ -133,7 +128,7 @@ void SceneRenderer::DrawOutline(Scene& scene, const std::vector<entt::entity>& m
 	Command::SetColorWrite(false);
 	Command::SetStencil(API::StencilFunction::kAlways, 1, 0xff);
 
-	Submit(scene, queue);
+	Submit(scene, view, queue);
 
 	Command::SetColorWrite(true);
 
@@ -151,8 +146,8 @@ void SceneRenderer::DrawOutline(Scene& scene, const std::vector<entt::entity>& m
 	outline_shader->Bind();
 	Statistics.Shaders++;
 
-	outline_shader->SetUniformMat4("u_Projection", scene.camera->GetProjectionMatrix());
-	outline_shader->SetUniformMat4("u_View", scene.camera->GetViewMatrix());
+	outline_shader->SetUniformMat4("u_Projection", view.projection);
+	outline_shader->SetUniformMat4("u_View", view.view);
 	outline_shader->SetUniform3f("u_OutlineColor", color.r, color.g, color.b);
 	outline_shader->SetUniform1f("u_OutlineWidth", width);
 	Statistics.UniformCalls += 4;

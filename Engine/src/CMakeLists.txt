@@ -20,8 +20,6 @@ add_library(Bron STATIC
         Bron/Graphics/Texture.cpp
         Bron/Graphics/Framebuffer.cpp
         Bron/Graphics/LightManagement.cpp
-        Bron/Graphics/OrthographicCamera.cpp
-        Bron/Graphics/FrustumCamera.cpp
         Bron/Graphics/Phong/PhongMaterial.cpp
         Bron/Graphics/Components/Cube.cpp
         Bron/Graphics/Components/ModelLoader.cpp

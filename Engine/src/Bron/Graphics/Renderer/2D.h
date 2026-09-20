@@ -4,7 +4,7 @@
 #include "Bron/Core/Logger.h"
 
 #include "Command.h"
-#include "../Camera.h"
+#include "../CameraView.h"
 #include "../Texture.h"
 #include "../Shader.h"
 
@@ -18,7 +18,7 @@ class BR_API R2D {
 public:
 	static void Init();
 
-	static void BeginScene(Camera* camera);
+	static void BeginScene(const CameraView& view);
 	static void EndScene();
 
 	static void NewBatch();

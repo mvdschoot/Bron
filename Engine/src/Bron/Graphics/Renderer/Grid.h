@@ -4,7 +4,7 @@
 #include "Bron/Core/Logger.h"
 #include "Bron/Core/Profiling.h"
 
-#include "../Camera.h"
+#include "../CameraView.h"
 
 #include "glm/glm.hpp"
 
@@ -51,8 +51,11 @@ struct GridSettings {
 /// like an ordinary surface.
 class GridRenderer {
 public:
-	static void Init(Camera* camera);
-	static void Draw();
+	static void Init();
+
+	/// 'view' is what the grid is being looked at through: it decides both where the
+	/// floor appears and how far the grid reaches before it fades out.
+	static void Draw(const CameraView& view);
 
 	/// Mutable so the editor can drive the grid from a settings panel; changes apply on
 	/// the next Draw().
