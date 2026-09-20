@@ -11,8 +11,11 @@
 #include "Panels/StatisticsPanel.h"
 #include "Panels/ViewportPanel.h"
 
+#include "Bron/Game/Manifest.h"
+#include "Bron/Scene/AssetDependencies.h"
 #include "Bron/Util/Paths.h"
 #include "nfd.hpp"
+
 #include "Panels/FileExplorerPanel.h"
 
 namespace bron::editor {
@@ -115,6 +118,8 @@ void EditorLayer::OpenProject(Scope<Project> project) {
 	context_.project->OpenStartupScene();
 	context_.SetActiveScene(context_.project->ActiveScene());
 }
+
+void EditorLayer::Export() {}
 
 void EditorLayer::Save() {
 	if (context_.HasProject())

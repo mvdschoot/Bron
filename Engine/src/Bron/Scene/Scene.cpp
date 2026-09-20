@@ -5,9 +5,12 @@
 #include "Bron/Graphics/Components/ModelLoader.h"
 #include "Bron/Util/Paths.h"
 #include "Bron/Scripting/LuaManager.h"
+#include "Bron/Core/Timestep.h"
 
 namespace bron {
-Scene::Scene() : light_management(*this) { root = CreateEntity("Root node"); }
+Scene::Scene() : light_management(*this), lua_manager(CreateScope<lua::LuaManager>(this)) {
+	root = CreateEntity("Root node");
+}
 
 Scene::~Scene() = default;
 
@@ -130,5 +133,19 @@ entt::entity Scene::PrimaryCamera() const {
 		BR_CORE_WARN("No camera in this scene is marked primary; using the first one found.");
 
 	return fallback;
+}
+
+void Scene::OnRuntimeStart() {
+	for (auto [entity, script]: reg.view<ScriptComponent>().each()) {
+		for (std::filesystem::path& location: script.scripts) {
+			lua_manager->AttachScript(location, entity);
+		}
+	}
+
+	for (auto [entity, script]: reg.view<ScriptComponent>().each()) {
+		for (std::filesystem::path& location: script.scripts) {
+			lua_manager->OnStart();
+		}
+	}
 }
 } // namespace bron

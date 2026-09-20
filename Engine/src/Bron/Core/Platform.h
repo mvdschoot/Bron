@@ -3,6 +3,8 @@
 #include "Bron/Core/Core.h"
 #include "Bron/Core/Logger.h"
 
+#include <filesystem>
+
 namespace bron {
 class Platform {
 public:
@@ -33,4 +35,12 @@ public:
 #endif
 	}
 };
+
+/// The directory the running executable sits in.
+///
+/// Never the working directory: that is whatever the shell, the launcher or the debugger
+/// happened to be in, and a game launched from a shortcut has no relationship to it at
+/// all. Anything shipped beside the binary - a manifest, the assets it names - is found
+/// relative to this.
+std::filesystem::path ExecutableDirectory();
 } // namespace bron

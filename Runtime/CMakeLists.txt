@@ -1,10 +1,12 @@
 cmake_minimum_required(VERSION 3.21)
 
-# Bron Editor - the application built on top of the engine.
+# Bron Runtime - what a game ships as. The engine plus a boot sequence, and none of the
+# editor: no panels, no project, no authoring. What it runs is decided by the manifest
+# the exporter writes next to the executable.
 add_executable(BronRuntime
         src/App.cpp
+
         src/Layers/WorldLayer.cpp
-        src/Layers/WorldLayer.h
 )
 
 target_include_directories(BronRuntime PUBLIC src)

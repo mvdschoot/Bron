@@ -1,16 +1,13 @@
 #include "App.h"
 
 #include "Bron/Core/EntryPoint.h"
-#include "Layers/WorldLayer.h"
 
-namespace bron::editor {
+namespace bron::runtime {
 App::App() {
 	BR_PROFILE_FUNCTION();
 
-	PushLayer(WorldLayer)
+	PushLayer(&world_layer_);
 }
+} // namespace bron::runtime
 
-App::~App() {}
-} // namespace bron::editor
-
-bron::Application* bron::CreateApplication() { return new bron::editor::App(); }
+bron::Application* bron::CreateApplication() { return new bron::runtime::App(); }

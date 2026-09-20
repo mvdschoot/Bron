@@ -4,6 +4,7 @@ add_library(Bron STATIC
         # Core
         Bron/Core/Application.cpp
         Bron/Core/Logger.cpp
+        Bron/Core/Platform.cpp
         Bron/Core/Window.cpp
 
         # Layers
@@ -35,8 +36,12 @@ add_library(Bron STATIC
         Bron/Graphics/Renderer/SceneRenderer.cpp
         Bron/Graphics/Renderer/Grid.cpp
 
+        # Game
+        Bron/Game/Manifest.cpp
+
         # Scene
         Bron/Scene/Scene.cpp
+        Bron/Scene/AssetDependencies.cpp
         Bron/Scene/Components.cpp
         Bron/Scene/Serialization/Serialization.cpp
 

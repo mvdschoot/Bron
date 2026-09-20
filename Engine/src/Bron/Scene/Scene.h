@@ -9,6 +9,11 @@
 #include "Bron/Graphics/LightManagement.h"
 
 namespace bron {
+class Timestep;
+
+namespace lua {
+class LuaManager;
+}
 
 class Scene {
 public:
@@ -45,9 +50,12 @@ public:
 	// fix it in.
 	[[nodiscard]] entt::entity PrimaryCamera() const;
 
+	void OnRuntimeStart();
+
 	entt::registry reg;
 	entt::entity root;
 
 	LightManagement light_management;
+	Scope<lua::LuaManager> lua_manager;
 };
 } // namespace bron

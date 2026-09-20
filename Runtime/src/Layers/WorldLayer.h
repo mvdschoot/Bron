@@ -1,17 +1,31 @@
-//
-// Created by mathi on 16-9-2026.
-//
-
-
 #pragma once
-#include "Bron/Layers/Layer.h"
 
-namespace bron {
-class WorldLayer : public Layer {
+#include "Bron.h"
+
+#include "Bron/Game/Manifest.h"
+
+namespace bron::runtime {
+/// The game itself: the one layer a shipped build has.
+///
+/// It owns the scene, ticks it, and draws it through whichever camera the scene marks
+/// primary. There is no edit mode to leave - the runtime is always playing, which is the
+/// one thing that makes it simpler than the editor rather than a subset of it.
+class WorldLayer final : public Layer {
+public:
 	void OnAttach() override;
-	void OnDetach() override;
-	void OnEvent(Event& event) override;
 	void OnUpdate(Timestep ts) override;
-	void OnImGuiRender() override;
+	void OnEvent(Event& event) override;
+
+private:
+	/// Reads the manifest beside the executable and loads the scene it names. Leaves
+	/// scene_ null and logs when there is nothing to run.
+	void Boot();
+
+	Scope<Scene> scene_;
+
+	/// Whether the scene has been reported as undrawable. A scene with no camera cannot
+	/// be drawn, and saying so sixty times a second would bury every other line in the
+	/// log under it.
+	bool warned_about_camera_ = false;
 };
-} // namespace bron
+} // namespace bron::runtime

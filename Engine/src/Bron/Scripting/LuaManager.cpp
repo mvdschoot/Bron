@@ -92,6 +92,39 @@ void RemoveDestroyedInstances(State& state, const Scene& scene) {
 					  [&scene](const ScriptInstance& instance) { return IsDestroyed(scene, instance.entity); });
 	}
 }
+
+// The script loaded from 'location', loading and registering it the first time it is
+// asked for. Returns nullptr when the file cannot be run, having said why.
+Script* FindOrLoad(State& state, const std::filesystem::path& location) {
+	if (auto* existing =
+				Find(state.scripts, [&location](const auto& item) { return item.second.location == location; }))
+		return &existing->second;
+
+	sol::protected_function_result function_result = state.lua.script_file(location.generic_string());
+	if (!function_result.valid()) {
+		const sol::error error = function_result;
+		// Not an assert: a missing or broken script is content being wrong, not the
+		// engine being wrong, and a shipped game must not die because one file is bad.
+		BR_CORE_ERROR("[lua] {} could not be loaded:\n{}", location.generic_string(), error.what());
+		return nullptr;
+	}
+
+	sol::table klass = function_result;
+	sol::table meta = state.lua.create_table();
+	meta["__index"] = klass;
+
+	const UUID script_id;
+	auto [it, inserted] = state.scripts.emplace(script_id, Script{.id = script_id,
+																  .location = location,
+																  .klass = klass,
+																  .metatable = meta,
+																  .instances = {},
+																  .on_update = klass["on_update"],
+																  .on_start = klass["on_start"],
+																  .on_destroy = klass["on_destroy"],
+																  .on_event = klass["on_event"]});
+	return &it->second;
+}
 } // namespace
 
 LuaManager::LuaManager(Scene* scene) : scene_(scene), state_(CreateScope<State>()) {
@@ -102,51 +135,22 @@ LuaManager::LuaManager(Scene* scene) : scene_(scene), state_(CreateScope<State>(
 
 LuaManager::~LuaManager() = default;
 
-UUID LuaManager::RegisterScript(const std::filesystem::path& location) const {
-	// First check if a script exists
-	if (auto* existing =
-				Find(state_->scripts, [&location](const auto& item) { return item.second.location == location; })) {
-		return existing->second.id;
-	}
-
-	sol::protected_function_result function_result = state_->lua.script_file(location.generic_string());
-	if (!function_result.valid()) {
-		sol::error err = function_result;
-		BR_CORE_ASSERT(false, "Script {}. \nExecution failed with message: {}", location.generic_string(), err.what());
-	}
-
-	sol::table klass = function_result;
-	sol::table meta = state_->lua.create_table();
-	meta["__index"] = klass;
-
-	UUID script_id;
-	Script script = Script{.id = script_id,
-						   .location = location,
-						   .klass = klass,
-						   .metatable = meta,
-						   .instances = {},
-						   .on_update = klass["on_update"],
-						   .on_start = klass["on_start"],
-						   .on_destroy = klass["on_destroy"],
-						   .on_event = klass["on_event"]};
-	state_->scripts.emplace(script_id, script);
-
-	return script_id;
-}
-
-void LuaManager::AttachScript(UUID script_id, entt::entity entity) const {
-	auto* existing =
-			Find(state_->scripts[script_id].instances, [&entity](const auto& item) { return item.entity == entity; });
-	if (existing) {
+void LuaManager::AttachScript(const std::filesystem::path& location, const entt::entity entity) const {
+	Script* script = FindOrLoad(*state_, location);
+	if (!script)
 		return;
-	}
+
+	// Attaching twice would give the entity two independent selves, and every callback
+	// would run on it twice.
+	if (Find(script->instances, [entity](const auto& item) { return item.entity == entity; }))
+		return;
 
 	sol::table instance = state_->lua.create_table();
-	instance[sol::metatable_key] = state_->scripts[script_id].metatable;
+	instance[sol::metatable_key] = script->metatable;
 
-	Entity lua_entity{.handle = entity};
+	const Entity lua_entity{.handle = entity};
 	instance["entity"] = lua_entity;
-	state_->scripts[script_id].instances.emplace_back(script_id, entity, instance);
+	script->instances.emplace_back(script->id, entity, instance);
 }
 
 void LuaManager::OnUpdate(Timestep ts) const {

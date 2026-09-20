@@ -31,8 +31,18 @@ public:
 	LuaManager(const LuaManager&) = delete;
 	LuaManager& operator=(const LuaManager&) = delete;
 
-	UUID RegisterScript(const std::filesystem::path& location) const;
-	void AttachScript(UUID script_id, entt::entity entity) const;
+	/// Gives 'entity' the script at 'location', loading the file if this is the first
+	/// entity to use it.
+	///
+	/// Loading and attaching are one call because there was never a reason to do one
+	/// without the other: a loaded script with no instances does nothing, and there is no
+	/// way to attach one that has not been loaded. Both halves are idempotent, so
+	/// attaching the same script to the same entity twice is a no-op rather than a second
+	/// instance.
+	///
+	/// A script whose file is missing or fails to execute is reported and skipped; the
+	/// entity simply ends up without it.
+	void AttachScript(const std::filesystem::path& location, entt::entity entity) const;
 
 	void OnUpdate(Timestep ts) const;
 	void OnStart();
