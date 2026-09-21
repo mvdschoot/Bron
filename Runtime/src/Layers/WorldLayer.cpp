@@ -62,7 +62,7 @@ void WorldLayer::OnUpdate(const Timestep ts) {
 	if (!scene_)
 		return;
 
-	scene_->lua_manager->OnUpdate(ts);
+	scene_->OnUpdate(ts);
 
 	const entt::entity camera = scene_->PrimaryCamera();
 	if (camera == entt::null) {
@@ -78,5 +78,7 @@ void WorldLayer::OnUpdate(const Timestep ts) {
 
 	SceneRenderer::Draw(*scene_, view);
 }
-void WorldLayer::OnEvent(Event& event) { scene_->lua_manager->OnEvent(event); }
+
+void WorldLayer::OnEvent(Event& event) { scene_->OnEvent(event); }
+
 } // namespace bron::runtime

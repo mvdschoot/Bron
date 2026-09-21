@@ -4,6 +4,8 @@
 
 #include "Bron.h"
 
+#include "Core/EditorContext.h"
+
 namespace bron::editor {
 enum ComponentFlags {
 	kComponentFlagsNone = 0,
@@ -25,7 +27,9 @@ struct ComponentMeta {
 	const char* name;
 
 	bool (*has)(Scene&, entt::entity);
-	void (*draw)(Scene&, entt::entity);
+	/// Takes the context as well as the scene: a few components have editor-only state that
+	/// lives outside the component (the camera preview toggle), and the rest ignore it.
+	void (*draw)(EditorContext&, Scene&, entt::entity);
 
 	// Null when the component carries the matching flag, meaning the UI does not offer the action.
 	void (*add)(Scene&, entt::entity);

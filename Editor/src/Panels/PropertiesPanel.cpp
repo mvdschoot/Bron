@@ -50,7 +50,7 @@ void PropertiesPanel::DrawComponents(const entt::entity entity) {
 		}
 
 		if (open)
-			component.draw(scene, entity);
+			component.draw(context_, scene, entity);
 
 		PopID();
 

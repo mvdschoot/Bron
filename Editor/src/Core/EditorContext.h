@@ -32,6 +32,11 @@ struct EditorContext {
 	entt::entity selection = entt::null;
 	ImGuizmo::OPERATION gizmo_operation = ImGuizmo::OPERATION::TRANSLATE;
 
+	/// The camera entity whose view is mirrored in the preview overlay, or entt::null for
+	/// "no preview". One at a time: a second preview would need a second framebuffer, and
+	/// the checkbox reads as a radio button across cameras this way.
+	entt::entity camera_preview = entt::null;
+
 	/// Duration of the last frame, for the statistics panel.
 	Timestep frame_time;
 
@@ -43,6 +48,7 @@ struct EditorContext {
 	void SetActiveScene(Scene* scene) {
 		active_scene = scene;
 		ClearSelection();
+		camera_preview = entt::null;
 	}
 };
 } // namespace bron::editor

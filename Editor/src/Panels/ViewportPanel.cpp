@@ -37,6 +37,20 @@ void ViewportPanel::OnAttach() {
 }
 
 void ViewportPanel::OnUpdate(const Timestep ts) {
+	// Select the correct camera to use first
+
+	// The aspect comes from the panel, not the camera: the projection has to follow
+	// whatever the framebuffer currently is, or the scene is stretched to fit it.
+	float aspect_ratio = viewport_size_.y > 0.0f ? viewport_size_.x / viewport_size_.y : 1.0f;
+	if (context_.camera_preview == entt::null) {
+		context_.camera.OnUpdate(ts);
+		view_ = context_.camera.View(aspect_ratio);
+	} else {
+		CameraComponent& camera_component = context_.active_scene->reg.get<CameraComponent>(context_.camera_preview);
+		view_ = ViewFrom(camera_component, context_.active_scene->WorldTransform(context_.camera_preview),
+						 aspect_ratio);
+	}
+
 	// WASD orbit is held-key state scaled by the timestep, so it is polled here rather than
 	// driven by events; the discrete shortcuts live in OnKeyPressed instead.
 	//
@@ -44,10 +58,6 @@ void ViewportPanel::OnUpdate(const Timestep ts) {
 	// the flag is what the panel saw last frame.
 	if (focused_)
 		context_.camera.OnUpdate(ts);
-
-	// The aspect comes from the panel, not the camera: the projection has to follow
-	// whatever the framebuffer currently is, or the scene is stretched to fit it.
-	view_ = context_.camera.View(viewport_size_.y > 0.0f ? viewport_size_.x / viewport_size_.y : 1.0f);
 
 	framebuffer_->Bind();
 	Command::Clear();

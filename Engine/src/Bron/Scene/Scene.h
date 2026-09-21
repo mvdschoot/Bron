@@ -1,5 +1,8 @@
 #pragma once
 
+#include "Bron/Events/Event.h"
+
+
 #include <entt/entity/registry.hpp>
 
 #include <string>
@@ -51,6 +54,8 @@ public:
 	[[nodiscard]] entt::entity PrimaryCamera() const;
 
 	void OnRuntimeStart();
+	void OnUpdate(Timestep ts) const;
+	void OnEvent(Event& event) const;
 
 	entt::registry reg;
 	entt::entity root;

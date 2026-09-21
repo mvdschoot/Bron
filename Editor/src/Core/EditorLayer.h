@@ -33,7 +33,7 @@ private:
 	/// Makes 'project' the open one: points asset resolution at it, records it in the
 	/// recent list and loads its startup scene. Null (a failed load) is ignored.
 	void OpenProject(Scope<Project> project);
-	void Export();
+	void Export() const;
 
 	/// Writes the open project and its scenes. Nothing to do with no project open.
 	void Save();

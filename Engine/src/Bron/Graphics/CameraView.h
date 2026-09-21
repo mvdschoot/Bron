@@ -1,8 +1,7 @@
 #pragma once
 
-#include "Bron/Core/Core.h"
-
 #include <glm/glm.hpp>
+#include <glm/gtc/matrix_transform.hpp>
 
 namespace bron {
 // What a shader needs in order to draw from a point of view, and nothing else.
@@ -27,5 +26,17 @@ struct CameraView {
 	glm::vec3 position{0.0f};
 
 	[[nodiscard]] glm::mat4 ViewProjection() const { return projection * view; }
+
+	static CameraView Create(float fov_y, float aspect, float near_plane, float far_plane, glm::vec3 focus,
+							 glm::vec3 up, glm::vec3 position) {
+		CameraView view;
+		// A collapsed panel would give an aspect of 0 or worse; glm::perspective divides by
+		// it, so the last sane shape is kept until there is something to draw into again.
+		view.projection = glm::perspective(fov_y, aspect > 0.0f ? aspect : 1.0f, near_plane, far_plane);
+		view.view = glm::lookAt(position, focus, up);
+		view.position = position;
+
+		return view;
+	}
 };
 } // namespace bron

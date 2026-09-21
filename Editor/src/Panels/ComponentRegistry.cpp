@@ -12,7 +12,7 @@ namespace {
 // Draw functions - the only part written per component type
 // ----------------------------------------------------------------
 
-void DrawTag(Scene& scene, const entt::entity entity) {
+void DrawTag(EditorContext& context, Scene& scene, const entt::entity entity) {
 	TagComponent& tag = scene.reg.get<TagComponent>(entity);
 
 	char buffer[256];
@@ -28,7 +28,7 @@ void DrawTag(Scene& scene, const entt::entity entity) {
 entt::entity s_euler_cache_owner = entt::null;
 glm::vec3 s_euler_cache{0.0f};
 
-void DrawTransform(Scene& scene, const entt::entity entity) {
+void DrawTransform(EditorContext& context, Scene& scene, const entt::entity entity) {
 	TransformComponent& t = scene.reg.get<TransformComponent>(entity);
 
 	DragFloat3("Position", value_ptr(t.Position));
@@ -41,10 +41,13 @@ void DrawTransform(Scene& scene, const entt::entity entity) {
 	if (DragFloat3("Rotation", value_ptr(s_euler_cache)))
 		t.RotationQuat = glm::quat(glm::radians(s_euler_cache));
 
-	DragFloat3("Scaling", value_ptr(t.Scaling));
+	// Camera's may not be scaled
+	if (!scene.reg.all_of<CameraComponent>(entity)) {
+		DragFloat3("Scaling", value_ptr(t.Scaling));
+	}
 }
 
-void DrawHierarchy(Scene& scene, const entt::entity entity) {
+void DrawHierarchy(EditorContext& context, Scene& scene, const entt::entity entity) {
 	const HierarchyComponent& h = scene.reg.get<HierarchyComponent>(entity);
 
 	if (h.parent == entt::null)
@@ -55,7 +58,7 @@ void DrawHierarchy(Scene& scene, const entt::entity entity) {
 	Text("Children: %d", static_cast<int>(h.children.size()));
 }
 
-void DrawMesh(Scene& scene, const entt::entity entity) {
+void DrawMesh(EditorContext& context, Scene& scene, const entt::entity entity) {
 	const MeshComponent& mesh = scene.reg.get<MeshComponent>(entity);
 
 	Text("Vertices: %d", static_cast<int>(mesh.vertex_data.positions.size()));
@@ -64,42 +67,44 @@ void DrawMesh(Scene& scene, const entt::entity entity) {
 	TextDisabled(mesh.vao ? "Uploaded to the GPU" : "Not yet uploaded");
 }
 
-void DrawPointLight(Scene& scene, const entt::entity entity) {
+void DrawPointLight(EditorContext& context, Scene& scene, const entt::entity entity) {
 	ColorEdit3("Color", value_ptr(scene.reg.get<PointLightComponent>(entity).color));
 }
 
-void DrawVisibility(Scene& scene, const entt::entity entity) {
+void DrawVisibility(EditorContext& context, Scene& scene, const entt::entity entity) {
 	Checkbox("Visible", &scene.reg.get<VisibilityComponent>(entity).visible);
 }
 
-void DrawCamera(Scene& scene, const entt::entity entity) {
+void DrawCamera(EditorContext& context, Scene& scene, const entt::entity entity) {
 	CameraComponent& camera = scene.reg.get<CameraComponent>(entity);
-	constexpr const char* kProjectionTypes[]{"Perspective", "Orthographic"};
-	static int selected_projection_type = camera.projection == kPerspective ? 0 : 1;
-	static bool is_primary = camera.primary;
 
-	Combo("Projection type", &selected_projection_type, *kProjectionTypes, 2);
-	Checkbox("Primary camera", &is_primary);
+	int projection_type = camera.projection == kPerspective ? 0 : 1;
+	if (Combo("Projection", &projection_type, "Perspective\0Orthographic\0"))
+		camera.projection = projection_type == 0 ? kPerspective : kOrthographic;
 
-	Separator();
+	// Primary is exclusive across the scene, so it is applied by clearing the flag everywhere
+	// else rather than written straight into the component.
+	if (bool is_primary = camera.primary; Checkbox("Primary camera", &is_primary) && is_primary) {
+		for (auto [other_entity, other_camera]: scene.reg.view<CameraComponent>().each())
+			other_camera.primary = false;
+		camera.primary = true;
+	}
+
+	// Preview is editor state, not scene state: it lives in the context so the viewport can
+	// read it, and it is deliberately not serialized with the camera.
+	if (bool previewing = context.camera_preview == entity; Checkbox("Preview", &previewing))
+		context.camera_preview = previewing ? entity : entt::null;
 
 	InputFloat("FOV", &camera.fov_y);
 	InputFloat("Near plane", &camera.near_plane);
 	InputFloat("Far plane", &camera.far_plane);
 
-	if (selected_projection_type == kOrthographic) {
+	if (camera.projection == kOrthographic)
 		InputFloat("Orthographic size", &camera.ortho_size);
-	}
-
-	if (is_primary != camera.primary) {
-		for (auto [other_entity, other_cameras]: scene.reg.view<CameraComponent>().each()) {
-			other_cameras.primary = false;
-		}
-		camera.primary = is_primary;
-	}
-
-	camera.projection = selected_projection_type == 0 ? kPerspective : kOrthographic;
 }
+
+
+void DrawScript(EditorContext& context, Scene& scene, const entt::entity entity) {}
 
 
 // ----------------------------------------------------------------
@@ -108,7 +113,7 @@ void DrawCamera(Scene& scene, const entt::entity entity) {
 
 /// Fills in has/add/remove generically; only 'draw' is ever written by hand.
 template<typename T>
-void Register(std::vector<ComponentMeta>& out, const char* name, void (*draw)(Scene&, entt::entity),
+void Register(std::vector<ComponentMeta>& out, const char* name, void (*draw)(EditorContext&, Scene&, entt::entity),
 			  const u32 flags = kComponentFlagsDefault) {
 	out.push_back({name, [](Scene& scene, const entt::entity e) { return scene.reg.all_of<T>(e); }, draw,
 				   flags & kComponentFlagsAddable ? +[](Scene& scene, const entt::entity e) { scene.reg.emplace<T>(e); }
@@ -135,6 +140,8 @@ std::vector<ComponentMeta> Build() {
 	Register<PointLightComponent>(components, "Light", DrawPointLight);
 
 	Register<CameraComponent>(components, "Camera", DrawCamera);
+
+	Register<ScriptComponent>(components, "Script", DrawScript);
 
 	return components;
 }

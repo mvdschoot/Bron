@@ -26,6 +26,8 @@ void ImGuiLayer::OnAttach() {
 
 	// For 4k
 	float scale = Application::GetWindow()->GetMonitorScale();
+	BR_CORE_INFO("Window monitor scale: {}", scale);
+
 	ImGui::GetStyle().FontScaleMain *= scale;
 }
 

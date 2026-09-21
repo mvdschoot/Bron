@@ -148,4 +148,8 @@ void Scene::OnRuntimeStart() {
 		}
 	}
 }
+
+void Scene::OnUpdate(Timestep ts) const { lua_manager->OnUpdate(ts); }
+
+void Scene::OnEvent(Event& event) const { lua_manager->OnEvent(event); }
 } // namespace bron

@@ -119,7 +119,31 @@ void EditorLayer::OpenProject(Scope<Project> project) {
 	context_.SetActiveScene(context_.project->ActiveScene());
 }
 
-void EditorLayer::Export() {}
+void EditorLayer::Export() const {
+	if (!context_.HasProject() || !context_.HasScene()) {
+		BR_APP_INFO("Cannot export without a project or scene");
+	}
+
+	BR_CORE_ASSERT(NFD::Init(), "Failed to initialize the file picker");
+
+	NFD::UniquePath out_path;
+	nfdresult_t result = NFD::PickFolder(out_path);
+	NFD_Quit();
+
+	if (result != NFD_OKAY) {
+		BR_APP_INFO("User did not pick a folder for project export.");
+		return;
+	}
+	std::filesystem::path export_path = out_path.get();
+
+	Manifest manifest;
+	manifest.asset_directory = paths::AssetRoot();
+	manifest.startup_scene = context_.project->StartupScenePath();
+	manifest.name = context_.project->Settings().name;
+
+	bool export_result = manifest.Save(export_path / "game.brongame");
+	BR_CORE_ASSERT(export_result, "Could not export the project.");
+}
 
 void EditorLayer::Save() {
 	if (context_.HasProject())
@@ -139,7 +163,7 @@ void EditorLayer::OpenProjectDialog() {
 }
 
 void EditorLayer::NewProjectDialog() {
-	NFD::Init();
+	BR_CORE_ASSERT(NFD::Init(), "Failed to initialize the file picker");
 
 	NFD::UniquePath out_path;
 	nfdfilteritem_t filter_item[1] = {{"Bron projects", "brn"}};
@@ -227,6 +251,10 @@ void EditorLayer::DrawMenuBar() {
 		// One save for the project and its scenes; they are only ever meaningful together.
 		if (ImGui::MenuItem("Save", "Ctrl+S"))
 			Save();
+
+		if (ImGui::MenuItem("Export")) {
+			Export();
+		}
 
 		ImGui::EndDisabled();
 
