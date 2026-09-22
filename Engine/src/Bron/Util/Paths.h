@@ -26,6 +26,8 @@ const std::filesystem::path& ProjectRoot();
 // directory under the project root, though a project may point it elsewhere.
 const std::filesystem::path& AssetRoot();
 
+bool InAssetDirectory(const std::filesystem::path& absolute_path);
+
 // Set together, because there is no meaningful state with one root and not the other.
 void SetRoots(const std::filesystem::path& project, const std::filesystem::path& assets);
 

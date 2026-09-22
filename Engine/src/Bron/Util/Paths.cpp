@@ -20,6 +20,12 @@ const std::filesystem::path& ProjectRoot() { return Current().project; }
 
 const std::filesystem::path& AssetRoot() { return Current().assets; }
 
+bool InAssetDirectory(const std::filesystem::path& absolute_path) {
+	std::error_code ec;
+	const std::filesystem::path relative = std::filesystem::relative(absolute_path, AssetRoot(), ec);
+	return !ec && !relative.empty() && *relative.begin() != "..";
+}
+
 bool HasRoots() { return !Current().project.empty() && !Current().assets.empty(); }
 
 void SetRoots(const std::filesystem::path& project, const std::filesystem::path& assets) {

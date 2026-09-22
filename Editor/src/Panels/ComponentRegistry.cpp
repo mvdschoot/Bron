@@ -1,8 +1,10 @@
 #include "ComponentRegistry.h"
 
-#include <cstring>
-
 #include "imgui.h"
+#include "nfd.hpp"
+#include "Bron/Scripting/LuaManager.h"
+#include "Bron/Util/Paths.h"
+#include "Core/Icons.h"
 
 namespace bron::editor {
 using namespace ImGui;
@@ -104,7 +106,41 @@ void DrawCamera(EditorContext& context, Scene& scene, const entt::entity entity)
 }
 
 
-void DrawScript(EditorContext& context, Scene& scene, const entt::entity entity) {}
+void DrawScript(EditorContext& context, Scene& scene, const entt::entity entity) {
+	ScriptComponent& script_component = scene.reg.get<ScriptComponent>(entity);
+
+	if (BeginListBox("Attached scripts")) {
+		for (auto& script: script_component.scripts) {
+			Selectable(script.filename().generic_string().c_str());
+		}
+
+		EndListBox();
+	}
+
+	if (icons::Button(icons::Id::kFile, "Upload a script into the project")) {
+		BR_CORE_ASSERT(NFD::Init(), "Failed to initialize the file picker");
+
+		NFD::UniquePath out_path;
+		nfdresult_t result = NFD::OpenDialog(out_path);
+		NFD_Quit();
+
+		if (result != NFD_OKAY) {
+			BR_APP_INFO("User did not pick a folder for project export.");
+			return;
+		}
+
+		std::filesystem::path script_file = out_path.get();
+
+		if (script_file.extension() != ".lua" || !paths::InAssetDirectory(script_file)) {
+			BR_APP_ERROR("You must pick a lua file inside the Asset directory");
+			return;
+		}
+
+		scene.lua_manager->AttachScript(script_file, entity);
+		script_component.scripts.push_back(script_file);
+		BR_APP_INFO("Added script {} to entity {}", script_file.generic_string(), static_cast<u64>(entity));
+	}
+}
 
 
 // ----------------------------------------------------------------

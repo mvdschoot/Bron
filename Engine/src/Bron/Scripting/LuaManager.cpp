@@ -31,7 +31,6 @@ struct ScriptInstance {
 struct Script {
 	UUID id;
 	std::filesystem::path location;
-	sol::table klass;
 	sol::table metatable;
 	std::vector<ScriptInstance> instances;
 
@@ -93,6 +92,24 @@ void RemoveDestroyedInstances(State& state, const Scene& scene) {
 	}
 }
 
+// One of the callbacks off a script's class table. A callback the script does not define
+// is absent rather than wrong, so it comes back empty; one defined as something other
+// than a function is content being wrong, so it is reported and then ignored. Fetching it
+// as sol::object first matters: converting straight to a function would let sol type
+// check a number and panic.
+sol::protected_function Callback(const sol::table& klass, const char* name, const std::filesystem::path& location) {
+	sol::object value = klass[name];
+	if (!value.valid())
+		return {};
+
+	if (value.get_type() != sol::type::function) {
+		BR_CORE_ERROR("[lua] {}: '{}' is not a function, so it will never be called.", location.generic_string(), name);
+		return {};
+	}
+
+	return value.as<sol::protected_function>();
+}
+
 // The script loaded from 'location', loading and registering it the first time it is
 // asked for. Returns nullptr when the file cannot be run, having said why.
 Script* FindOrLoad(State& state, const std::filesystem::path& location) {
@@ -109,20 +126,29 @@ Script* FindOrLoad(State& state, const std::filesystem::path& location) {
 		return nullptr;
 	}
 
-	sol::table klass = function_result;
+	// An empty file, or one that forgets its return, runs perfectly well and hands back no
+	// value at all - so the result being valid is not enough to assume a table is there.
+	// sol would panic converting it, which takes the process with it, hence the check.
+	const sol::optional<sol::table> returned = function_result;
+	if (!returned) {
+		BR_CORE_ERROR("[lua] {} did not return a table. A script file has to end with 'return <name>'.",
+					  location.generic_string());
+		return nullptr;
+	}
+
+	const sol::table klass = *returned;
 	sol::table meta = state.lua.create_table();
 	meta["__index"] = klass;
 
 	const UUID script_id;
 	auto [it, inserted] = state.scripts.emplace(script_id, Script{.id = script_id,
 																  .location = location,
-																  .klass = klass,
 																  .metatable = meta,
 																  .instances = {},
-																  .on_update = klass["on_update"],
-																  .on_start = klass["on_start"],
-																  .on_destroy = klass["on_destroy"],
-																  .on_event = klass["on_event"]});
+																  .on_update = Callback(klass, "on_update", location),
+																  .on_start = Callback(klass, "on_start", location),
+																  .on_destroy = Callback(klass, "on_destroy", location),
+																  .on_event = Callback(klass, "on_event", location)});
 	return &it->second;
 }
 } // namespace

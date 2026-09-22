@@ -7,6 +7,8 @@
 #include "Bron/Scripting/LuaManager.h"
 #include "Bron/Core/Timestep.h"
 
+#include <set>
+
 namespace bron {
 Scene::Scene() : light_management(*this), lua_manager(CreateScope<lua::LuaManager>(this)) {
 	root = CreateEntity("Root node");
@@ -142,11 +144,9 @@ void Scene::OnRuntimeStart() {
 		}
 	}
 
-	for (auto [entity, script]: reg.view<ScriptComponent>().each()) {
-		for (std::filesystem::path& location: script.scripts) {
-			lua_manager->OnStart();
-		}
-	}
+	lua_manager->OnStart();
+
+	BR_CORE_INFO("Loaded & started scripts");
 }
 
 void Scene::OnUpdate(Timestep ts) const { lua_manager->OnUpdate(ts); }
