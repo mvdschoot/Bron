@@ -136,6 +136,10 @@ void EditorLayer::Export() const {
 	}
 	std::filesystem::path export_path = out_path.get();
 
+	// Now copy all assets
+	auto assets = CollectAssets(*context_.active_scene);
+
+
 	Manifest manifest;
 	manifest.asset_directory = paths::AssetRoot();
 	manifest.startup_scene = context_.project->StartupScenePath();
