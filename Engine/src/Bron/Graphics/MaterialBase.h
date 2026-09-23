@@ -14,6 +14,11 @@ enum MaterialWorkflow {
 	// PBR,
 };
 
+enum TextureType {
+	kDiffuse,
+	kSpecular,
+};
+
 class MaterialBase {
 public:
 	MaterialWorkflow workflow;

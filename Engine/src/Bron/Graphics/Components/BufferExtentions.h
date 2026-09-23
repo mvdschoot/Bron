@@ -71,7 +71,7 @@ struct NamedBufferData {
 
 template<typename T>
 struct MultipleNamedBufferData {
-	MultipleNamedBufferData(const NamedBufferLayout<T>* layout, const u8 number_of_buffers) :
+	MultipleNamedBufferData(const NamedBufferLayout<T>* layout, const u32 number_of_buffers) :
 		layout(layout), number_of_buffers(number_of_buffers), data(new u8[layout->GetStride() * number_of_buffers]) {}
 
 	/**
@@ -91,7 +91,7 @@ struct MultipleNamedBufferData {
 	u32 GetTotalSize() { return number_of_buffers * layout->GetStride(); }
 
 	const NamedBufferLayout<T>* layout;
-	const u8 number_of_buffers;
+	const u32 number_of_buffers;
 	u8* data;
 };
 } // namespace bron

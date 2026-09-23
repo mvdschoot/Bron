@@ -1,6 +1,7 @@
 #include "Layers/WorldLayer.h"
 
 #include "Bron/Core/Platform.h"
+#include "Bron/Scene/AssetManager.h"
 #include "Bron/Scene/Serialization/Serialization.h"
 #include "Bron/Scripting/LuaManager.h"
 #include "Bron/Util/Paths.h"
@@ -34,6 +35,7 @@ void WorldLayer::Boot() {
 	// happen before anything is deserialized.
 	const std::filesystem::path assets = (root / manifest->asset_directory).lexically_normal();
 	paths::SetRoots(root, assets);
+	bron::assets::AssetManager::Instance().Refresh();
 
 	const std::filesystem::path scene_file = assets / manifest->startup_scene;
 	if (!std::filesystem::exists(scene_file)) {

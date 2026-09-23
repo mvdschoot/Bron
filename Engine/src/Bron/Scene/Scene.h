@@ -41,8 +41,14 @@ public:
 	// Checks all parents for visibility
 	bool IsVisible(entt::entity entity);
 
-	// Loads a model from disk and attaches it to the entity.
-	entt::entity CreatePhongModel(const std::filesystem::path& path);
+	// Creates the entities for a model asset: one per node, carrying the node's transform,
+	// with the node's meshes on it - or on children of it, when it has more than one. The
+	// entities are copies; changing them leaves the model asset alone. Returns the
+	// unparented root, or entt::null when the model cannot be loaded.
+	entt::entity Instantiate(const assets::AssetHandle& model);
+
+	// Loads the model at 'path' through the asset manager and instantiates it.
+	entt::entity CreateModel(const std::filesystem::path& path, MaterialWorkflow workflow = kPhong);
 
 	// The entity holding the CameraComponent the scene is meant to be looked through,
 	// or entt::null when it has no camera at all.

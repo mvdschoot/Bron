@@ -5,6 +5,7 @@
 #include <nlohmann/json.hpp>
 
 #include "Bron/Core/Logger.h"
+#include "Bron/Scene/AssetManager.h"
 #include "Bron/Scene/Scene.h"
 #include "Bron/Scene/Serialization/Serialization.h"
 #include "Bron/Util/Paths.h"
@@ -109,7 +110,10 @@ bool Project::Save() const {
 	return true;
 }
 
-void Project::MakeActive() const { paths::SetRoots(directory_, AssetRoot()); }
+void Project::MakeActive() const {
+	paths::SetRoots(directory_, AssetRoot());
+	assets::AssetManager::Instance().Refresh();
+}
 
 void Project::OpenStartupScene() {
 	EnsureStartupScene();

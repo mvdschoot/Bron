@@ -22,6 +22,7 @@
 #include "Bron/Graphics/CameraView.h"
 #include "Bron/Graphics/MaterialBase.h"
 #include "Bron/Graphics/VertexArray.h"
+#include "Bron/Scene/Asset.h"
 #include "Serialization/GlmJson.h"
 #include "nlohmann/json.hpp"
 
@@ -139,57 +140,28 @@ struct HierarchyComponent {
 // --------------------------------------------------------------------
 // Mesh
 // --------------------------------------------------------------------
+// What an entity draws and what it draws it with. Both are assets, shared by every entity
+// that uses them; placing a model copies its choice of mesh and material in here, and from
+// then on this is the only place the renderer looks.
+struct MeshMaterialComponent {
+	assets::AssetHandle mesh = assets::builtin::kCubeMesh;
+	assets::AssetHandle material = assets::builtin::kDefaultMaterial;
 
-enum VertexVariables { kPositions, kNormals, kUvs, kTangents, kSmoothNormals };
+	MeshMaterialComponent() = default;
+	MeshMaterialComponent(const assets::AssetHandle& mesh, const assets::AssetHandle& material) :
+		mesh(mesh), material(material) {}
 
-struct MeshData {
-	std::vector<glm::vec3> positions;
-	std::vector<u32> indices;
-	std::optional<std::vector<glm::vec3>> normals;
-	std::optional<std::vector<glm::vec2>> uvs;
-	std::optional<std::vector<glm::vec3>> tangents;
-
-	// Normals with the hard edges welded shut - see SmoothNormals(). Derived from the
-	// positions and indices, so it is filled in on demand rather than by the importer.
-	std::optional<std::vector<glm::vec3>> smooth_normals;
+	NLOHMANN_DEFINE_TYPE_INTRUSIVE(MeshMaterialComponent, mesh, material)
 };
-
-// TODO: store buffer layout as well, or better define packages of materials, shaders, buffer layouts, etc.
-struct MeshComponent {
-	MeshData vertex_data;
-	Ref<MaterialBase> material;
-
-	// Lazily built by GetVao(); not part of the mesh's data.
-	Ref<VertexArray> vao = nullptr;
-};
-
-// Average of the given vertices.
-glm::vec3 FindCentroid(const glm::vec3* vertices, uint64_t n);
-
-// Returns the mesh's vertex array, building it against the given layout on first use.
-Ref<VertexArray> GetVao(MeshComponent& mesh, const NamedBufferLayout<VertexVariables>& buffer_layout);
 
 
 // --------------------------------------------------------------------
-// Model source
+// Material workflow
 // --------------------------------------------------------------------
 
 NLOHMANN_JSON_SERIALIZE_ENUM(MaterialWorkflow, {
 													   {kPhong, "phong"},
 											   })
-
-// Marks an entity as the root of an imported model. Meshes are never written
-// to a save file - they are re-imported from this path on load, and
-// everything below this entity is treated as generated output.
-struct ModelSourceComponent {
-	std::string path; // relative to paths::AssetRoot()
-	MaterialWorkflow workflow = kPhong;
-
-	ModelSourceComponent() = default;
-	ModelSourceComponent(std::string p, const MaterialWorkflow w) : path(std::move(p)), workflow(w) {}
-
-	NLOHMANN_DEFINE_TYPE_INTRUSIVE(ModelSourceComponent, path, workflow)
-};
 
 
 // --------------------------------------------------------------------

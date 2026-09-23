@@ -5,10 +5,11 @@
 #include "Cube.h"
 
 #include "Bron/Graphics/Phong/PhongMaterial.h"
+#include "Bron/Scene/AssetManager.h"
 #include "Bron/Scene/Scene.h"
 
 namespace bron {
-entt::entity CreateCube(Scene& target, const Ref<MaterialBase>& material) {
+MeshData CubeMeshData() {
 	MeshData mesh_data;
 
 	// Cube vertices (positions)
@@ -64,8 +65,12 @@ entt::entity CreateCube(Scene& target, const Ref<MaterialBase>& material) {
 			{1.0f, 0.0f, 0.0f} // 7
 	};
 
+	return mesh_data;
+}
+
+entt::entity CreateCube(Scene& target, const assets::AssetHandle& material) {
 	const entt::entity cube = target.CreateEntity("Cube");
-	target.reg.emplace<MeshComponent>(cube, std::move(mesh_data), material);
+	target.reg.emplace<MeshMaterialComponent>(cube, assets::builtin::kCubeMesh, material);
 
 	return cube;
 }
@@ -78,6 +83,9 @@ entt::entity CreatePhongCube(Scene& target, const glm::vec3 color) {
 	material->Set(PhongMaterialVariables::kShininessStrength, 1.0f);
 	material->Set(PhongMaterialVariables::kAmbientFactor, 0.2f);
 
-	return CreateCube(target, material);
+	const Ref<assets::MaterialAsset> asset = CreateRef<assets::MaterialAsset>();
+	asset->material = material;
+
+	return CreateCube(target, assets::AssetManager::Instance().AddMemoryAsset(assets::kMaterial, asset));
 }
 } // namespace bron

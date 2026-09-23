@@ -2,6 +2,7 @@
 
 #include "imgui.h"
 #include "nfd.hpp"
+#include "Bron/Scene/AssetManager.h"
 #include "Bron/Scripting/LuaManager.h"
 #include "Bron/Util/Paths.h"
 #include "Core/Icons.h"
@@ -61,12 +62,23 @@ void DrawHierarchy(EditorContext& context, Scene& scene, const entt::entity enti
 }
 
 void DrawMesh(EditorContext& context, Scene& scene, const entt::entity entity) {
-	const MeshComponent& mesh = scene.reg.get<MeshComponent>(entity);
+	const MeshMaterialComponent& component = scene.reg.get<MeshMaterialComponent>(entity);
+	assets::AssetManager& manager = assets::AssetManager::Instance();
 
-	Text("Vertices: %d", static_cast<int>(mesh.vertex_data.positions.size()));
-	Text("Indices: %d", static_cast<int>(mesh.vertex_data.indices.size()));
-	Text("Shader: %s", mesh.material ? mesh.material->shader_name : "none");
-	TextDisabled(mesh.vao ? "Uploaded to the GPU" : "Not yet uploaded");
+	if (const Ref<assets::MeshAsset> mesh = manager.Get<assets::MeshAsset>(component.mesh)) {
+		Text("Vertices: %d", static_cast<int>(mesh->mesh_data.positions.size()));
+		Text("Indices: %d", static_cast<int>(mesh->mesh_data.indices.size()));
+	} else {
+		TextDisabled("Mesh %s cannot be found", component.mesh.value);
+	}
+
+	if (const Ref<assets::MaterialAsset> material = manager.Get<assets::MaterialAsset>(component.material))
+		Text("Shader: %s", material->material->shader_name);
+	else
+		TextDisabled("Material %s cannot be found; drawn with the default", component.material.value);
+
+	const std::optional<std::filesystem::path> source = manager.SourceFile(component.mesh);
+	TextDisabled("From: %s", source.has_value() ? source->generic_string().c_str() : "built in");
 }
 
 void DrawPointLight(EditorContext& context, Scene& scene, const entt::entity entity) {
@@ -171,7 +183,7 @@ std::vector<ComponentMeta> Build() {
 
 	// A mesh without vertices or a material cannot be drawn, so it is built by a loader or a
 	// factory rather than added from the menu.
-	Register<MeshComponent>(components, "Mesh", DrawMesh, kComponentFlagsRemovable);
+	Register<MeshMaterialComponent>(components, "Mesh", DrawMesh, kComponentFlagsRemovable);
 
 	Register<PointLightComponent>(components, "Light", DrawPointLight);
 

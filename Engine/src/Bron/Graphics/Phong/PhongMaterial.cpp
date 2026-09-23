@@ -20,13 +20,13 @@ u8 PhongMaterial::Bind(const Ref<Shader> shader, u8 texture_slot_starting_index)
 
 	// Bind the available textures_ to texture slots
 	int texture_slot_index = texture_slot_starting_index;
-	if (textures_.contains(PhongMaterialTextureTypes::kDiffuse)) {
-		textures_.at(PhongMaterialTextureTypes::kDiffuse)->Bind(texture_slot_index);
+	if (textures_.contains(kDiffuse)) {
+		textures_.at(kDiffuse)->Bind(texture_slot_index);
 		Set(PhongMaterialVariables::kDiffuseTexture, static_cast<float>(texture_slot_index));
 		texture_slot_index += 1;
 	}
-	if (textures_.contains(PhongMaterialTextureTypes::kSpecular)) {
-		textures_.at(PhongMaterialTextureTypes::kSpecular)->Bind(texture_slot_index);
+	if (textures_.contains(kSpecular)) {
+		textures_.at(kSpecular)->Bind(texture_slot_index);
 		Set(PhongMaterialVariables::kSpecularTexture, static_cast<float>(texture_slot_index));
 		texture_slot_index += 1;
 	}
@@ -43,7 +43,7 @@ u8 PhongMaterial::Bind(const Ref<Shader> shader, u8 texture_slot_starting_index)
 
 u32 PhongMaterial::NumberUniformCalls() const { return layout->keys.size(); }
 
-void PhongMaterial::AddTexture(PhongMaterialTextureTypes texture_type, Ref<Texture> texture) {
+void PhongMaterial::AddTexture(TextureType texture_type, Ref<Texture> texture) {
 	textures_[texture_type] = std::move(texture);
 }
 } // namespace bron

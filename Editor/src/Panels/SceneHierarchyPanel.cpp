@@ -77,10 +77,11 @@ void SceneHierarchyPanel::DrawAddMenu() {
 	if (MenuItem("Model")) {
 		std::filesystem::path path = ModelPicker();
 		if (!path.empty()) {
-			const entt::entity model = context_.active_scene->CreatePhongModel(path);
-
-			const entt::entity parent = context_.HasSelection() ? context_.selection : context_.active_scene->root;
-			context_.active_scene->AddChild(parent, model);
+			const entt::entity model = context_.active_scene->CreateModel(path);
+			if (model != entt::null) {
+				const entt::entity parent = context_.HasSelection() ? context_.selection : context_.active_scene->root;
+				context_.active_scene->AddChild(parent, model);
+			}
 		}
 	}
 

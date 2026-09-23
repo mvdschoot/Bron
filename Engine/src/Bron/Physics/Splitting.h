@@ -9,7 +9,7 @@ public:
 	static void Split(Ref<BvhNode> node);
 
 private:
-	static float Cost(Ref<BvhNode> node, AABB a, AABB b);
+	static float Cost(Ref<BvhNode> node, P_AABB a, P_AABB b);
 
 	static constexpr u8 kSplitPerAxis = 3;
 	static constexpr u8 kCostTraverse = 1;

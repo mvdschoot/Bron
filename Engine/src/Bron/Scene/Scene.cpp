@@ -2,8 +2,7 @@
 
 #include <algorithm>
 
-#include "Bron/Graphics/Components/ModelLoader.h"
-#include "Bron/Util/Paths.h"
+#include "Bron/Scene/AssetManager.h"
 #include "Bron/Scripting/LuaManager.h"
 #include "Bron/Core/Timestep.h"
 
@@ -106,17 +105,43 @@ bool Scene::IsVisible(entt::entity entity) {
 	return is_visible;
 }
 
-entt::entity Scene::CreatePhongModel(const std::filesystem::path& path) {
-	entt::entity model_entity = CreateEntity(path.stem().string());
-	ModelLoader::LoadModel(*this, MaterialWorkflow::kPhong, path);
+entt::entity Scene::Instantiate(const assets::AssetHandle& model) {
+	const Ref<assets::ModelAsset> asset = assets::AssetManager::Instance().Get<assets::ModelAsset>(model);
+	if (!asset || asset->nodes.empty())
+		return entt::null;
 
-	// Recorded relative to the asset root so a save file survives the project
-	// being moved. paths::RelativeToAsset keeps a location outside the root as it is;
-	// joining an absolute path back onto the root is a no-op, so loading still works.
-	reg.emplace<ModelSourceComponent>(model_entity, paths::RelativeToAsset(path).generic_string(),
-									  MaterialWorkflow::kPhong);
+	// Nodes come parent first, so each one's parent entity already exists.
+	std::vector<entt::entity> created(asset->nodes.size(), static_cast<entt::entity>(entt::null));
+	for (usize i = 0; i < asset->nodes.size(); i++) {
+		const assets::ModelAsset::Node& node = asset->nodes[i];
 
-	return model_entity;
+		const entt::entity parent = node.parent.has_value() ? created[*node.parent] : entt::null;
+		const entt::entity entity = CreateEntity(node.name, parent);
+		created[i] = entity;
+
+		TransformComponent& transform = reg.get<TransformComponent>(entity);
+		transform.Position = node.position;
+		transform.RotationQuat = node.rotation;
+		transform.Scaling = node.scale;
+
+		if (node.meshes.size() == 1) {
+			reg.emplace<MeshMaterialComponent>(entity, node.meshes[0].mesh, node.meshes[0].material);
+			continue;
+		}
+
+		// A mesh has no transform of its own, so each child sits exactly on the node.
+		for (const assets::ModelAsset::Submesh& submesh: node.meshes) {
+			const entt::entity child = CreateEntity(submesh.name, entity);
+			reg.emplace<MeshMaterialComponent>(child, submesh.mesh, submesh.material);
+		}
+	}
+
+	return created[0];
+}
+
+entt::entity Scene::CreateModel(const std::filesystem::path& path, const MaterialWorkflow workflow) {
+	const std::optional<assets::AssetHandle> model = assets::AssetManager::Instance().LoadModel(path, workflow);
+	return model.has_value() ? Instantiate(*model) : entt::null;
 }
 
 

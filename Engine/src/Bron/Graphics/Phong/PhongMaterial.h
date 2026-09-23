@@ -9,11 +9,6 @@
 #include "Bron/Graphics/Components/BufferExtentions.h"
 
 namespace bron {
-enum class PhongMaterialTextureTypes {
-	kDiffuse,
-	kSpecular,
-	// kNormal
-};
 
 // These are the variables that the material has.
 enum class PhongMaterialVariables {
@@ -29,7 +24,7 @@ enum class PhongMaterialVariables {
 	// kNormalTexture
 };
 
-inline const auto PhongMaterialLayout = NamedBufferLayout<PhongMaterialVariables>({
+inline const auto kPhongMaterialLayout = NamedBufferLayout<PhongMaterialVariables>({
 		{PhongMaterialVariables::kAmbientFactor, {"u_Material.AmbientFactor", ShaderDataType::kFloat}},
 		{PhongMaterialVariables::kDiffuse, {"u_Material.Diffuse", ShaderDataType::kFloat3}},
 		{PhongMaterialVariables::kSpecular, {"u_Material.Specular", ShaderDataType::kFloat3}},
@@ -45,13 +40,13 @@ class PhongMaterial final : public MaterialBase, public NamedBufferData<PhongMat
 public:
 	PhongMaterial() :
 		MaterialBase(MaterialWorkflow::kPhong, BR_PHONG_SHADER),
-		NamedBufferData<PhongMaterialVariables>(&PhongMaterialLayout) {}
+		NamedBufferData<PhongMaterialVariables>(&kPhongMaterialLayout) {}
 
 	u8 Bind(Ref<Shader> shader, u8 texture_slot_starting_index) override;
 	[[nodiscard]] u32 NumberUniformCalls() const override;
-	void AddTexture(PhongMaterialTextureTypes texture_type, Ref<Texture> texture);
+	void AddTexture(TextureType texture_type, Ref<Texture> texture);
 
 private:
-	std::map<PhongMaterialTextureTypes, Ref<Texture>> textures_;
+	std::map<TextureType, Ref<Texture>> textures_;
 };
 } // namespace bron

@@ -112,8 +112,12 @@ icons::Id FileExplorerPanel::IconFor(const EntryType type) {
 void FileExplorerPanel::ActivateFile(const Entry& entry) {
 	switch (entry.type) {
 		case kModelFile: {
-			context_.active_scene->CreatePhongModel(entry.path);
-			BR_APP_INFO("Loaded Phong model: {}", entry.path.string());
+			const entt::entity model = context_.active_scene->CreateModel(entry.path);
+			if (model == entt::null)
+				break;
+
+			context_.active_scene->AddChild(context_.active_scene->root, model);
+			BR_APP_INFO("Placed model: {}", entry.path.string());
 			break;
 		}
 		default:
@@ -141,6 +145,10 @@ void FileExplorerPanel::Refresh() {
 	for (const std::filesystem::directory_entry& file: std::filesystem::directory_iterator(current_path_, ec)) {
 		// extension() keeps the dot, so the constants above carry one too.
 		const std::string extension = ToLowerCase(file.path().extension().string());
+
+		// The asset manager's bookkeeping, not something to open.
+		if (extension == ".meta")
+			continue;
 
 		EntryType type;
 		if (file.is_directory())

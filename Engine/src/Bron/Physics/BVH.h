@@ -13,7 +13,7 @@ namespace bron {
 struct PhysicsData;
 
 struct BvhNode {
-	AABB box;
+	P_AABB box;
 	Ref<BvhNode> left, right;
 	std::vector<Ref<RigidBody>> primitives;
 };

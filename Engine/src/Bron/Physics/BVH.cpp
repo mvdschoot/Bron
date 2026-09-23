@@ -5,7 +5,7 @@
 
 namespace bron {
 BVH::BVH() {
-	root = CreateRef<BvhNode>(AABB{{-1, -1, -1}, {1, 1, 1}}, nullptr, nullptr, std::vector<Ref<RigidBody>>());
+	root = CreateRef<BvhNode>(P_AABB{{-1, -1, -1}, {1, 1, 1}}, nullptr, nullptr, std::vector<Ref<RigidBody>>());
 }
 
 void BVH::AddObject(Ref<RigidBody> obj) { InsertPrimitive(root, obj); }

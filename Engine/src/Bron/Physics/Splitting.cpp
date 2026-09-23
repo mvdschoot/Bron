@@ -13,7 +13,7 @@ void SAH::Split(Ref<BvhNode> node) {
 
 	for (u8 x = 1; x < kSplitPerAxis + 1; x++) {
 		glm::vec3 s = node->box.min + glm::vec3(x * split_step_x, 0, 0);
-		float cost = Cost(node, AABB(node->box.min, s), AABB(s, node->box.max));
+		float cost = Cost(node, P_AABB(node->box.min, s), P_AABB(s, node->box.max));
 		if (cost < min_cost) {
 			min_split = s;
 			min_cost = cost;
@@ -21,7 +21,7 @@ void SAH::Split(Ref<BvhNode> node) {
 	}
 	for (u8 x = 1; x < kSplitPerAxis + 1; x++) {
 		glm::vec3 s = node->box.min + glm::vec3(0, x * split_step_y, 0);
-		float cost = Cost(node, AABB(node->box.min, s), AABB(s, node->box.max));
+		float cost = Cost(node, P_AABB(node->box.min, s), P_AABB(s, node->box.max));
 		if (cost < min_cost) {
 			min_split = s;
 			min_cost = cost;
@@ -29,15 +29,15 @@ void SAH::Split(Ref<BvhNode> node) {
 	}
 	for (u8 x = 1; x < kSplitPerAxis + 1; x++) {
 		glm::vec3 s = node->box.min + glm::vec3(0, 0, x * split_step_z);
-		float cost = Cost(node, AABB(node->box.min, s), AABB(s, node->box.max));
+		float cost = Cost(node, P_AABB(node->box.min, s), P_AABB(s, node->box.max));
 		if (cost < min_cost) {
 			min_split = s;
 			min_cost = cost;
 		}
 	}
 
-	AABB a = AABB(node->box.min, min_split);
-	AABB b = AABB(min_split, node->box.max);
+	P_AABB a = P_AABB(node->box.min, min_split);
+	P_AABB b = P_AABB(min_split, node->box.max);
 
 	node->left = CreateRef<BvhNode>(BvhNode{a, nullptr, nullptr});
 	node->right = CreateRef<BvhNode>(BvhNode{a, nullptr, nullptr});
@@ -58,7 +58,7 @@ void SAH::Split(Ref<BvhNode> node) {
 }
 
 
-float SAH::Cost(Ref<BvhNode> node, AABB a, AABB b) {
+float SAH::Cost(Ref<BvhNode> node, P_AABB a, P_AABB b) {
 	glm::vec3 box = node->box.max - node->box.min;
 	float volume = box.x * box.y * box.z;
 

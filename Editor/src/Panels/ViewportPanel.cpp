@@ -2,6 +2,8 @@
 
 #include "Panels/ComponentRegistry.h"
 
+#include "Bron/Scene/AssetManager.h"
+
 #include <ImGuizmo.h>
 #include <glm/gtx/matrix_decompose.hpp>
 
@@ -14,13 +16,53 @@ void CollectMeshes(Scene& scene, const entt::entity entity, std::vector<entt::en
 	if (entity == entt::null)
 		return;
 
-	if (scene.reg.all_of<MeshComponent>(entity))
+	if (scene.reg.all_of<MeshMaterialComponent>(entity))
 		out.push_back(entity);
 
 	if (const HierarchyComponent* hierarchy = scene.reg.try_get<HierarchyComponent>(entity)) {
 		for (const entt::entity child: hierarchy->children)
 			CollectMeshes(scene, child, out);
 	}
+}
+
+// Grows [min, max] by the bounds of every mesh at or below 'entity'. 'to_space' takes the
+// entity's local space into the space the bounds are gathered in.
+void AccumulateBounds(Scene& scene, const entt::entity entity, const glm::mat4& to_space, glm::vec3& min,
+					  glm::vec3& max, bool& found) {
+	if (const MeshMaterialComponent* component = scene.reg.try_get<MeshMaterialComponent>(entity)) {
+		const Ref<assets::MeshAsset> mesh = assets::AssetManager::Instance().Get<assets::MeshAsset>(component->mesh);
+
+		if (mesh && !mesh->mesh_data.positions.empty()) {
+			// All eight corners, since a rotation can make any of them the extreme one.
+			for (int corner = 0; corner < 8; corner++) {
+				const glm::vec3 local(corner & 1 ? mesh->aabb.max.x : mesh->aabb.min.x,
+									  corner & 2 ? mesh->aabb.max.y : mesh->aabb.min.y,
+									  corner & 4 ? mesh->aabb.max.z : mesh->aabb.min.z);
+				const glm::vec3 point = glm::vec3(to_space * glm::vec4(local, 1.0f));
+
+				min = glm::min(min, point);
+				max = glm::max(max, point);
+			}
+			found = true;
+		}
+	}
+
+	for (const entt::entity child: scene.reg.get<HierarchyComponent>(entity).children)
+		AccumulateBounds(scene, child, to_space * *scene.reg.get<TransformComponent>(child), min, max, found);
+}
+
+// The centre of what the entity draws - its own mesh and every mesh below it - in the
+// entity's local space. Meshes keep their vertices where the model file put them, so an
+// entity's origin can sit well away from its geometry; this is where a user expects to
+// grab it. An entity that draws nothing uses its origin.
+glm::vec3 LocalPivot(Scene& scene, const entt::entity entity) {
+	glm::vec3 min(std::numeric_limits<float>::max());
+	glm::vec3 max(std::numeric_limits<float>::lowest());
+	bool found = false;
+
+	AccumulateBounds(scene, entity, glm::mat4(1.0f), min, max, found);
+
+	return found ? (min + max) * 0.5f : glm::vec3(0.0f);
 }
 } // namespace
 
@@ -169,13 +211,16 @@ bool ViewportPanel::OnKeyPressed(KeyPressedEvent& event) const {
 		case key::H:
 			context_.gizmo_operation = ImGuizmo::OPERATION::SCALE;
 			return true;
-		case key::F:
+		case key::F: {
 			// Framing an empty selection has nothing to aim at, so leave the key unhandled.
 			if (!context_.HasSelection())
 				return false;
 
-			context_.camera.Focus(context_.active_scene->reg.get<TransformComponent>(context_.selection).Position);
+			Scene& scene = *context_.active_scene;
+			const glm::vec3 pivot = LocalPivot(scene, context_.selection);
+			context_.camera.Focus(glm::vec3(scene.WorldTransform(context_.selection) * glm::vec4(pivot, 1.0f)));
 			return true;
+		}
 		default:
 			return false;
 	}
@@ -210,8 +255,11 @@ void ViewportPanel::DrawGizmo() {
 	glm::mat4 proj = view_.projection;
 	glm::mat4 view = view_.view;
 
-	// The gizmo manipulates a world transform; the component stores a local one.
-	glm::mat4 transform = scene.WorldTransform(selected);
+	// The gizmo manipulates a world transform; the component stores a local one. It is
+	// drawn at the centre of the geometry rather than the entity's origin, so moving,
+	// rotating and scaling all happen around that point.
+	const glm::vec3 pivot = LocalPivot(scene, selected);
+	glm::mat4 transform = scene.WorldTransform(selected) * glm::translate(glm::mat4(1.0f), pivot);
 
 	ImGuizmo::Manipulate(glm::value_ptr(view), glm::value_ptr(proj), context_.gizmo_operation, ImGuizmo::LOCAL,
 						 glm::value_ptr(transform));
@@ -225,7 +273,8 @@ void ViewportPanel::DrawGizmo() {
 	// Back out the parent transform, so the entity keeps its place in the hierarchy.
 	const entt::entity parent = scene.reg.get<HierarchyComponent>(selected).parent;
 	const glm::mat4 parent_transform = parent != entt::null ? scene.WorldTransform(parent) : glm::mat4(1.0f);
-	const glm::mat4 local = glm::inverse(parent_transform) * transform;
+	// And the pivot offset, which is not part of the entity's transform.
+	const glm::mat4 local = glm::inverse(parent_transform) * transform * glm::translate(glm::mat4(1.0f), -pivot);
 
 	// Extract TRS in a stable way
 	glm::vec3 skew;

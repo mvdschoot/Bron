@@ -23,7 +23,7 @@ add_library(Bron STATIC
         Bron/Graphics/LightManagement.cpp
         Bron/Graphics/Phong/PhongMaterial.cpp
         Bron/Graphics/Components/Cube.cpp
-        Bron/Graphics/Components/ModelLoader.cpp
+        Bron/Scene/ModelLoader.cpp
         # TextRenderer is out of the build: it calls an R2D::DrawQuad overload that no
         # longer exists. TextTexture (Platform/OpenGL/OpenGLTextTexture.cpp) is still
         # built regardless, because Texture.cpp's TextTexture::Create names it.
@@ -71,7 +71,15 @@ add_library(Bron STATIC
         Platform/Desktop/DesktopInput.cpp
         Bron/Scripting/LuaManager.cpp
         Bron/Scripting/LuaManager.h
-        Bron/Scripting/LuaRegister.cpp)
+        Bron/Scripting/LuaRegister.cpp
+        Bron/Scene/AssetManager.cpp
+        Bron/Scene/AssetManager.h
+        Bron/Scene/Asset.cpp
+        Bron/Scene/Asset.h
+        Bron/Graphics/Components/Mesh.cpp
+        Bron/Graphics/Components/Mesh.h
+        Bron/Scripting/Scripting.h
+)
 
 target_include_directories(Bron PUBLIC .)
 

@@ -10,22 +10,22 @@
 
 namespace bron {
 /* Internally used by physics engine */
-struct AABB {
-	AABB() : min(0.0f), max(0.0f) {}
-	AABB(vec3 A, vec3 B);
+struct P_AABB {
+	P_AABB() : min(0.0f), max(0.0f) {}
+	P_AABB(vec3 A, vec3 b);
 
 	vec3 min;
 	vec3 max;
 
-	bool Contains(AABB& other);
-	void ResizeTo(AABB& other);
+	bool Contains(P_AABB& other);
+	void ResizeTo(P_AABB& other);
 };
 
 enum RigidBodyType { kSphere, kCube };
 
 struct RigidBody {
 	RigidBodyType type;
-	AABB bounding_box;
+	P_AABB bounding_box;
 
 	real weight;
 	vec3 center_of_mass;

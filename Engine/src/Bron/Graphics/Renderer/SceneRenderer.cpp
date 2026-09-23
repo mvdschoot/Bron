@@ -2,8 +2,8 @@
 
 #include "Command.h"
 #include "Bron/Graphics/Texture.h"
-#include "Bron/Graphics/Phong/PhongDefinitions.h"
 #include "Bron/Graphics/ShaderRegistry.h"
+#include "Bron/Scene/AssetManager.h"
 
 #include <map>
 #include <string>
@@ -21,8 +21,16 @@ struct SceneRendererData {
 static SceneRendererData s_data;
 
 namespace {
-// Entities grouped by shader, then by material, so each is only bound once.
-using RenderQueue = std::map<std::string, std::map<MaterialBase*, std::vector<entt::entity>>>;
+// Entities grouped by shader, then by material, so each is only bound once. Each entity
+// carries the mesh it resolved to, so a draw does not look it up a second time.
+using DrawList = std::vector<std::pair<entt::entity, const assets::MeshAsset*>>;
+using RenderQueue = std::map<std::string, std::map<MaterialBase*, DrawList>>;
+
+// The mesh an entity draws, or null when its handle leads nowhere - a model file that was
+// deleted, or a memory-only asset from a previous session.
+const assets::MeshAsset* ResolveMesh(const MeshMaterialComponent& component) {
+	return assets::AssetManager::Instance().Get<assets::MeshAsset>(component.mesh).get();
+}
 
 // Rebuilt every frame: the registry is the single source of truth, and a scene of this size
 // makes the sort free compared to keeping a second container in sync.
@@ -30,10 +38,22 @@ void Enqueue(Scene& scene, const entt::entity entity, RenderQueue& queue) {
 	if (!scene.IsVisible(entity))
 		return;
 
-	const MeshComponent& mesh = scene.reg.get<MeshComponent>(entity);
-	BR_CORE_ASSERT(mesh.material != nullptr, "Mesh has no material and cannot be drawn");
+	const MeshMaterialComponent& component = scene.reg.get<MeshMaterialComponent>(entity);
 
-	queue[mesh.material->shader_name][mesh.material.get()].push_back(entity);
+	const assets::MeshAsset* mesh = ResolveMesh(component);
+	if (mesh == nullptr)
+		return;
+
+	// A missing material draws in the default one: a grey mesh is easy to spot, a
+	// missing one is not.
+	assets::AssetManager& manager = assets::AssetManager::Instance();
+	Ref<assets::MaterialAsset> material = manager.Get<assets::MaterialAsset>(component.material);
+	if (!material)
+		material = manager.Get<assets::MaterialAsset>(assets::builtin::kDefaultMaterial);
+
+	// Held by the asset manager's cache for as long as the frame lasts.
+	MaterialBase* base = material->material.get();
+	queue[base->shader_name][base].emplace_back(entity, mesh);
 }
 
 // Walks the queue and draws it with each entity's own shader and material. Shared by the
@@ -61,9 +81,7 @@ void Submit(Scene& scene, const CameraView& view, const RenderQueue& queue) {
 			material->Bind(shader, 1);
 			SceneRenderer::Statistics.UniformCalls += material->NumberUniformCalls();
 
-			for (const entt::entity entity: entities) {
-				MeshComponent& mesh = scene.reg.get<MeshComponent>(entity);
-
+			for (const auto& [entity, mesh]: entities) {
 				shader->SetUniformMat4("u_Model", scene.WorldTransform(entity));
 				SceneRenderer::Statistics.UniformCalls++;
 
@@ -71,7 +89,7 @@ void Submit(Scene& scene, const CameraView& view, const RenderQueue& queue) {
 				shader->SetUniform1iv("u_EntityId", &entity_id, 1);
 				SceneRenderer::Statistics.UniformCalls++;
 
-				const Ref<VertexArray> vao = GetVao(mesh, kPhongVertexLayout);
+				const Ref<VertexArray>& vao = mesh->vao;
 				Command::DrawIndexed(vao, vao->GetIndexBuffer()->GetCount());
 
 				SceneRenderer::Statistics.DrawCalls++;
@@ -98,7 +116,7 @@ void SceneRenderer::Draw(Scene& scene, const CameraView& view) {
 	Statistics = {0, 0, 0, 0, 0};
 
 	RenderQueue queue;
-	for (auto [entity, mesh]: scene.reg.view<MeshComponent>().each())
+	for (auto [entity, mesh]: scene.reg.view<MeshMaterialComponent>().each())
 		Enqueue(scene, entity, queue);
 
 	// Light data is shared by every shader, so upload and bind it once for the whole frame.
@@ -116,7 +134,7 @@ void SceneRenderer::DrawOutline(Scene& scene, const CameraView& view, const std:
 
 	RenderQueue queue;
 	for (const entt::entity mesh: meshes) {
-		BR_CORE_ASSERT(scene.reg.all_of<MeshComponent>(mesh),
+		BR_CORE_ASSERT(scene.reg.all_of<MeshMaterialComponent>(mesh),
 					   "To draw an outline, the given entities MUST contain a mesh component");
 		Enqueue(scene, mesh, queue);
 	}
@@ -164,8 +182,11 @@ void SceneRenderer::DrawOutline(Scene& scene, const CameraView& view, const std:
 		// outline_shader->SetUniform1i("u_EntityId", static_cast<u32>(mesh));
 		Statistics.UniformCalls++;
 
-		MeshComponent& mesh_component = scene.reg.get<MeshComponent>(mesh);
-		const Ref<VertexArray> vao = GetVao(mesh_component, kPhongVertexLayout);
+		const assets::MeshAsset* mesh_asset = ResolveMesh(scene.reg.get<MeshMaterialComponent>(mesh));
+		if (mesh_asset == nullptr)
+			continue;
+
+		const Ref<VertexArray>& vao = mesh_asset->vao;
 
 		Command::DrawIndexed(vao, vao->GetIndexBuffer()->GetCount());
 		Statistics.Meshes++;
