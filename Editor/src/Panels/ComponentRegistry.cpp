@@ -123,7 +123,8 @@ void DrawScript(EditorContext& context, Scene& scene, const entt::entity entity)
 
 	if (BeginListBox("Attached scripts")) {
 		for (auto& script: script_component.scripts) {
-			Selectable(script.filename().generic_string().c_str());
+			std::string name = context.asset_manager.Metadata(script)->path.stem().string();
+			Selectable(name.c_str());
 		}
 
 		EndListBox();
@@ -148,8 +149,10 @@ void DrawScript(EditorContext& context, Scene& scene, const entt::entity entity)
 			return;
 		}
 
-		scene.lua_manager->AttachScript(script_file, entity);
-		script_component.scripts.push_back(script_file);
+		// We don't check if LoadScript returns an empty optional, because we already guarantee that the file exists.
+		assets::AssetHandle script_handle = context.asset_manager.LoadScript(script_file, kLua).value();
+		scene.lua_manager->AttachScript(script_handle, entity);
+		script_component.scripts.push_back(script_handle);
 		BR_APP_INFO("Added script {} to entity {}", script_file.generic_string(), static_cast<u64>(entity));
 	}
 }

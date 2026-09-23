@@ -36,7 +36,7 @@ void SetRoots(const std::filesystem::path& project, const std::filesystem::path&
 // Absolute location of a path stored relative to a root. An absolute input is
 // returned unchanged, because joining it onto a root is a no-op.
 std::filesystem::path ResolveProject(const std::filesystem::path& relative);
-std::filesystem::path ResolveAsset(const std::filesystem::path& relative);
+std::filesystem::path ResolveAsset(const std::filesystem::path& path);
 
 // The inverse of ResolveAsset: how an absolute location should be stored so that the
 // save file survives the project being moved. Paths outside the root cannot be

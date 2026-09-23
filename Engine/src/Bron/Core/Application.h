@@ -17,9 +17,32 @@
 
 #include <ctime>
 #include <memory>
+#include <optional>
 #include <random>
+#include <string_view>
 
 namespace bron {
+/// The arguments main() was started with, handed to CreateApplication so that an
+/// application can be told where to work rather than having to guess.
+///
+/// It points straight at main's argv, which lives for the whole process, so this stays
+/// valid without owning anything. values[0] is the executable, as usual - Get() counts
+/// from the first real argument instead, because nothing here cares what the binary was
+/// called.
+struct CommandLineArgs {
+	int count = 0;
+	char** values = nullptr;
+
+	/// Argument 'index', counting from 0 for the first one after the executable name.
+	/// Nothing when there are fewer than that many.
+	[[nodiscard]] std::optional<std::string_view> Get(const int index) const {
+		const int argv_index = index + 1;
+		if (values == nullptr || argv_index < 1 || argv_index >= count)
+			return std::nullopt;
+		return std::string_view(values[argv_index]);
+	}
+};
+
 #define BR_BIND_EVENT_FN(fn)                                                                                           \
 	[this](auto&&... args) -> decltype(auto) { return this->fn(std::forward<decltype(args)>(args)...); }
 
@@ -72,5 +95,5 @@ private:
 
 
 // To be defined in client app
-Application* CreateApplication();
+Application* CreateApplication(CommandLineArgs args);
 } // namespace bron

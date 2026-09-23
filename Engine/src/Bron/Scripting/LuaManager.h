@@ -8,6 +8,7 @@
 #include "Bron/Core/Timestep.h"
 #include "Bron/Core/UUID.h"
 #include "Bron/Events/Event.h"
+#include "Bron/Scene/Asset.h"
 
 #include "entt/entity/entity.hpp"
 
@@ -42,7 +43,7 @@ public:
 	///
 	/// A script whose file is missing or fails to execute is reported and skipped; the
 	/// entity simply ends up without it.
-	void AttachScript(const std::filesystem::path& location, entt::entity entity) const;
+	void AttachScript(const assets::AssetHandle& script_handle, entt::entity entity) const;
 
 	void OnUpdate(Timestep ts) const;
 	void OnStart();

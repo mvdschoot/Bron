@@ -35,6 +35,7 @@ public:
 	// .meta has the final say. Returns nothing when the file cannot be read.
 	std::optional<AssetHandle> LoadModel(const std::filesystem::path& location, MaterialWorkflow workflow = kPhong);
 	std::optional<AssetHandle> LoadTexture(const std::filesystem::path& location);
+	std::optional<AssetHandle> LoadScript(const std::filesystem::path& location, ScriptLanguage language);
 
 	// Registers an asset that has no file, e.g. a material built at runtime. It lasts until
 	// the next Refresh(), so a scene saved while pointing at one will not find it again.

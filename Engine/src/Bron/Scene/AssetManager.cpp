@@ -334,6 +334,23 @@ std::optional<AssetHandle> AssetManager::LoadTexture(const std::filesystem::path
 	return handle;
 }
 
+std::optional<AssetHandle> AssetManager::LoadScript(const std::filesystem::path& location, ScriptLanguage language) {
+	const std::filesystem::path absolute = paths::ResolveAsset(location);
+	if (!std::filesystem::exists(absolute)) {
+		BR_CORE_WARN("Texture {} does not exist", absolute.string());
+		return std::nullopt;
+	}
+
+	const AssetHandle handle = Register(absolute, kTexture);
+	if (!cache_.contains(handle)) {
+		const Ref<ScriptAsset> asset = CreateRef<ScriptAsset>();
+		asset->language = language;
+		cache_[handle] = asset;
+	}
+
+	return handle;
+}
+
 AssetHandle AssetManager::AddMemoryAsset(const AssetType type, Ref<Asset> asset) {
 	BR_CORE_ASSERT(asset && asset->Type() == type, "Memory asset does not match its declared type");
 

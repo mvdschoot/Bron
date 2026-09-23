@@ -43,10 +43,11 @@ std::filesystem::path ResolveProject(const std::filesystem::path& relative) {
 	return ProjectRoot() / relative;
 }
 
-std::filesystem::path ResolveAsset(const std::filesystem::path& relative) {
+std::filesystem::path ResolveAsset(const std::filesystem::path& path) {
 	BR_CORE_ASSERT(HasRoots(), "No roots: resolving an asset with no project open");
 
-	return AssetRoot() / relative;
+	// This operation '/' returns path if path is already an absolute path.
+	return AssetRoot() / path;
 }
 
 std::filesystem::path RelativeToAsset(const std::filesystem::path& absolute) {

@@ -7,7 +7,9 @@
 #include "LuaRegister.h"
 #include "Bron/Events/KeyEvent.h"
 #include "Bron/Events/MouseEvent.h"
+#include "Bron/Scene/AssetManager.h"
 #include "Bron/Scene/Scene.h"
+#include "Bron/Util/Paths.h"
 #include "Bron/Util/Util.h"
 
 #include <sol/sol.hpp>
@@ -112,17 +114,19 @@ sol::protected_function Callback(const sol::table& klass, const char* name, cons
 
 // The script loaded from 'location', loading and registering it the first time it is
 // asked for. Returns nullptr when the file cannot be run, having said why.
-Script* FindOrLoad(State& state, const std::filesystem::path& location) {
+Script* FindOrLoad(State& state, const assets::AssetHandle& handle) {
+	std::filesystem::path path = assets::AssetManager::Instance().Metadata(handle)->path;
+	std::filesystem::path absolute = paths::ResolveAsset(path);
 	if (auto* existing =
-				Find(state.scripts, [&location](const auto& item) { return item.second.location == location; }))
+				Find(state.scripts, [&absolute](const auto& item) { return item.second.location == absolute; }))
 		return &existing->second;
 
-	sol::protected_function_result function_result = state.lua.script_file(location.generic_string());
+	sol::protected_function_result function_result = state.lua.script_file(absolute.generic_string());
 	if (!function_result.valid()) {
 		const sol::error error = function_result;
 		// Not an assert: a missing or broken script is content being wrong, not the
 		// engine being wrong, and a shipped game must not die because one file is bad.
-		BR_CORE_ERROR("[lua] {} could not be loaded:\n{}", location.generic_string(), error.what());
+		BR_CORE_ERROR("[lua] {} could not be loaded:\n{}", absolute.generic_string(), error.what());
 		return nullptr;
 	}
 
@@ -132,7 +136,7 @@ Script* FindOrLoad(State& state, const std::filesystem::path& location) {
 	const sol::optional<sol::table> returned = function_result;
 	if (!returned) {
 		BR_CORE_ERROR("[lua] {} did not return a table. A script file has to end with 'return <name>'.",
-					  location.generic_string());
+					  absolute.generic_string());
 		return nullptr;
 	}
 
@@ -142,13 +146,13 @@ Script* FindOrLoad(State& state, const std::filesystem::path& location) {
 
 	const UUID script_id;
 	auto [it, inserted] = state.scripts.emplace(script_id, Script{.id = script_id,
-																  .location = location,
+																  .location = absolute,
 																  .metatable = meta,
 																  .instances = {},
-																  .on_update = Callback(klass, "on_update", location),
-																  .on_start = Callback(klass, "on_start", location),
-																  .on_destroy = Callback(klass, "on_destroy", location),
-																  .on_event = Callback(klass, "on_event", location)});
+																  .on_update = Callback(klass, "on_update", absolute),
+																  .on_start = Callback(klass, "on_start", absolute),
+																  .on_destroy = Callback(klass, "on_destroy", absolute),
+																  .on_event = Callback(klass, "on_event", absolute)});
 	return &it->second;
 }
 } // namespace
@@ -161,8 +165,8 @@ LuaManager::LuaManager(Scene* scene) : scene_(scene), state_(CreateScope<State>(
 
 LuaManager::~LuaManager() = default;
 
-void LuaManager::AttachScript(const std::filesystem::path& location, const entt::entity entity) const {
-	Script* script = FindOrLoad(*state_, location);
+void LuaManager::AttachScript(const assets::AssetHandle& script_handle, const entt::entity entity) const {
+	Script* script = FindOrLoad(*state_, script_handle);
 	if (!script)
 		return;
 

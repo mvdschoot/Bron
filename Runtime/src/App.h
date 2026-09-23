@@ -9,7 +9,9 @@ namespace bron::runtime {
 /// manifest the exporter wrote beside this executable.
 class App final : public Application {
 public:
-	App();
+	/// 'root' is the directory to look for the manifest in. Empty means the directory the
+	/// executable sits in, which is where an exported game normally puts it.
+	explicit App(const std::filesystem::path& root);
 
 private:
 	// Owned here, not by the layer stack - Application's stack only orders what it is

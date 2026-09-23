@@ -2,6 +2,7 @@
 
 #include "Bron.h"
 #include "ImGuizmo.h"
+#include "Bron/Scene/AssetManager.h"
 
 #include <memory>
 
@@ -39,6 +40,8 @@ struct EditorContext {
 
 	/// Duration of the last frame, for the statistics panel.
 	Timestep frame_time;
+
+	assets::AssetManager& asset_manager = assets::AssetManager::Instance();
 
 	[[nodiscard]] bool HasSelection() const { return selection != entt::null; }
 	void ClearSelection() { selection = entt::null; }

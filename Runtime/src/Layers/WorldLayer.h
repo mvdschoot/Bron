@@ -4,6 +4,8 @@
 
 #include "Bron/Game/Manifest.h"
 
+#include <filesystem>
+
 namespace bron::runtime {
 /// The game itself: the one layer a shipped build has.
 ///
@@ -12,6 +14,9 @@ namespace bron::runtime {
 /// one thing that makes it simpler than the editor rather than a subset of it.
 class WorldLayer final : public Layer {
 public:
+	/// 'root' is where to look for the manifest. Empty means the executable's directory.
+	explicit WorldLayer(std::filesystem::path root);
+
 	void OnAttach() override;
 	void OnUpdate(Timestep ts) override;
 	void OnEvent(Event& event) override;
@@ -20,6 +25,10 @@ private:
 	/// Reads the manifest beside the executable and loads the scene it names. Leaves
 	/// scene_ null and logs when there is nothing to run.
 	void Boot();
+
+	/// As given on the command line, or empty for the executable's directory. Resolved in
+	/// Boot() rather than here, because a constructor is no place to be touching the disk.
+	std::filesystem::path root_;
 
 	Scope<Scene> scene_;
 

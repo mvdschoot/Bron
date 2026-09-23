@@ -164,8 +164,8 @@ entt::entity Scene::PrimaryCamera() const {
 
 void Scene::OnRuntimeStart() {
 	for (auto [entity, script]: reg.view<ScriptComponent>().each()) {
-		for (std::filesystem::path& location: script.scripts) {
-			lua_manager->AttachScript(location, entity);
+		for (assets::AssetHandle& handle: script.scripts) {
+			lua_manager->AttachScript(handle, entity);
 		}
 	}
 

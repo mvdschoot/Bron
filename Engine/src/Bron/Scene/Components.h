@@ -243,10 +243,10 @@ CameraView ViewFrom(const CameraComponent& camera, const glm::mat4& world_transf
 // Script
 // --------------------------------------------------------------------
 struct ScriptComponent {
-	std::vector<std::filesystem::path> scripts;
+	std::vector<assets::AssetHandle> scripts;
 
 	ScriptComponent() = default;
-	explicit ScriptComponent(const std::filesystem::path& location) : scripts({location}) {}
+	explicit ScriptComponent(const assets::AssetHandle& location) : scripts({location}) {}
 
 	NLOHMANN_DEFINE_TYPE_INTRUSIVE(ScriptComponent, scripts)
 };

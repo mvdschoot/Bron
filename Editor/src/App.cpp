@@ -20,7 +20,7 @@ App::~App() {
 }
 } // namespace bron::editor
 
-bron::Application* bron::CreateApplication() {
+bron::Application* bron::CreateApplication(CommandLineArgs) {
 	// Before the Application constructor, which is what creates the window: the theme and
 	// the UI scale have to be known by the time anything is drawn.
 	bron::editor::Preferences::Load();

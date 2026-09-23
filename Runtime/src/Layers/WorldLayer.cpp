@@ -6,12 +6,34 @@
 #include "Bron/Scripting/LuaManager.h"
 #include "Bron/Util/Paths.h"
 
+#include <utility>
+
 namespace bron::runtime {
 namespace {
 // What the exporter writes beside the executable. The name is the contract between the
 // two halves; nothing else looks for this file.
 const char* k_manifest_name = "game.brongame";
+
+// Where the manifest is, given what the command line asked for. An explicit directory
+// wins when it holds a game; otherwise this falls back to the executable's own, so a
+// mistyped path still starts the game sitting beside the binary rather than nothing.
+std::filesystem::path ManifestDirectory(const std::filesystem::path& requested) {
+	if (requested.empty())
+		return ExecutableDirectory();
+
+	// Relative to the working directory, which is the one place it is the right base:
+	// the argument was typed by whoever is standing in that directory.
+	const std::filesystem::path absolute = std::filesystem::absolute(requested).lexically_normal();
+	if (std::filesystem::exists(absolute / k_manifest_name))
+		return absolute;
+
+	BR_APP_WARN("No {} in {}; falling back to the directory this executable is in.", k_manifest_name,
+				absolute.string());
+	return ExecutableDirectory();
+}
 } // namespace
+
+WorldLayer::WorldLayer(std::filesystem::path root) : root_(std::move(root)) {}
 
 void WorldLayer::OnAttach() {
 	SceneRenderer::Init();
@@ -21,7 +43,7 @@ void WorldLayer::OnAttach() {
 }
 
 void WorldLayer::Boot() {
-	const std::filesystem::path root = ExecutableDirectory();
+	const std::filesystem::path root = ManifestDirectory(root_);
 
 	const std::optional<Manifest> manifest = Manifest::Load(root / k_manifest_name);
 	if (!manifest) {
