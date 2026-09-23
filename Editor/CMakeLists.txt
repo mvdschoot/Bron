@@ -10,6 +10,7 @@ add_executable(BronEditor
 	src/Core/Icons.cpp
 	src/Core/Theme.cpp
 	src/Core/Project.cpp
+	src/Core/Exporter.cpp
 
 	src/Panels/ViewportPanel.cpp
 	src/Panels/SceneHierarchyPanel.cpp
@@ -52,3 +53,4 @@ target_link_libraries(BronEditor PUBLIC Bron)
 
 # Makes F5 in Visual Studio start the editor instead of ALL_BUILD.
 set_property(DIRECTORY ${CMAKE_SOURCE_DIR} PROPERTY VS_STARTUP_PROJECT BronEditor)
+

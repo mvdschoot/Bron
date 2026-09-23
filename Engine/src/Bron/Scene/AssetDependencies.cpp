@@ -36,8 +36,12 @@ std::vector<std::filesystem::path> CollectAssets(const Scene& scene) {
 		}
 	}
 
-	// Every other component that comes to refer to an asset belongs here, next to this
-	// one. A ScriptComponent is the next of them.
+	for (const auto [entity, script]: scene.reg.view<const ScriptComponent>().each()) {
+		for (const assets::AssetHandle& handle: script.scripts)
+			add(handle);
+	}
+
+	// Every other component that comes to refer to an asset belongs here, next to these.
 
 	return {found.begin(), found.end()};
 }

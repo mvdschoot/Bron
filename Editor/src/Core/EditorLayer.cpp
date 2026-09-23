@@ -11,7 +11,7 @@
 #include "Panels/StatisticsPanel.h"
 #include "Panels/ViewportPanel.h"
 
-#include "Bron/Game/Manifest.h"
+#include "Core/Exporter.h"
 #include "Bron/Scene/AssetDependencies.h"
 #include "Bron/Util/Paths.h"
 #include "nfd.hpp"
@@ -121,32 +121,24 @@ void EditorLayer::OpenProject(Scope<Project> project) {
 
 void EditorLayer::Export() const {
 	if (!context_.HasProject() || !context_.HasScene()) {
-		BR_APP_INFO("Cannot export without a project or scene");
+		BR_APP_INFO("Cannot export without a project and a scene open");
+		return;
 	}
 
 	BR_CORE_ASSERT(NFD::Init(), "Failed to initialize the file picker");
 
 	NFD::UniquePath out_path;
-	nfdresult_t result = NFD::PickFolder(out_path);
+	const nfdresult_t result = NFD::PickFolder(out_path);
 	NFD_Quit();
 
 	if (result != NFD_OKAY) {
 		BR_APP_INFO("User did not pick a folder for project export.");
 		return;
 	}
-	std::filesystem::path export_path = out_path.get();
 
-	// Now copy all assets
-	auto assets = CollectAssets(*context_.active_scene);
-
-
-	Manifest manifest;
-	manifest.asset_directory = paths::AssetRoot();
-	manifest.startup_scene = context_.project->StartupScenePath();
-	manifest.name = context_.project->Settings().name;
-
-	bool export_result = manifest.Save(export_path / "game.brongame");
-	BR_CORE_ASSERT(export_result, "Could not export the project.");
+	// Whether it worked is already logged, in the terms of whatever went wrong. This
+	// layer only decides when to start one.
+	ExportGame(*context_.project, *context_.active_scene, out_path.get());
 }
 
 void EditorLayer::Save() {

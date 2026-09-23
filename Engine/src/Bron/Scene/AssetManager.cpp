@@ -334,14 +334,15 @@ std::optional<AssetHandle> AssetManager::LoadTexture(const std::filesystem::path
 	return handle;
 }
 
-std::optional<AssetHandle> AssetManager::LoadScript(const std::filesystem::path& location, ScriptLanguage language) {
+std::optional<AssetHandle> AssetManager::LoadScript(const std::filesystem::path& location,
+													const ScriptLanguage language) {
 	const std::filesystem::path absolute = paths::ResolveAsset(location);
 	if (!std::filesystem::exists(absolute)) {
-		BR_CORE_WARN("Texture {} does not exist", absolute.string());
+		BR_CORE_WARN("Script {} does not exist", absolute.string());
 		return std::nullopt;
 	}
 
-	const AssetHandle handle = Register(absolute, kTexture);
+	const AssetHandle handle = Register(absolute, kScript);
 	if (!cache_.contains(handle)) {
 		const Ref<ScriptAsset> asset = CreateRef<ScriptAsset>();
 		asset->language = language;
@@ -401,6 +402,11 @@ Ref<Asset> AssetManager::GetOrLoad(const AssetHandle& handle) {
 				break;
 			case kTexture:
 				LoadTexture(metadata.path);
+				break;
+			case kScript:
+				// The .meta does not record the language, because there is only one. When a
+				// second arrives it has to be written there, the way a model's workflow is.
+				LoadScript(metadata.path, kLua);
 				break;
 			default:
 				BR_CORE_WARN("{} is a kind of asset that cannot be loaded from a file yet", metadata.path.string());
