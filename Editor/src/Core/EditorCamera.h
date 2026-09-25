@@ -3,6 +3,7 @@
 #include "Bron.h"
 
 namespace bron::editor {
+class PanelInput;
 /// The camera the editor viewport looks through: an orbit ("turntable") camera that
 /// always points at a focus point and is moved by changing the two angles and the
 /// distance around it, never by writing a position directly.
@@ -16,7 +17,7 @@ public:
 	EditorCamera(float fov_y, float near_plane, float far_plane);
 
 	/// Applies the held-key orbit controls. Called once per frame.
-	void OnUpdate(Timestep ts);
+	void OnUpdate(const PanelInput& input, Timestep ts);
 
 	/// Zooms towards or away from the focus point.
 	bool OnMouseScrolled(MouseScrolledEvent& e);

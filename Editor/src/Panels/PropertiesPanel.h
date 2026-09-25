@@ -7,9 +7,10 @@ namespace bron::editor {
 /// types - the list comes from ComponentRegistry.
 class PropertiesPanel final : public Panel {
 public:
-	explicit PropertiesPanel(EditorContext& context) : Panel(context) {}
+	PropertiesPanel(EditorContext& context, const std::string& name, const std::string& display_name) :
+		Panel(context, name, display_name) {}
 
-	void OnImGuiRender() override;
+	void ImGuiContent() override;
 
 private:
 	void DrawComponents(entt::entity entity);

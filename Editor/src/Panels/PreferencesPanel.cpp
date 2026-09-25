@@ -6,15 +6,7 @@
 namespace bron::editor {
 using namespace ImGui;
 
-void PreferencesPanel::OnImGuiRender() {
-	if (!open_)
-		return;
-
-	if (!Begin("Preferences", &open_)) {
-		End();
-		return;
-	}
-
+void PreferencesPanel::ImGuiContent() {
 	Preferences& prefs = Preferences::Get();
 
 	// Restyling mid-frame would leave the windows already submitted this frame using the
@@ -53,8 +45,6 @@ void PreferencesPanel::OnImGuiRender() {
 
 	SameLine();
 	TextDisabled("%s", Preferences::File().string().c_str());
-
-	End();
 
 	if (restyle)
 		theme::Apply();

@@ -15,12 +15,9 @@ namespace {
 constexpr const char* kAddMenu = "##add.entity";
 } // namespace
 
-void SceneHierarchyPanel::OnImGuiRender() {
-	Begin("Scene Hierarchy", nullptr, ImGuiWindowFlags_MenuBar);
-
+void SceneHierarchyPanel::ImGuiContent() {
 	if (!context_.HasScene()) {
 		TextDisabled("No scene open.");
-		End();
 		return;
 	}
 
@@ -28,8 +25,6 @@ void SceneHierarchyPanel::OnImGuiRender() {
 
 	DrawNode(context_.active_scene->root);
 	DrawRenamePopup();
-
-	End();
 }
 
 void SceneHierarchyPanel::DrawToolbar() {

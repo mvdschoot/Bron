@@ -39,6 +39,12 @@ const embedded::Resource& SourceFor(const Id id) {
 			return embedded::kScene;
 		case Id::kProject:
 			return embedded::kProject;
+		case Id::kPlay:
+			return embedded::kPlay;
+		case Id::kPause:
+			return embedded::kPause;
+		case Id::kStop:
+			return embedded::kStop;
 
 		case Id::kCount:
 			break;
@@ -69,6 +75,12 @@ const char* NameFor(const Id id) {
 			return "##icon.scene";
 		case Id::kProject:
 			return "##icon.project";
+		case Id::kPlay:
+			return "##icon.play";
+		case Id::kPause:
+			return "##icon.pause";
+		case Id::kStop:
+			return "##icon.stop";
 
 		case Id::kCount:
 			break;
@@ -94,13 +106,6 @@ ImTextureRef Handle(const Id id) {
 /// GetStyleColorVec4 folds in the global alpha, so an icon inside BeginDisabled() fades
 /// the way the label beside it does.
 ImVec4 Tint() { return ImGui::GetStyleColorVec4(ImGuiCol_Text); }
-
-/// Square, and the height of a line of text: an icon button then measures the same as a
-/// text button beside it, and the whole set follows the interface scale for free.
-ImVec2 Size() {
-	const float side = ImGui::GetFontSize();
-	return {side, side};
-}
 
 void DrawTooltip(const char* tooltip) {
 	if (tooltip && ImGui::IsItemHovered(ImGuiHoveredFlags_ForTooltip))
@@ -130,8 +135,8 @@ Ref<bron::Texture> Get(const Id id) { return Set()[Index(id)]; }
 // a transparent background makes it the plain Image() it used to be.
 void Draw(const Id id) { ImGui::ImageWithBg(Handle(id), Size(), kUv0, kUv1, ImVec4(0, 0, 0, 0), Tint()); }
 
-bool Button(const Id id, const char* tooltip) {
-	const bool pressed = ImGui::ImageButton(NameFor(id), Handle(id), Size(), kUv0, kUv1, ImVec4(0, 0, 0, 0), Tint());
+bool Button(const Id id, const char* tooltip, const ImVec2 size) {
+	const bool pressed = ImGui::ImageButton(NameFor(id), Handle(id), size, kUv0, kUv1, ImVec4(0, 0, 0, 0), Tint());
 	DrawTooltip(tooltip);
 
 	return pressed;

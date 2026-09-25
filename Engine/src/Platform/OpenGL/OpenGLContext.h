@@ -4,7 +4,7 @@
 #include "glad/glad.h"
 #include "GLFW/glfw3.h"
 
-#include "Bron/Events/Event.h"
+#include "Bron/Input/Event.h"
 #include "Bron/Core/Core.h"
 #include "Bron/Core/Logger.h"
 #include "Bron/Core/Profiling.h"

@@ -5,6 +5,7 @@
 #include <entt/entity/entity.hpp>
 
 namespace bron {
+class ScriptInput;
 class Scene;
 
 namespace lua {
@@ -22,13 +23,13 @@ struct PendingDestroyComponent {};
 
 void RegisterMath(sol::state& state);
 void RegisterLog(sol::state& state);
-void RegisterInput(sol::state& state);
+void RegisterInput(sol::state& state, ScriptInput& script_input);
 void RegisterComponents(sol::state& state);
 void RegisterEntity(sol::state& state, Scene& scene);
 void RegisterScene(sol::state& state, Scene& scene);
 
 // Everything above, in dependency order.
-void RegisterAll(sol::state& state, Scene& scene);
+void RegisterAll(sol::state& state, Scene& scene, ScriptInput& script_input);
 
 // Destroys the entities scripts destroyed. Call once all scripts are done for the frame.
 void FlushPendingDestroys(Scene& scene);

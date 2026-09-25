@@ -3,6 +3,8 @@
 #include "Panels/ComponentRegistry.h"
 
 #include "Bron/Scene/AssetManager.h"
+#include "Bron/Scripting/LuaManager.h"
+#include "Core/Icons.h"
 
 #include <ImGuizmo.h>
 #include <glm/gtx/matrix_decompose.hpp>
@@ -79,31 +81,33 @@ void ViewportPanel::OnAttach() {
 }
 
 void ViewportPanel::OnUpdate(const Timestep ts) {
-	// Select the correct camera to use first
+	const bool playing = context_.state == kPlay && context_.play_scene;
+	if (playing) {
+		context_.play_scene->OnUpdate(ts);
+		context_.play_scene->lua_manager->SetReceiveKeyboardInput(IsFocussed());
+		context_.play_scene->lua_manager->SetReceiveMouseInput(IsHovered());
+	}
+
+	// While playing, the scripts move entities in the play copy, not in the scene being
+	// edited - so that copy is the one to look through and draw.
+	Scene* scene = playing ? context_.play_scene.get() : context_.active_scene;
 
 	// The aspect comes from the panel, not the camera: the projection has to follow
 	// whatever the framebuffer currently is, or the scene is stretched to fit it.
 	float aspect_ratio = viewport_size_.y > 0.0f ? viewport_size_.x / viewport_size_.y : 1.0f;
-	if (context_.camera_preview == entt::null) {
-		context_.camera.OnUpdate(ts);
+	if (context_.active_camera == entt::null) {
+		if (IsFocussed())
+			context_.camera.OnUpdate(panel_input_, ts);
 		view_ = context_.camera.View(aspect_ratio);
 	} else {
-		CameraComponent& camera_component = context_.active_scene->reg.get<CameraComponent>(context_.camera_preview);
-		view_ = ViewFrom(camera_component, context_.active_scene->WorldTransform(context_.camera_preview),
-						 aspect_ratio);
+		CameraComponent& camera_component = scene->reg.get<CameraComponent>(context_.active_camera);
+		view_ = ViewFrom(camera_component, scene->WorldTransform(context_.active_camera), aspect_ratio);
 	}
-
-	// WASD orbit is held-key state scaled by the timestep, so it is polled here rather than
-	// driven by events; the discrete shortcuts live in OnKeyPressed instead.
-	//
-	// OnUpdate runs before ImGui::NewFrame(), so there is no current window to ask here -
-	// the flag is what the panel saw last frame.
-	if (focused_)
-		context_.camera.OnUpdate(ts);
 
 	framebuffer_->Bind();
 	Command::Clear();
 
+	// Clears Entity selection attachment
 	// Has to come after the clears: glClear covers every enabled draw buffer, so clearing
 	// the id attachment first would just be overwritten. -1 is the "nothing here" value,
 	// since entity 0 is a perfectly valid entity.
@@ -113,12 +117,15 @@ void ViewportPanel::OnUpdate(const Timestep ts) {
 	GridRenderer::Draw(view_);
 
 	Command::EnableDepth();
-	if (context_.HasScene()) {
-		SceneRenderer::Draw(*context_.active_scene, view_);
+	if (scene) {
+		SceneRenderer::Draw(*scene, view_);
 
-		std::vector<entt::entity> selected_meshes;
-		CollectMeshes(*context_.active_scene, context_.selection, selected_meshes);
-		SceneRenderer::DrawOutline(*context_.active_scene, view_, selected_meshes);
+		// The selection is an entity of the edited scene, so it only means something there.
+		if (!playing) {
+			std::vector<entt::entity> selected_meshes;
+			CollectMeshes(*scene, context_.selection, selected_meshes);
+			SceneRenderer::DrawOutline(*scene, view_, selected_meshes);
+		}
 	}
 
 	framebuffer_->Unbind();
@@ -142,32 +149,26 @@ void ViewportPanel::Resize(const ImVec2 size) {
 	framebuffer_->Invalidate();
 }
 
-void ViewportPanel::OnImGuiRender() {
-	// The image has to sit flush against the window edge.
-	ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, ImVec2(0.0f, 0.0f));
-	ImGui::Begin("Viewport");
-	ImGui::PopStyleVar();
-
-	focused_ = ImGui::IsWindowFocused();
-	hovered_ = ImGui::IsWindowHovered();
-
+void ViewportPanel::ImGuiContent() {
 	// The position of these 2 lines in this function is very important,
 	// It sets the viewport position and size, which changes based on location in this function.
 	const ImVec2 available = ImGui::GetContentRegionAvail();
 	Resize(available);
 
+	ImGui::SetNextItemAllowOverlap();
+
 	const uint64_t texture_id = framebuffer_->GetColorAttachId(0);
 	ImGui::Image(texture_id, viewport_size_, ImVec2{0, 1}, ImVec2{1, 0});
 
-	DrawGizmo();
+	PlayStopButton();
 
-	ImGui::End();
+	DrawGizmo();
 }
 
 // Reports the entity drawn under the cursor, or -1 for empty space. The id attachment is
 // written by the scene pass, so this reads what was rendered last frame.
 entt::entity ViewportPanel::ReadHoveredEntity() const {
-	if (!hovered_)
+	if (!IsHovered())
 		return entt::null;
 
 	const ImVec2 mouse = ImGui::GetMousePos();
@@ -185,18 +186,56 @@ entt::entity ViewportPanel::ReadHoveredEntity() const {
 	return static_cast<entt::entity>(entity_id);
 }
 
-void ViewportPanel::OnEvent(Event& event) {
-	EventDispatcher dispatcher(event);
+void ViewportPanel::PlayStopButton() const {
+	// Pinned to the image's top-right corner, the same gap from both edges. 'icon_size' is
+	// only the icon: ImageButton adds FramePadding on every side, so the gap has to be
+	// measured from the button's outer edge or the right one comes out short.
+	const ImVec2 image_min = ImGui::GetItemRectMin();
+	const ImVec2 image_max = ImGui::GetItemRectMax();
+	const float offset = 0.01f * viewport_size_.x;
+	const float icon_size = 0.02f * viewport_size_.x;
+	const float button_width = icon_size + ImGui::GetStyle().FramePadding.x * 2.0f;
 
-	// Scrolling follows the cursor, the way it does everywhere else; typed shortcuts
-	// need the panel to actually have focus.
-	if (hovered_) {
-		dispatcher.Dispatch<MouseScrolledEvent>(BR_BIND_EVENT_FN(ViewportPanel::OnMouseScrolled));
-		dispatcher.Dispatch<MouseButtonPressedEvent>(BR_BIND_EVENT_FN(ViewportPanel::OnMouseClicked));
+	ImGui::SetCursorScreenPos({image_max.x - offset - button_width, image_min.y + offset});
+	if (context_.state == kEdit) {
+		ImGui::PushStyleColor(ImGuiCol_Text, {0, 1, 0, 1});
+		if (icons::Button(icons::Id::kPlay, "Play", {icon_size, icon_size})) {
+			context_.state = kPlay;
+			context_.play_scene = CreateRef<Scene>();
+			context_.active_scene->Copy(*context_.play_scene);
+			context_.play_scene->OnRuntimeStart();
+			context_.active_camera = context_.play_scene->PrimaryCamera();
+		}
+		ImGui::PopStyleColor();
 	}
 
-	if (focused_) {
-		dispatcher.Dispatch<KeyPressedEvent>(BR_BIND_EVENT_FN(ViewportPanel::OnKeyPressed));
+	if (context_.state == kPlay) {
+		ImGui::PushStyleColor(ImGuiCol_Text, {1, 0, 0, 1});
+		if (icons::Button(icons::Id::kStop, "Stop", {icon_size, icon_size})) {
+			context_.state = kEdit;
+			context_.active_camera = entt::null;
+			context_.play_scene.reset();
+		}
+		ImGui::PopStyleColor();
+	}
+}
+
+void ViewportPanel::OnEvent(Event& event) {
+	if (context_.state == kPlay) {
+		context_.play_scene->OnEvent(event);
+	} else if (context_.state == kEdit) {
+		EventDispatcher dispatcher(event);
+
+		// Scrolling follows the cursor, the way it does everywhere else; typed shortcuts
+		// need the panel to actually have focus.
+		if (IsHovered()) {
+			dispatcher.Dispatch<MouseScrolledEvent>(BR_BIND_EVENT_FN(OnMouseScrolled));
+			dispatcher.Dispatch<MouseButtonPressedEvent>(BR_BIND_EVENT_FN(OnMouseClicked));
+		}
+
+		if (IsFocussed()) {
+			dispatcher.Dispatch<KeyPressedEvent>(BR_BIND_EVENT_FN(OnKeyPressed));
+		}
 	}
 }
 
@@ -229,7 +268,7 @@ bool ViewportPanel::OnKeyPressed(KeyPressedEvent& event) const {
 bool ViewportPanel::OnMouseScrolled(MouseScrolledEvent& event) const { return context_.camera.OnMouseScrolled(event); }
 
 bool ViewportPanel::OnMouseClicked(MouseButtonPressedEvent& event) const {
-	if (hovered_ && !guizmo_hovered_) {
+	if (IsHovered() && !guizmo_hovered_) {
 		entt::entity entity = ReadHoveredEntity();
 		context_.selection = entity;
 		return true;

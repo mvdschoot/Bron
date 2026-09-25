@@ -8,14 +8,11 @@
 namespace bron::editor {
 using namespace ImGui;
 
-void ProjectPanel::OnImGuiRender() {
-	Begin("Project");
-
+void ProjectPanel::ImGuiContent() {
 	if (!context_.HasProject()) {
 		// The editor starts here when nothing has been opened before.
 		TextDisabled("No project open.");
 		TextDisabled("Create or open one from the File menu.");
-		End();
 		return;
 	}
 
@@ -36,8 +33,6 @@ void ProjectPanel::OnImGuiRender() {
 	SameLine();
 	AlignTextToFramePadding();
 	Text("Save");
-
-	End();
 }
 
 void ProjectPanel::DrawSettings() {

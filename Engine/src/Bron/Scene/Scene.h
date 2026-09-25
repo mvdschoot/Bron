@@ -1,6 +1,6 @@
 #pragma once
 
-#include "Bron/Events/Event.h"
+#include "Bron/Input/Event.h"
 
 
 #include <entt/entity/registry.hpp>
@@ -58,6 +58,8 @@ public:
 	// than one looked at from an arbitrary angle, and a shipped game has no editor to
 	// fix it in.
 	[[nodiscard]] entt::entity PrimaryCamera() const;
+
+	void Copy(Scene& dst) const;
 
 	void OnRuntimeStart();
 	void OnUpdate(Timestep ts) const;

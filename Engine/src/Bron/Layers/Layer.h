@@ -1,7 +1,7 @@
 #pragma once
 
 #include "Bron/Core/Core.h"
-#include "Bron/Events/Event.h"
+#include "Bron/Input/Event.h"
 #include "Bron/Core/Timestep.h"
 
 namespace bron {

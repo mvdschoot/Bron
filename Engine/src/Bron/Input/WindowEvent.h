@@ -1,6 +1,6 @@
 #pragma once
 
-#include "Bron/Events/Event.h"
+#include "Bron/Input/Event.h"
 
 namespace bron {
 class BR_API WindowResizeEvent : public Event {

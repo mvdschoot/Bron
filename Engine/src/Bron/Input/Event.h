@@ -44,7 +44,7 @@ public:
 	virtual int GetCategoryFlags() const = 0;
 	virtual const char* GetName() const = 0;
 
-	bool IsInCategory(EventCategory cat) { return GetCategoryFlags() & cat; }
+	bool IsInCategory(const EventCategory cat) const { return GetCategoryFlags() & cat; }
 
 	bool is_handled = false;
 

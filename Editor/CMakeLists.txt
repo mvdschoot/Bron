@@ -2,25 +2,27 @@ cmake_minimum_required(VERSION 3.21)
 
 # Bron Editor - the application built on top of the engine.
 add_executable(BronEditor
-	src/App.cpp
+        src/App.cpp
 
-	src/Core/EditorLayer.cpp
-	src/Core/Preferences.cpp
-	src/Core/EditorCamera.cpp
-	src/Core/Icons.cpp
-	src/Core/Theme.cpp
-	src/Core/Project.cpp
-	src/Core/Exporter.cpp
+        src/Core/EditorLayer.cpp
+        src/Core/Preferences.cpp
+        src/Core/EditorCamera.cpp
+        src/Core/Icons.cpp
+        src/Core/Theme.cpp
+        src/Core/Project.cpp
+        src/Core/Exporter.cpp
 
-	src/Panels/ViewportPanel.cpp
-	src/Panels/SceneHierarchyPanel.cpp
-	src/Panels/PropertiesPanel.cpp
-	src/Panels/ProjectPanel.cpp
-	src/Panels/StatisticsPanel.cpp
-	src/Panels/PreferencesPanel.cpp
-	src/Panels/ComponentRegistry.cpp
+        src/Panels/ViewportPanel.cpp
+        src/Panels/SceneHierarchyPanel.cpp
+        src/Panels/PropertiesPanel.cpp
+        src/Panels/ProjectPanel.cpp
+        src/Panels/StatisticsPanel.cpp
+        src/Panels/PreferencesPanel.cpp
+        src/Panels/ComponentRegistry.cpp
         src/Panels/FileExplorerPanel.cpp
         src/Panels/FileExplorerPanel.h
+        src/Panels/PanelInput.h
+        src/Panels/PanelInput.cpp
 )
 
 target_include_directories(BronEditor PUBLIC src)
@@ -32,18 +34,21 @@ target_include_directories(BronEditor PUBLIC src)
 include(${CMAKE_SOURCE_DIR}/cmake/EmbedResources.cmake)
 
 bron_embed_resources(BronEditor
-	NAMESPACE bron::editor::embedded
-	BASENAME EditorIcons
-	FILES
-		resources/icons/add.png
-		resources/icons/delete.png
-		resources/icons/save.png
-		resources/icons/up.png
-		resources/icons/folder.png
-		resources/icons/file.png
-		resources/icons/model.png
-		resources/icons/scene.png
-		resources/icons/project.png
+        NAMESPACE bron::editor::embedded
+        BASENAME EditorIcons
+        FILES
+        resources/icons/add.png
+        resources/icons/delete.png
+        resources/icons/save.png
+        resources/icons/up.png
+        resources/icons/folder.png
+        resources/icons/file.png
+        resources/icons/model.png
+        resources/icons/scene.png
+        resources/icons/project.png
+        resources/icons/play.png
+        resources/icons/pause.png
+        resources/icons/stop.png
 )
 
 target_compile_features(BronEditor PUBLIC cxx_std_20)

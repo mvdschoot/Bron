@@ -10,6 +10,13 @@
 #include "Core/Project.h"
 
 namespace bron::editor {
+class Panel;
+
+enum EditorState {
+	kEdit,
+	kPlay,
+};
+
 /// The state every panel shares: what is being edited, what is selected, and how the
 /// viewport looks at it. Panels hold a reference to this instead of reaching into each
 /// other, so a panel can be added or removed without touching the rest.
@@ -36,7 +43,15 @@ struct EditorContext {
 	/// The camera entity whose view is mirrored in the preview overlay, or entt::null for
 	/// "no preview". One at a time: a second preview would need a second framebuffer, and
 	/// the checkbox reads as a radio button across cameras this way.
-	entt::entity camera_preview = entt::null;
+	entt::entity active_camera = entt::null;
+
+	/// Where mouse and keyboard events go. Rebuilt every ImGui frame by the panels
+	/// themselves; null when the cursor or focus is on something that is not a panel.
+	Panel* hovered_panel = nullptr;
+	Panel* focused_panel = nullptr;
+
+	EditorState state = kEdit;
+	Ref<Scene> play_scene;
 
 	/// Duration of the last frame, for the statistics panel.
 	Timestep frame_time;
@@ -51,7 +66,7 @@ struct EditorContext {
 	void SetActiveScene(Scene* scene) {
 		active_scene = scene;
 		ClearSelection();
-		camera_preview = entt::null;
+		active_camera = entt::null;
 	}
 };
 } // namespace bron::editor

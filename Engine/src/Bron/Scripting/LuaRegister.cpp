@@ -4,10 +4,11 @@
 
 #include "LuaRegister.h"
 
-#include "Bron/Core/Input.h"
-#include "Bron/Core/KeyCodes.h"
+#include "ScriptInput.h"
+#include "../Input/Input.h"
+#include "../Input/KeyCodes.h"
 #include "Bron/Core/Logger.h"
-#include "Bron/Core/MouseCodes.h"
+#include "Bron/Input/MouseCodes.h"
 #include "Bron/Scene/Components.h"
 #include "Bron/Scene/Scene.h"
 
@@ -379,7 +380,7 @@ void RegisterLog(sol::state& state) {
 // Input
 // ============================================================
 
-void RegisterInput(sol::state& state) {
+void RegisterInput(sol::state& state, ScriptInput& script_input) {
 	// Read-only tables: key.W, mouse.Left, ...
 	state.new_enum<KeyCode>("key", {BR_LUA_KEYS(BR_LUA_KEY_ENTRY)});
 	state.new_enum<MouseCode>("mouse", {
@@ -397,8 +398,10 @@ void RegisterInput(sol::state& state) {
 									   });
 
 	sol::table input = state.create_named_table("input");
-	input["is_key_pressed"] = [](const KeyCode key) { return Input::IsKeyPressed(key); };
-	input["is_mouse_pressed"] = [](const MouseCode button) { return Input::IsMousePressed(button); };
+	// By reference: the owner flips the receive flags on its own instance every frame, and
+	// a copy captured here would never see them.
+	input["is_key_pressed"] = [&script_input](const KeyCode key) { return script_input.IsKeyPressed(key); };
+	input["is_mouse_pressed"] = [&script_input](const MouseCode button) { return script_input.IsMousePressed(button); };
 }
 
 // ============================================================
@@ -541,10 +544,10 @@ void RegisterScene(sol::state& state, Scene& scene) {
 	};
 }
 
-void RegisterAll(sol::state& state, Scene& scene) {
+void RegisterAll(sol::state& state, Scene& scene, ScriptInput& script_input) {
 	RegisterMath(state);
 	RegisterLog(state);
-	RegisterInput(state);
+	RegisterInput(state, script_input);
 	RegisterComponents(state);
 	RegisterEntity(state, scene);
 	RegisterScene(state, scene);

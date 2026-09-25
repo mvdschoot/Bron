@@ -5,8 +5,9 @@
 #include "LuaManager.h"
 
 #include "LuaRegister.h"
-#include "Bron/Events/KeyEvent.h"
-#include "Bron/Events/MouseEvent.h"
+#include "ScriptInput.h"
+#include "Bron/Input/KeyEvent.h"
+#include "Bron/Input/MouseEvent.h"
 #include "Bron/Scene/AssetManager.h"
 #include "Bron/Scene/Scene.h"
 #include "Bron/Util/Paths.h"
@@ -40,6 +41,9 @@ struct Script {
 };
 
 struct State {
+	// Before lua: the input bindings hold a reference to it, so it has to outlive the
+	// Lua state, and members are destroyed in reverse order.
+	ScriptInput input;
 	sol::state lua;
 	std::map<UUID, Script> scripts;
 };
@@ -160,7 +164,7 @@ Script* FindOrLoad(State& state, const assets::AssetHandle& handle) {
 LuaManager::LuaManager(Scene* scene) : scene_(scene), state_(CreateScope<State>()) {
 	// Libraries first: RegisterMath adds to the math table open_libraries creates.
 	state_->lua.open_libraries(sol::lib::base, sol::lib::math, sol::lib::string, sol::lib::table);
-	lua::RegisterAll(state_->lua, *scene_);
+	lua::RegisterAll(state_->lua, *scene_, state_->input);
 }
 
 LuaManager::~LuaManager() = default;
@@ -254,6 +258,12 @@ void LuaManager::OnEvent(Event& event) {
 	}
 
 	CallAll(*state_, &Script::on_event, lua_event);
+}
+
+void LuaManager::SetReceiveMouseInput(bool receive_input) const { state_->input.receive_mouse_input = receive_input; }
+
+void LuaManager::SetReceiveKeyboardInput(bool receive_input) const {
+	state_->input.receive_keyboard_input = receive_input;
 }
 
 } // namespace bron::lua

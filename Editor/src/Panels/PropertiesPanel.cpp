@@ -6,9 +6,7 @@
 namespace bron::editor {
 using namespace ImGui;
 
-void PropertiesPanel::OnImGuiRender() {
-	Begin("Properties");
-
+void PropertiesPanel::ImGuiContent() {
 	if (context_.HasSelection()) {
 		DrawComponents(context_.selection);
 
@@ -23,8 +21,6 @@ void PropertiesPanel::OnImGuiRender() {
 
 		DrawAddComponentMenu(context_.selection);
 	}
-
-	End();
 }
 
 void PropertiesPanel::DrawComponents(const entt::entity entity) {

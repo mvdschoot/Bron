@@ -27,8 +27,8 @@ public:
 private:
 	/// Adds a panel and returns it, so the layer can keep a handle on the ones the menu
 	/// bar drives directly.
-	template<typename T>
-	T* AddPanel();
+	template<class T>
+	T* AddPanel(std::string panel_name, std::string display_name);
 
 	/// Makes 'project' the open one: points asset resolution at it, records it in the
 	/// recent list and loads its startup scene. Null (a failed load) is ignored.
@@ -36,7 +36,7 @@ private:
 	void Export() const;
 
 	/// Writes the open project and its scenes. Nothing to do with no project open.
-	void Save();
+	void Save() const;
 
 	/// Ask for a .brn and open it, or create one. No-ops when the dialog is cancelled.
 	void OpenProjectDialog();
@@ -47,9 +47,6 @@ private:
 	void DrawMenuBar();
 
 	EditorContext context_;
-	std::vector<Scope<Panel>> panels_;
-
-	ProjectPanel* project_panel_ = nullptr;
-	PreferencesPanel* preferences_panel_ = nullptr;
+	std::map<std::string, Ref<Panel>> panels_;
 };
 } // namespace bron::editor

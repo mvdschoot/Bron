@@ -1,8 +1,8 @@
 #pragma once
 
 #include "Bron/Core/Core.h"
-#include "Bron/Events/Event.h"
-#include "Bron/Core/KeyCodes.h"
+#include "Bron/Input/Event.h"
+#include "KeyCodes.h"
 
 namespace bron {
 class BR_API KeyEvent : public Event {

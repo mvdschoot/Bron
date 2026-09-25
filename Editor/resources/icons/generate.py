@@ -30,6 +30,7 @@ W = 16
 PAD = 3 * SS
 
 WHITE = (255, 255, 255, 255)
+GREEN = (0, 255, 0, 255)
 
 
 def canvas():
@@ -107,6 +108,36 @@ def draw_project(d):
     d.line([(44, 180), (128, 228), (212, 180)], fill=WHITE, width=W, joint="curve")
 
 
+def draw_play(d):
+    """A triangle pointing right.
+
+    Drawn as a filled hull with the same hull stroked over it: the stroke is what rounds
+    the three corners, which a bare polygon cannot do and which a sharp tip badly needs
+    at this size. The points put the centroid on the centre of the grid rather than the
+    bounding box, because a triangle carries its mass behind its tip and a box-centred
+    one reads as leaning left.
+    """
+    hull = [(80, 40), (80, 216), (224, 128)]
+    d.polygon(hull, fill=WHITE)
+    d.line(hull + [hull[0]], fill=WHITE, width=W, joint="curve")
+
+
+def draw_pause(d):
+    """Two upright bars.
+
+    Narrower overall than the play triangle on purpose: two solid bars carry more ink
+    than a triangle of the same width, and the pair has to sit next to play in a toolbar
+    without looking heavier than it.
+    """
+    top, bottom = 40, 216
+    for left in (64, 148):
+        d.rounded_rectangle([left, top, left + 44, bottom], radius=W // 2, fill=WHITE)
+
+
+def draw_stop(d):
+    d.rectangle([50, 50, 200, 200], fill=WHITE)
+
+
 # The name of each entry is the file it is written to, and so the symbol the build
 # generates for it: 'add' becomes kAdd in EmbeddedIcons.h.
 ICONS = {
@@ -119,6 +150,9 @@ ICONS = {
     "model": draw_model,
     "scene": draw_scene,
     "project": draw_project,
+    "play": draw_play,
+    "pause": draw_pause,
+    "stop": draw_stop,
 }
 
 

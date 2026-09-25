@@ -1,6 +1,7 @@
 #include "Core/EditorCamera.h"
 
 #include "Core/Preferences.h"
+#include "Panels/PanelInput.h"
 
 #include <glm/gtc/matrix_transform.hpp>
 
@@ -16,18 +17,18 @@ constexpr glm::vec3 kUp{0.0f, 1.0f, 0.0f};
 EditorCamera::EditorCamera(const float fov_y, const float near_plane, const float far_plane) :
 	fov_y_(fov_y), near_plane_(near_plane), far_plane_(far_plane) {}
 
-void EditorCamera::OnUpdate(const Timestep ts) {
+void EditorCamera::OnUpdate(const PanelInput& input, const Timestep ts) {
 	const float dt = ts.GetSeconds() * Preferences::Get().camera_orbit_speed;
 
-	if (Input::IsKeyPressed(key::A))
+	if (input.IsKeyPressed(key::A))
 		azimuth_ += dt;
-	if (Input::IsKeyPressed(key::D))
+	if (input.IsKeyPressed(key::D))
 		azimuth_ -= dt;
 
 	// Stopping just short of the poles keeps the up vector meaningful.
-	if (Input::IsKeyPressed(key::W))
+	if (input.IsKeyPressed(key::W))
 		elevation_ += (elevation_ > 0.5f * kPi ? 0.0f : dt);
-	if (Input::IsKeyPressed(key::S))
+	if (input.IsKeyPressed(key::S))
 		elevation_ -= (elevation_ < -0.5f * kPi ? 0.0f : dt);
 }
 

@@ -38,22 +38,22 @@ Scope<Project> MostRecentProject() {
 } // namespace
 
 template<typename T>
-T* EditorLayer::AddPanel() {
-	auto panel = CreateScope<T>(context_);
+T* EditorLayer::AddPanel(std::string panel_name, std::string display_name) {
+	auto panel = CreateRef<T>(context_, panel_name, display_name);
 	T* raw = panel.get();
-	panels_.push_back(std::move(panel));
+	panels_.emplace(panel_name, std::move(panel));
 	return raw;
 }
 
 EditorLayer::EditorLayer() {
 	// Declaration order is display order for anything that is not docked yet.
-	AddPanel<ViewportPanel>();
-	AddPanel<SceneHierarchyPanel>();
-	AddPanel<PropertiesPanel>();
-	project_panel_ = AddPanel<ProjectPanel>();
-	AddPanel<StatisticsPanel>();
-	preferences_panel_ = AddPanel<PreferencesPanel>();
-	AddPanel<FileExplorerPanel>();
+	AddPanel<ViewportPanel>("viewport", "Viewport");
+	AddPanel<SceneHierarchyPanel>("scene_hierarchy", "Scene Hierarchy");
+	AddPanel<PropertiesPanel>("properties", "Properties");
+	AddPanel<ProjectPanel>("project", "Project");
+	AddPanel<StatisticsPanel>("statistics", "Statistics");
+	AddPanel<PreferencesPanel>("preferences", "Preferences");
+	AddPanel<FileExplorerPanel>("file_explorer", "File Explorer");
 }
 
 void EditorLayer::OnAttach() {
@@ -74,12 +74,12 @@ void EditorLayer::OnAttach() {
 	// above assumes; panels may draw one on their very first frame.
 	icons::Init();
 
-	for (const auto& panel: panels_)
+	for (const auto& panel: ValuesIt(panels_))
 		panel->OnAttach();
 }
 
 void EditorLayer::OnDetach() {
-	for (const auto& panel: panels_)
+	for (const auto& panel: ValuesIt(panels_))
 		panel->OnDetach();
 
 	// While the context is still up: a texture released after the window has gone is a
@@ -88,17 +88,20 @@ void EditorLayer::OnDetach() {
 }
 
 void EditorLayer::OnEvent(Event& event) {
-	for (const auto& panel: panels_) {
-		if (!event.is_handled) {
-			panel->OnEvent(event);
-		}
+	// Mouse events get sent to the hovered panel, keyboard events to the focussed panel
+	if (context_.hovered_panel && (event.IsInCategory(kMouse) || event.IsInCategory(kMouseButton))) {
+		context_.hovered_panel->OnEvent(event);
+	}
+
+	if (context_.focused_panel && event.IsInCategory(kKeyboard)) {
+		context_.focused_panel->OnEvent(event);
 	}
 }
 
 void EditorLayer::OnUpdate(const Timestep ts) {
 	context_.frame_time = ts;
 
-	for (const auto& panel: panels_)
+	for (const auto& panel: ValuesIt(panels_))
 		panel->OnUpdate(ts);
 }
 
@@ -141,9 +144,9 @@ void EditorLayer::Export() const {
 	ExportGame(*context_.project, *context_.active_scene, out_path.get());
 }
 
-void EditorLayer::Save() {
+void EditorLayer::Save() const {
 	if (context_.HasProject())
-		context_.project->Save();
+		BR_APP_ASSERT(context_.project->Save(), "Failed to save the project");
 }
 
 void EditorLayer::OpenProjectDialog() {
@@ -180,7 +183,12 @@ void EditorLayer::OnImGuiRender() {
 	BeginDockspace();
 	DrawMenuBar();
 
-	for (const auto& panel: panels_)
+	// Cleared first so that a panel which has lost the cursor or focus stops receiving
+	// events; whichever panel still has them claims them again as it is drawn.
+	context_.hovered_panel = nullptr;
+	context_.focused_panel = nullptr;
+
+	for (const auto& panel: ValuesIt(panels_))
 		panel->OnImGuiRender();
 
 	EndDockspace();
@@ -258,8 +266,12 @@ void EditorLayer::DrawMenuBar() {
 	}
 
 	if (ImGui::BeginMenu("Edit")) {
-		if (ImGui::MenuItem("Preferences..."))
-			preferences_panel_->Open();
+		if (ImGui::MenuItem("Preferences...")) {
+			// Cannot cast the Scope<Panel> to Scope<PreferencesPanel> without copying, so using .get() to get the raw
+			// pointer
+			PreferencesPanel* prefs_panel = static_cast<PreferencesPanel*>(panels_.at("preferences").get());
+			prefs_panel->Open();
+		}
 
 		ImGui::EndMenu();
 	}

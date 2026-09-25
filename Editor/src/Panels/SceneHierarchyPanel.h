@@ -6,9 +6,13 @@ namespace bron::editor {
 /// The entity tree. Owns the selection: clicking a node selects it, F2 renames it.
 class SceneHierarchyPanel final : public Panel {
 public:
-	explicit SceneHierarchyPanel(EditorContext& context) : Panel(context) {}
+	SceneHierarchyPanel(EditorContext& context, const std::string& name, const std::string& display_name) :
+		Panel(context, name, display_name) {
+		window_flags_ = ImGuiWindowFlags_MenuBar;
+	}
 
-	void OnImGuiRender() override;
+protected:
+	void ImGuiContent() override;
 
 private:
 	/// The menu bar row: what can be done to the tree, rather than to one node.

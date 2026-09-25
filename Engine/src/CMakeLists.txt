@@ -79,6 +79,8 @@ add_library(Bron STATIC
         Bron/Graphics/Components/Mesh.cpp
         Bron/Graphics/Components/Mesh.h
         Bron/Scripting/Scripting.h
+        Bron/Scripting/ScriptInput.cpp
+        Bron/Scripting/ScriptInput.h
 )
 
 target_include_directories(Bron PUBLIC .)

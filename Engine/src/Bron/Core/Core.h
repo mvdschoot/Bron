@@ -5,6 +5,9 @@
 
 #include "Config.h"
 
+#include <__msvc_ranges_to.hpp>
+#include <ranges>
+
 #define BR_BIT(x) (1 << (x))
 
 #define BR_EXPAND_MACRO(x) x
@@ -121,5 +124,7 @@ template<typename Tuple, typename F>
 void ApplyToTuple(const Tuple& t, F func) {
 	std::apply([&](const auto&... args) { (func(args), ...); }, t);
 }
+
+inline const auto& ValuesIt = std::ranges::views::values;
 
 } // namespace bron

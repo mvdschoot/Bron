@@ -7,9 +7,10 @@ namespace bron::editor {
 /// grow here; for now it is the project's settings plus the scene it starts with.
 class ProjectPanel final : public Panel {
 public:
-	explicit ProjectPanel(EditorContext& context) : Panel(context) {}
+	ProjectPanel(EditorContext& context, const std::string& name, const std::string& display_name) :
+		Panel(context, name, display_name) {}
 
-	void OnImGuiRender() override;
+	void ImGuiContent() override;
 
 private:
 	void DrawSettings();

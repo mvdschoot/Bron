@@ -14,12 +14,9 @@ namespace {
 constexpr std::array kModelExtensions{".fbx", ".glb", ".gltf", ".obj"};
 } // namespace
 
-void FileExplorerPanel::OnImGuiRender() {
-	Begin("File Explorer");
-
+void FileExplorerPanel::ImGuiContent() {
 	if (!context_.HasProject()) {
 		TextDisabled("No project open.");
-		End();
 		return;
 	}
 
@@ -33,8 +30,6 @@ void FileExplorerPanel::OnImGuiRender() {
 	DrawHeader();
 	Separator();
 	DrawEntries();
-
-	End();
 }
 
 void FileExplorerPanel::DrawHeader() {

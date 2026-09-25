@@ -7,7 +7,7 @@
 #include "Bron/Core/Core.h"
 #include "Bron/Core/Timestep.h"
 #include "Bron/Core/UUID.h"
-#include "Bron/Events/Event.h"
+#include "Bron/Input/Event.h"
 #include "Bron/Scene/Asset.h"
 
 #include "entt/entity/entity.hpp"
@@ -49,6 +49,9 @@ public:
 	void OnStart();
 	void OnDestroy();
 	void OnEvent(Event& event);
+
+	void SetReceiveMouseInput(bool receive_input) const;
+	void SetReceiveKeyboardInput(bool receive_input) const;
 
 private:
 	Scene* scene_;

@@ -1,5 +1,6 @@
 #pragma once
 
+#include "PanelInput.h"
 #include "Panels/Panel.h"
 
 namespace bron::editor {
@@ -8,16 +9,25 @@ namespace bron::editor {
 /// tied to the panel whose size decides it.
 class ViewportPanel final : public Panel {
 public:
-	explicit ViewportPanel(EditorContext& context) : Panel(context) {}
+	ViewportPanel(EditorContext& context, const std::string& name, const std::string& display_name) :
+		Panel(context, name, display_name) {
+		window_flags_ = ImGuiWindowFlags_NoNav;
+	}
 
 	void OnAttach() override;
 	void OnUpdate(Timestep ts) override;
-	void OnImGuiRender() override;
 	void OnEvent(Event& event) override;
 
 	bool OnMouseScrolled(MouseScrolledEvent& event) const;
 	bool OnMouseClicked(MouseButtonPressedEvent& event) const;
 	bool OnKeyPressed(KeyPressedEvent& event) const;
+
+protected:
+	void ImGuiContent() override;
+
+	// The image has to sit flush against the window edge.
+	void PushWindowStyle() override { ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, ImVec2(0.0f, 0.0f)); }
+	void PopWindowStyle() override { ImGui::PopStyleVar(); }
 
 private:
 	/// Keeps the framebuffer matching the panel.
@@ -25,6 +35,8 @@ private:
 	void DrawGizmo();
 	/// Logs the entity under the cursor, read back from the id attachment.
 	entt::entity ReadHoveredEntity() const;
+
+	void PlayStopButton() const;
 
 	Ref<Framebuffer> framebuffer_;
 	FramebufferSpecification spec_;
@@ -39,12 +51,6 @@ private:
 
 	/// Exludes the top bar, this is where the viewport image actually starts.
 	ImVec2 viewport_position_{0.0f, 0.0f};
-
-
-	/// Whether the panel had focus last frame. OnUpdate runs outside the ImGui frame, so
-	/// it cannot query focus itself.
-	bool focused_ = false;
-	bool hovered_ = false;
 
 	bool guizmo_hovered_ = false;
 };

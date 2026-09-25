@@ -7,13 +7,13 @@ namespace bron::editor {
 /// menu bar, since it is not a window anyone keeps docked.
 class PreferencesPanel final : public Panel {
 public:
-	explicit PreferencesPanel(EditorContext& context) : Panel(context) {}
+	PreferencesPanel(EditorContext& context, const std::string& name, const std::string& display_name) :
+		Panel(context, name, display_name) {
+		closable_ = true;
+		open_ = false;
+	}
 
-	void OnImGuiRender() override;
-
-	void Open() { open_ = true; }
-
-private:
-	bool open_ = false;
+protected:
+	void ImGuiContent() override;
 };
 } // namespace bron::editor

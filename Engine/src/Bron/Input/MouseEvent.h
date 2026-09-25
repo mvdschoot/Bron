@@ -1,8 +1,8 @@
 #pragma once
 
-#include "Bron/Events/Event.h"
-#include "Bron/Core/KeyCodes.h"
-#include "Bron/Core/MouseCodes.h"
+#include "Bron/Input/Event.h"
+#include "KeyCodes.h"
+#include "MouseCodes.h"
 
 namespace bron {
 class BR_API MouseMovedEvent : public Event {
@@ -62,4 +62,5 @@ public:
 private:
 	float offx_, offy_;
 };
+
 } // namespace bron

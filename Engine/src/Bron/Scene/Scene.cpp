@@ -5,6 +5,7 @@
 #include "Bron/Scene/AssetManager.h"
 #include "Bron/Scripting/LuaManager.h"
 #include "Bron/Core/Timestep.h"
+#include "Serialization/Serialization.h"
 
 #include <set>
 
@@ -162,7 +163,19 @@ entt::entity Scene::PrimaryCamera() const {
 	return fallback;
 }
 
+void Scene::Copy(Scene& dst) const {
+	// Generate temporary, unique filename
+	std::filesystem::path temp_dir = std::filesystem::temp_directory_path();
+	char temp_file_name[L_tmpnam];
+	std::tmpnam(temp_file_name);
+	std::filesystem::path temp_file = temp_dir / temp_file_name;
+
+	Serialization::SerializeScene(*this, temp_file);
+	Serialization::DeserializeScene(dst, temp_file);
+}
+
 void Scene::OnRuntimeStart() {
+	lua_manager = CreateScope<lua::LuaManager>(this);
 	for (auto [entity, script]: reg.view<ScriptComponent>().each()) {
 		for (assets::AssetHandle& handle: script.scripts) {
 			lua_manager->AttachScript(handle, entity);

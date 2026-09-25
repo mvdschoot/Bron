@@ -106,8 +106,8 @@ void DrawCamera(EditorContext& context, Scene& scene, const entt::entity entity)
 
 	// Preview is editor state, not scene state: it lives in the context so the viewport can
 	// read it, and it is deliberately not serialized with the camera.
-	if (bool previewing = context.camera_preview == entity; Checkbox("Preview", &previewing))
-		context.camera_preview = previewing ? entity : entt::null;
+	if (bool previewing = context.active_camera == entity; Checkbox("Preview", &previewing))
+		context.active_camera = previewing ? entity : entt::null;
 
 	InputFloat("FOV", &camera.fov_y);
 	InputFloat("Near plane", &camera.near_plane);

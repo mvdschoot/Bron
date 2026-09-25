@@ -3,6 +3,9 @@
 #include "Bron/Core/Core.h"
 #include "Bron/Graphics/Texture.h"
 
+#include "imgui.h"
+
+
 namespace bron::editor::icons {
 /// The editor's own icons. They are not assets: they are part of what the editor looks
 /// like, they have to be there on the first frame - before any project is open, so
@@ -23,9 +26,20 @@ enum class Id {
 	kModel,
 	kScene,
 	kProject,
+	kPlay,
+	kPause,
+	kStop,
 
 	kCount
 };
+
+/// Square, and the height of a line of text: an icon button then measures the same as a
+/// text button beside it, and the whole set follows the interface scale for free.
+inline ImVec2 Size() {
+	const float side = ImGui::GetFontSize();
+	return {side, side};
+}
+
 
 /// Decodes and uploads the set. Needs a live graphics context, so it belongs in a
 /// layer's OnAttach rather than in a constructor.
@@ -48,7 +62,7 @@ void Draw(Id id);
 ///
 /// The icon is the button's ImGui id, so two buttons with the same icon in one window
 /// need a PushID between them, as anywhere else in ImGui.
-bool Button(Id id, const char* tooltip);
+bool Button(Id id, const char* tooltip, const ImVec2 size = Size());
 
 /// The same button drawn small, for a header row or a list entry, where a full sized one
 /// would set the row height.

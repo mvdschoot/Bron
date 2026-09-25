@@ -2,14 +2,14 @@
 
 #include "Bron/Core/Core.h"
 #include "Bron/Core/Application.h"
-#include "Bron/Core/Input.h"
+#include "Bron/Input/Input.h"
 #include "Bron/Core/Timestep.h"
 #include "Bron/Core/UUID.h"
 
-#include "Bron/Events/Event.h"
-#include "Bron/Events/KeyEvent.h"
-#include "Bron/Events/WindowEvent.h"
-#include "Bron/Events/MouseEvent.h"
+#include "Bron/Input/Event.h"
+#include "Bron/Input/KeyEvent.h"
+#include "Bron/Input/WindowEvent.h"
+#include "Bron/Input/MouseEvent.h"
 
 #include "Bron/Layers/Layer.h"
 #include "Bron/Layers/LayerStack.h"

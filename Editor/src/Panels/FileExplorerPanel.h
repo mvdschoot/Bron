@@ -14,9 +14,10 @@ namespace bron::editor {
 /// of the editor will grow into.
 class FileExplorerPanel final : public Panel {
 public:
-	explicit FileExplorerPanel(EditorContext& context) : Panel(context) {}
+	FileExplorerPanel(EditorContext& context, const std::string& name, const std::string& display_name) :
+		Panel(context, name, display_name) {}
 
-	void OnImGuiRender() override;
+	void ImGuiContent() override;
 
 private:
 	/// What an entry is, so the list can label it and so ActivateFile knows what it was
