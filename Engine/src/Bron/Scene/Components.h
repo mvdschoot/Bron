@@ -251,4 +251,19 @@ struct ScriptComponent {
 	NLOHMANN_DEFINE_TYPE_INTRUSIVE(ScriptComponent, scripts)
 };
 
+struct Text2DComponent {
+	assets::AssetHandle font;
+	std::string_view text;
+	glm::vec2 position;
+	float font_size;
+	glm::vec4 color;
+
+	Text2DComponent() = default;
+	Text2DComponent(const assets::AssetHandle& font, const std::string_view& text, const glm::vec2& position,
+					float font_size, const glm::vec4& color) :
+		font(font), text(text), position(position), font_size(font_size), color(color) {}
+
+	NLOHMANN_DEFINE_TYPE_INTRUSIVE(Text2DComponent, font, text, position, font_size, color)
+};
+
 } // namespace bron

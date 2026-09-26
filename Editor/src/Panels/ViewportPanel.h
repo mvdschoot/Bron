@@ -53,5 +53,8 @@ private:
 	ImVec2 viewport_position_{0.0f, 0.0f};
 
 	bool guizmo_hovered_ = false;
+
+	/// tmp
+	assets::AssetHandle font_handle;
 };
 } // namespace bron::editor

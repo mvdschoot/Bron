@@ -17,6 +17,10 @@ OpenGLTextTexture::OpenGLTextTexture(u32 width, u32 height) :
 
 	glTextureParameteri(renderer_id_, GL_TEXTURE_WRAP_S, GL_REPEAT);
 	glTextureParameteri(renderer_id_, GL_TEXTURE_WRAP_T, GL_REPEAT);
+
+	// Samples as (1, 1, 1, coverage), so the regular 2D shader can draw glyphs tinted.
+	const GLint swizzle[] = {GL_ONE, GL_ONE, GL_ONE, GL_RED};
+	glTextureParameteriv(renderer_id_, GL_TEXTURE_SWIZZLE_RGBA, swizzle);
 }
 
 void OpenGLTextTexture::SetData(void* data, u32 size) {

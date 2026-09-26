@@ -34,16 +34,14 @@ struct EditorContext {
 
 	[[nodiscard]] bool HasScene() const { return active_scene != nullptr; }
 
-	EditorCamera camera{glm::radians(80.0f), 0.1f, 100.0f};
+	EditorCamera camera_3d{glm::radians(80.0f), 0.1f, 100.0f};
+	entt::entity active_camera = entt::null;
+
 
 	/// The entity the inspector and the gizmo act on, or entt::null for "nothing selected".
 	entt::entity selection = entt::null;
 	ImGuizmo::OPERATION gizmo_operation = ImGuizmo::OPERATION::TRANSLATE;
 
-	/// The camera entity whose view is mirrored in the preview overlay, or entt::null for
-	/// "no preview". One at a time: a second preview would need a second framebuffer, and
-	/// the checkbox reads as a radio button across cameras this way.
-	entt::entity active_camera = entt::null;
 
 	/// Where mouse and keyboard events go. Rebuilt every ImGui frame by the panels
 	/// themselves; null when the cursor or focus is on something that is not a panel.

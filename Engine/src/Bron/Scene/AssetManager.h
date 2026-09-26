@@ -36,6 +36,7 @@ public:
 	std::optional<AssetHandle> LoadModel(const std::filesystem::path& location, MaterialWorkflow workflow = kPhong);
 	std::optional<AssetHandle> LoadTexture(const std::filesystem::path& location);
 	std::optional<AssetHandle> LoadScript(const std::filesystem::path& location, ScriptLanguage language);
+	std::optional<AssetHandle> LoadFont(const std::filesystem::path& location, float initial_size);
 
 	// Registers an asset that has no file, e.g. a material built at runtime. It lasts until
 	// the next Refresh(), so a scene saved while pointing at one will not find it again.

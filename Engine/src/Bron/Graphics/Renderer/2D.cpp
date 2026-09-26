@@ -1,319 +1,187 @@
 #include "2D.h"
 
 #include "Bron/Graphics/BuiltinShaders.h"
+#include "Command.h"
+#include "Bron/Graphics/Camera2D.h"
+#include "Bron/Scene/Asset.h"
+#include "Bron/Scene/AssetManager.h"
 
+#include <array>
+#include <numeric>
+#include <vector>
 
 namespace bron {
+namespace {
 struct QuadVertex {
-	glm::vec2 pos;
+	glm::vec2 position;
 	glm::vec4 color;
 	glm::vec2 tex_coord;
-	glm::vec1 tex_index;
+	float tex_index;
 };
 
-// Because of multiple shaders
-struct VAO {
-	Ref<VertexArray> quad_vertex_array;
-	Ref<VertexBuffer> quad_buffer;
+constexpr u32 kMaxQuads = 20000;
+constexpr u32 kMaxVertices = kMaxQuads * 4;
+constexpr u32 kMaxIndices = kMaxQuads * 6;
+// Has to match the size of uTextures in the 2D shaders.
+constexpr u32 kMaxTextureSlots = 32;
+
+struct R2DData {
 	Ref<Shader> shader;
+	Ref<VertexArray> vertex_array;
+	Ref<VertexBuffer> vertex_buffer;
+	std::vector<QuadVertex> vertices;
 
-	QuadVertex* quad_vertex_buffer_base;
-	QuadVertex* quad_vertex_buffer_ptr;
+	// Slot 0 is always the white texture, so untextured quads can share a batch.
+	std::array<Ref<Texture>, kMaxTextureSlots> texture_slots;
+	u32 texture_count = 1;
 
-	u32 quad_count = 0;
-};
-
-struct Renderer2DData {
-	static constexpr u32 kMaxVertices = 1e6;
-	static constexpr u32 kMaxIndices = 1e6;
-	static constexpr u32 kMaxTexUnits = 32;
-
-	u32 quad_index_count = 0;
-	u32 quad_vertex_count = 0;
-
-	// Texture stuff
-	Ref<Texture> white_texture;
-	std::array<Ref<Texture>, kMaxTexUnits> texture_slots;
-	u32 current_tex_slot = 1;
-
-	// Copied rather than pointed at: a batch is flushed after BeginScene returns, so
-	// the view it was begun with has to outlive the caller's frame-local value.
 	CameraView view;
-
-	// Everything to graphics
-	// to_render[0] == standard rendering
-	std::vector<VAO> to_render;
-	unsigned int render_state = 0;
 };
 
-static Renderer2DData s_data_2d;
-#define CURRENT_RENDER_DATA s_data_2d.to_render[s_data_2d.render_state]
+R2DData render_data;
+} // namespace
+
+static const assets::FontAsset* ResolveFont(const assets::AssetHandle& font_handle) {
+	return assets::AssetManager::Instance().Get<assets::FontAsset>(font_handle).get();
+}
 
 void R2D::Init() {
 	BR_PROFILE_FUNCTION();
 
-	AddVAO(Shader::Create(builtin_shaders::Source(builtin_shaders::Id::kRenderer2D)),
-		   BufferLayout({{"a_Position", ShaderDataType::kFloat2},
-						 {"a_Color", ShaderDataType::kFloat4},
-						 {"a_TexCoord", ShaderDataType::kFloat2},
-						 {"a_TexIndex", ShaderDataType::kFloat}}));
+	render_data.vertex_buffer = VertexBuffer::Create(kMaxVertices * sizeof(QuadVertex));
+	render_data.vertex_buffer->SetBufferLayout({{"a_Position", ShaderDataType::kFloat2},
+												{"a_Color", ShaderDataType::kFloat4},
+												{"a_TexCoord", ShaderDataType::kFloat2},
+												{"a_TexIndex", ShaderDataType::kFloat}});
 
-	s_data_2d.white_texture = Texture2D::Create(1, 1);
-	u32 white_data = 0xffffffff;
-	s_data_2d.white_texture->SetData(&white_data, sizeof(u32));
+	render_data.vertex_array = VertexArray::Create();
+	render_data.vertex_array->AddVertexBuffer(render_data.vertex_buffer);
+
+	std::vector<u32> indices(kMaxIndices);
+	for (u32 quad = 0; quad < kMaxQuads; ++quad) {
+		const u32 v = quad * 4;
+		const u32 i = quad * 6;
+		indices[i + 0] = v + 0;
+		indices[i + 1] = v + 1;
+		indices[i + 2] = v + 2;
+		indices[i + 3] = v + 2;
+		indices[i + 4] = v + 3;
+		indices[i + 5] = v + 0;
+	}
+	render_data.vertex_array->SetIndexBuffer(IndexBuffer::Create(indices.data(), kMaxIndices));
+
+	const Ref<Texture> white = Texture2D::Create(1, 1);
+	u32 white_pixel = 0xffffffff;
+	white->SetData(&white_pixel, sizeof(u32));
+	render_data.texture_slots[0] = white;
+
+	std::array<int, kMaxTextureSlots> samplers{};
+	std::iota(samplers.begin(), samplers.end(), 0);
+	render_data.shader = Shader::Create(builtin_shaders::Source(builtin_shaders::Id::kRenderer2D));
+	render_data.shader->Bind();
+	render_data.shader->SetUniform1iv("uTextures", samplers.data(), kMaxTextureSlots);
 }
 
 void R2D::BeginScene(const CameraView& view) {
-	BR_PROFILE_FUNCTION();
-	s_data_2d.view = view;
-	s_data_2d.quad_index_count = 0;
-	s_data_2d.quad_vertex_count = 0;
-
-	for (VAO& vao: s_data_2d.to_render)
-		vao.quad_count = 0;
-
-	NewBatch();
+	render_data.view = view;
+	render_data.vertices.clear();
+	render_data.texture_count = 1;
 }
 
-void R2D::EndScene() {
-	BR_PROFILE_FUNCTION();
-	Flush();
+void R2D::BeginScene(const glm::vec2 target_size) { BeginScene(Camera2D().View(target_size)); }
+
+void R2D::EndScene() { Flush(); }
+
+void R2D::DrawQuad(const glm::vec2 position, const glm::vec2 size, const glm::vec4& color) {
+	PushQuad(position, size, color, 0.0f, {0.0f, 0.0f}, {1.0f, 1.0f});
 }
 
-void R2D::NewBatch() {
-	BR_PROFILE_FUNCTION();
-	s_data_2d.current_tex_slot = 1;
-	for (VAO& vao: s_data_2d.to_render) {
-		vao.quad_vertex_buffer_ptr = vao.quad_vertex_buffer_base;
-		vao.quad_count = 0;
-	}
+void R2D::DrawQuad(const glm::vec2 position, const glm::vec2 size, const Ref<Texture>& texture) {
+	DrawQuad(position, size, texture, {0.0f, 0.0f, 1.0f, 1.0f});
 }
 
-void R2D::NextBatch() {
-	BR_PROFILE_FUNCTION();
-	Flush();
-	NewBatch();
+void R2D::DrawQuad(const glm::vec2 position, const glm::vec2 size, const Ref<Texture>& texture,
+				   const glm::vec4& uv_rect, const glm::vec4& tint) {
+	// Before picking a slot: a flush for room would clear the slot this quad was given.
+	if (render_data.vertices.size() == kMaxVertices)
+		Flush();
+
+	const float slot = TextureSlot(texture);
+	PushQuad(position, size, tint, slot, {uv_rect.x, uv_rect.y}, {uv_rect.x + uv_rect.z, uv_rect.y + uv_rect.w});
 }
 
-uint8_t R2D::AddShader(Ref<Shader> shader, BufferLayout buffer_layout) {
-	AddVAO(shader, buffer_layout);
-	return s_data_2d.to_render.size() - 1;
-}
+void R2D::DrawText(const std::string_view text, const assets::AssetHandle font_handle, const glm::vec2 position,
+				   const float font_size, const glm::vec4& color) {
+	const assets::FontAsset* font = ResolveFont(font_handle);
+	const glm::vec2 atlas_size(font->texture->GetWidth(), font->texture->GetHeight());
+	glm::vec2 pen = position;
+	const float scale = font_size / font->font_size;
 
-void R2D::ActiveShader(uint8_t shader_number) {
-	BR_CORE_ASSERT(shader_number < (s_data_2d.to_render.size()), "Invalid shader number");
-	s_data_2d.render_state = shader_number;
-	NextBatch();
-}
-
-u32 R2D::GetActiveShader() { return s_data_2d.render_state; }
-
-void R2D::DrawQuad(const glm::vec3 pos, const glm::vec3 dimension, const glm::vec4 color) {
-	BR_PROFILE_FUNCTION();
-
-	if (++CURRENT_RENDER_DATA.quad_count * 4 >= Renderer2DData::kMaxVertices) {
-		NextBatch();
-	}
-
-	CURRENT_RENDER_DATA.quad_vertex_buffer_ptr->pos = glm::vec2(pos.x, pos.y);
-	CURRENT_RENDER_DATA.quad_vertex_buffer_ptr->color = color;
-	CURRENT_RENDER_DATA.quad_vertex_buffer_ptr->tex_coord = glm::vec2(0.0f, 0.0f);
-	CURRENT_RENDER_DATA.quad_vertex_buffer_ptr->tex_index = glm::vec1(0.0f);
-	CURRENT_RENDER_DATA.quad_vertex_buffer_ptr++;
-
-	CURRENT_RENDER_DATA.quad_vertex_buffer_ptr->pos = glm::vec2(pos.x + dimension.x, pos.y);
-	CURRENT_RENDER_DATA.quad_vertex_buffer_ptr->color = color;
-	CURRENT_RENDER_DATA.quad_vertex_buffer_ptr->tex_coord = glm::vec2(1.0f, 0.0f);
-	CURRENT_RENDER_DATA.quad_vertex_buffer_ptr->tex_index = glm::vec1(0.0f);
-	CURRENT_RENDER_DATA.quad_vertex_buffer_ptr++;
-
-	CURRENT_RENDER_DATA.quad_vertex_buffer_ptr->pos = glm::vec2(pos.x + dimension.x, pos.y + dimension.y);
-	CURRENT_RENDER_DATA.quad_vertex_buffer_ptr->color = color;
-	CURRENT_RENDER_DATA.quad_vertex_buffer_ptr->tex_coord = glm::vec2(1.0f, 1.0f);
-	CURRENT_RENDER_DATA.quad_vertex_buffer_ptr->tex_index = glm::vec1(0.0f);
-	CURRENT_RENDER_DATA.quad_vertex_buffer_ptr++;
-
-	CURRENT_RENDER_DATA.quad_vertex_buffer_ptr->pos = glm::vec2(pos.x, pos.y + dimension.y);
-	CURRENT_RENDER_DATA.quad_vertex_buffer_ptr->color = color;
-	CURRENT_RENDER_DATA.quad_vertex_buffer_ptr->tex_coord = glm::vec2(0.0f, 1.0f);
-	CURRENT_RENDER_DATA.quad_vertex_buffer_ptr->tex_index = glm::vec1(0.0f);
-	CURRENT_RENDER_DATA.quad_vertex_buffer_ptr++;
-
-	s_data_2d.quad_vertex_count += 4;
-	s_data_2d.quad_index_count += 6;
-}
-
-void R2D::DrawQuad(const glm::vec3 pos, const glm::vec3 dimension, const Ref<Texture> texture) {
-	BR_PROFILE_FUNCTION();
-	if (++CURRENT_RENDER_DATA.quad_count * 4 >= Renderer2DData::kMaxVertices) {
-		NextBatch();
-	}
-
-	u32 tex_index = 0;
-	for (int x = 1; x < s_data_2d.current_tex_slot; x++) {
-		if (s_data_2d.texture_slots[x] != nullptr && (*texture.get()) == (*(s_data_2d.texture_slots[x]))) {
-			tex_index = x;
-			break;
+	for (const char c: text) {
+		if (c == '\n') {
+			pen = {position.x, pen.y - font->font_size * scale};
+			continue;
 		}
+
+		const auto it = font->characters.find(c);
+		if (it == font->characters.end())
+			continue;
+
+		const assets::FontAsset::Character& glyph = it->second;
+		const glm::vec2 size = glm::vec2(glyph.location.z, glyph.location.w) * scale;
+		const glm::vec2 origin = pen + glm::vec2(glyph.bearing.x, -glyph.bearing.y) * scale;
+		const glm::vec4 uv_rect = glm::vec4(glyph.location) / glm::vec4(atlas_size, atlas_size);
+
+		DrawQuad(origin, size, font->texture, uv_rect, color);
+
+		// FreeType advances are in 1/64 pixel.
+		pen.x += static_cast<float>(glyph.advance >> 6) * scale;
 	}
-	if (tex_index == 0) {
-		s_data_2d.texture_slots[s_data_2d.current_tex_slot] = texture;
-		tex_index = s_data_2d.current_tex_slot;
-		s_data_2d.current_tex_slot++;
-	}
-
-	CURRENT_RENDER_DATA.quad_vertex_buffer_ptr->pos = glm::vec2(pos.x, pos.y);
-	CURRENT_RENDER_DATA.quad_vertex_buffer_ptr->color = glm::vec4(1.0f);
-	CURRENT_RENDER_DATA.quad_vertex_buffer_ptr->tex_coord = glm::vec2(0.0f, 0.0f);
-	CURRENT_RENDER_DATA.quad_vertex_buffer_ptr->tex_index = glm::vec1(static_cast<float>(tex_index));
-	CURRENT_RENDER_DATA.quad_vertex_buffer_ptr++;
-
-	CURRENT_RENDER_DATA.quad_vertex_buffer_ptr->pos = glm::vec2(pos.x + dimension.x, pos.y);
-	CURRENT_RENDER_DATA.quad_vertex_buffer_ptr->color = glm::vec4(1.0f);
-	CURRENT_RENDER_DATA.quad_vertex_buffer_ptr->tex_coord = glm::vec2(1.0f, 0.0f);
-	CURRENT_RENDER_DATA.quad_vertex_buffer_ptr->tex_index = glm::vec1(static_cast<float>(tex_index));
-	CURRENT_RENDER_DATA.quad_vertex_buffer_ptr++;
-
-	CURRENT_RENDER_DATA.quad_vertex_buffer_ptr->pos = glm::vec2(pos.x + dimension.x, pos.y + dimension.y);
-	CURRENT_RENDER_DATA.quad_vertex_buffer_ptr->color = glm::vec4(1.0f);
-	CURRENT_RENDER_DATA.quad_vertex_buffer_ptr->tex_coord = glm::vec2(1.0f, 1.0f);
-	CURRENT_RENDER_DATA.quad_vertex_buffer_ptr->tex_index = glm::vec1(static_cast<float>(tex_index));
-	CURRENT_RENDER_DATA.quad_vertex_buffer_ptr++;
-
-	CURRENT_RENDER_DATA.quad_vertex_buffer_ptr->pos = glm::vec2(pos.x, pos.y + dimension.y);
-	CURRENT_RENDER_DATA.quad_vertex_buffer_ptr->color = glm::vec4(1.0f);
-	CURRENT_RENDER_DATA.quad_vertex_buffer_ptr->tex_coord = glm::vec2(0.0f, 1.0f);
-	CURRENT_RENDER_DATA.quad_vertex_buffer_ptr->tex_index = glm::vec1(static_cast<float>(tex_index));
-	CURRENT_RENDER_DATA.quad_vertex_buffer_ptr++;
-
-	s_data_2d.quad_vertex_count += 4;
-	s_data_2d.quad_index_count += 6;
 }
 
-void R2D::DrawQuad(glm::vec3 pos, glm::vec3 dimension, const Ref<Texture> texture, glm::vec4 tex_coords_and_dims) {
-	BR_PROFILE_FUNCTION();
-	if (++CURRENT_RENDER_DATA.quad_count * 4 >= Renderer2DData::kMaxVertices) {
-		NextBatch();
+float R2D::TextureSlot(const Ref<Texture>& texture) {
+	for (u32 i = 1; i < render_data.texture_count; ++i) {
+		if (*render_data.texture_slots[i] == *texture)
+			return static_cast<float>(i);
 	}
 
-	u32 tex_index = 0;
-	for (int x = 1; x < s_data_2d.current_tex_slot; x++) {
-		if (s_data_2d.texture_slots[x] != nullptr && (*texture.get()) == (*(s_data_2d.texture_slots[x]))) {
-			tex_index = x;
-			break;
-		}
-	}
+	if (render_data.texture_count == kMaxTextureSlots)
+		Flush();
 
-	if (tex_index == 0) {
-		s_data_2d.texture_slots[s_data_2d.current_tex_slot] = texture;
-		tex_index = s_data_2d.current_tex_slot;
-		s_data_2d.current_tex_slot++;
-	}
-
-	CURRENT_RENDER_DATA.quad_vertex_buffer_ptr->pos = glm::vec2(pos.x, pos.y);
-	CURRENT_RENDER_DATA.quad_vertex_buffer_ptr->color = glm::vec4(1.0f);
-	CURRENT_RENDER_DATA.quad_vertex_buffer_ptr->tex_coord = glm::vec2(tex_coords_and_dims.x, tex_coords_and_dims.y);
-	CURRENT_RENDER_DATA.quad_vertex_buffer_ptr->tex_index = glm::vec1(static_cast<float>(tex_index));
-	CURRENT_RENDER_DATA.quad_vertex_buffer_ptr++;
-
-	CURRENT_RENDER_DATA.quad_vertex_buffer_ptr->pos = glm::vec2(pos.x + dimension.x, pos.y);
-	CURRENT_RENDER_DATA.quad_vertex_buffer_ptr->color = glm::vec4(1.0f);
-	CURRENT_RENDER_DATA.quad_vertex_buffer_ptr->tex_coord =
-			glm::vec2(tex_coords_and_dims.x + tex_coords_and_dims.z, tex_coords_and_dims.y);
-	CURRENT_RENDER_DATA.quad_vertex_buffer_ptr->tex_index = glm::vec1(static_cast<float>(tex_index));
-	CURRENT_RENDER_DATA.quad_vertex_buffer_ptr++;
-
-	CURRENT_RENDER_DATA.quad_vertex_buffer_ptr->pos = glm::vec2(pos.x + dimension.x, pos.y + dimension.y);
-	CURRENT_RENDER_DATA.quad_vertex_buffer_ptr->color = glm::vec4(1.0f);
-	CURRENT_RENDER_DATA.quad_vertex_buffer_ptr->tex_coord =
-			glm::vec2(tex_coords_and_dims.x + tex_coords_and_dims.z, tex_coords_and_dims.y + tex_coords_and_dims.w);
-	CURRENT_RENDER_DATA.quad_vertex_buffer_ptr->tex_index = glm::vec1(static_cast<float>(tex_index));
-	CURRENT_RENDER_DATA.quad_vertex_buffer_ptr++;
-
-	CURRENT_RENDER_DATA.quad_vertex_buffer_ptr->pos = glm::vec2(pos.x, pos.y + dimension.y);
-	CURRENT_RENDER_DATA.quad_vertex_buffer_ptr->color = glm::vec4(1.0f);
-	CURRENT_RENDER_DATA.quad_vertex_buffer_ptr->tex_coord =
-			glm::vec2(tex_coords_and_dims.x, tex_coords_and_dims.y + tex_coords_and_dims.w);
-	CURRENT_RENDER_DATA.quad_vertex_buffer_ptr->tex_index = glm::vec1(static_cast<float>(tex_index));
-	CURRENT_RENDER_DATA.quad_vertex_buffer_ptr++;
-
-	s_data_2d.quad_vertex_count += 4;
-	s_data_2d.quad_index_count += 6;
+	render_data.texture_slots[render_data.texture_count] = texture;
+	return static_cast<float>(render_data.texture_count++);
 }
 
+void R2D::PushQuad(const glm::vec2 position, const glm::vec2 size, const glm::vec4& color, const float texture_slot,
+				   const glm::vec2 uv_min, const glm::vec2 uv_max) {
+	if (render_data.vertices.size() == kMaxVertices)
+		Flush();
 
-u32 R2D::GetTotQuadCount() {
-	u32 res = 0;
-	for (VAO& vao: s_data_2d.to_render)
-		res += vao.quad_count;
-	return res;
-}
-u32 R2D::GetTotQuadIndexCount() { return s_data_2d.quad_index_count; }
-
-u32 R2D::GetTotVertexCount() { return s_data_2d.quad_vertex_count; }
-
-void R2D::AddVAO(Ref<Shader> shader, BufferLayout buffer_layout) {
-	BR_PROFILE_FUNCTION();
-	VAO& vao = s_data_2d.to_render.emplace_back();
-
-	vao.quad_vertex_array = VertexArray::Create();
-	vao.quad_buffer = VertexBuffer::Create(s_data_2d.kMaxVertices * sizeof(QuadVertex));
-	vao.quad_buffer->SetBufferLayout(buffer_layout);
-	vao.quad_vertex_array->AddVertexBuffer(vao.quad_buffer);
-
-
-	vao.quad_vertex_buffer_base = new QuadVertex[Renderer2DData::kMaxVertices];
-	vao.quad_vertex_buffer_ptr = vao.quad_vertex_buffer_base;
-	memset(vao.quad_vertex_buffer_base, 0, Renderer2DData::kMaxVertices);
-
-	const auto quad_index_buffer = new u32[Renderer2DData::kMaxIndices];
-	int offset = 0;
-	for (u32 x = 6; x < Renderer2DData::kMaxIndices; x += 6) {
-		quad_index_buffer[x - 6] = offset + 0;
-		quad_index_buffer[x - 5] = offset + 1;
-		quad_index_buffer[x - 4] = offset + 2;
-
-		quad_index_buffer[x - 3] = offset + 2;
-		quad_index_buffer[x - 2] = offset + 3;
-		quad_index_buffer[x - 1] = offset + 0;
-		offset += 4;
-	}
-	const Ref<IndexBuffer> index_buffer = IndexBuffer::Create(quad_index_buffer, Renderer2DData::kMaxIndices);
-	vao.quad_vertex_array->SetIndexBuffer(index_buffer);
-	delete[] quad_index_buffer;
-
-	vao.shader = shader;
-
-	int arr[Renderer2DData::kMaxTexUnits];
-	for (int x = 0; x < Renderer2DData::kMaxTexUnits; x++) {
-		arr[x] = x;
-	}
-
-	vao.shader->Bind();
-	vao.shader->SetUniform1iv("uTextures", arr, Renderer2DData::kMaxTexUnits);
-
-	s_data_2d.texture_slots[0] = s_data_2d.white_texture;
+	const glm::vec2 max = position + size;
+	render_data.vertices.push_back({position, color, uv_min, texture_slot});
+	render_data.vertices.push_back({{max.x, position.y}, color, {uv_max.x, uv_min.y}, texture_slot});
+	render_data.vertices.push_back({max, color, uv_max, texture_slot});
+	render_data.vertices.push_back({{position.x, max.y}, color, {uv_min.x, uv_max.y}, texture_slot});
 }
 
 void R2D::Flush() {
 	BR_PROFILE_FUNCTION();
 
-	for (auto& [quad_vertex_array, quad_buffer, shader, quad_vertex_buffer_base, quad_vertex_buffer_ptr, quad_count]:
-		 s_data_2d.to_render) {
+	Command::DisableDepth();
+	if (!render_data.vertices.empty()) {
+		render_data.shader->Bind();
+		render_data.shader->SetUniformMat4("uVPmatrix", render_data.view.ViewProjection());
+		for (u32 i = 0; i < render_data.texture_count; ++i)
+			render_data.texture_slots[i]->Bind(i);
 
-		// Quad graphics
-		if (quad_count == 0)
-			continue;
-		quad_vertex_array->Bind();
-		shader->Bind();
-		for (int x = 0; x < s_data_2d.current_tex_slot; x++) {
-			s_data_2d.texture_slots[x]->Bind(x);
-		}
-
-		const u32 size = static_cast<u32>((uint8_t*) quad_vertex_buffer_ptr - (uint8_t*) quad_vertex_buffer_base);
-		quad_buffer->SetBufferData(quad_vertex_buffer_base, size);
-		shader->SetUniformMat4("uVPmatrix", s_data_2d.view.ViewProjection());
-		Command::DrawIndexed(quad_vertex_array, quad_count * 6);
+		render_data.vertex_buffer->SetBufferData(render_data.vertices.data(),
+												 render_data.vertices.size() * sizeof(QuadVertex));
+		render_data.vertex_array->Bind();
+		Command::DrawIndexed(render_data.vertex_array, static_cast<u32>(render_data.vertices.size() / 4 * 6));
 	}
+	Command::EnableDepth();
+
+	render_data.vertices.clear();
+	render_data.texture_count = 1;
 }
 } // namespace bron

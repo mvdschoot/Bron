@@ -21,9 +21,9 @@
 #include "Bron/Graphics/Shader.h"
 #include "Bron/Graphics/VertexArray.h"
 #include "Bron/Graphics/CameraView.h"
+#include "Bron/Graphics/Camera2D.h"
 #include "Bron/Graphics/Texture.h"
 #include "Bron/Graphics/Framebuffer.h"
-// #include "Bron/Graphics/TextRenderer.h"
 
 #include "Bron/Scene/Scene.h"
 #include "Bron/Scene/Components.h"

@@ -1,54 +1,44 @@
 #pragma once
 
 #include "Bron/Core/Core.h"
-#include "Bron/Core/Logger.h"
-
-#include "Command.h"
-#include "../CameraView.h"
-#include "../Texture.h"
-#include "../Shader.h"
+#include "Bron/Scene/Asset.h"
 
 #include "glm/glm.hpp"
 
-#include <array>
-
+#include <string_view>
 
 namespace bron {
+struct CameraView;
+namespace assets {
+struct FontAsset;
+}
+
+/// Batched 2D quads. Draws are collected until EndScene, a shader switch or a full batch,
+/// then submitted in one draw call - so draw order is preserved across shaders.
 class BR_API R2D {
 public:
 	static void Init();
 
 	static void BeginScene(const CameraView& view);
+	/// Draws in pixels over the whole target, (0, 0) being its bottom-left corner.
+	static void BeginScene(glm::vec2 target_size);
 	static void EndScene();
 
-	static void NewBatch();
-	static void NextBatch();
+	static void DrawQuad(glm::vec2 position, glm::vec2 size, const glm::vec4& color);
+	static void DrawQuad(glm::vec2 position, glm::vec2 size, const Ref<Texture>& texture);
+	/// 'uv_rect' is the sampled region of the texture as {x, y, width, height} in UV space.
+	static void DrawQuad(glm::vec2 position, glm::vec2 size, const Ref<Texture>& texture, const glm::vec4& uv_rect,
+						 const glm::vec4& tint = glm::vec4(1.0f));
 
-	/*
-	 * 2D shaders work with a template for variables.
-	 * The input is this:
-	 *
-			{"a_Position", ShaderDataType::kFloat2},
-			{"a_Color", ShaderDataType::kFloat4},
-			{"a_TexCoord", ShaderDataType::kFloat2},
-			{"a_TexIndex", ShaderDataType::kFloat}
-
-	 * It also need uTextures and uVPmatrix as uniforms.
-	 */
-	static uint8_t AddShader(Ref<Shader> shader, BufferLayout buffer_layout);
-	static void ActiveShader(uint8_t shader_number);
-	static u32 GetActiveShader();
-
-	static void DrawQuad(glm::vec3 pos, glm::vec3 dimension, glm::vec4 color);
-	static void DrawQuad(glm::vec3 pos, glm::vec3 dimension, const Ref<Texture> texture);
-	static void DrawQuad(glm::vec3 pos, glm::vec3 dimension, const Ref<Texture> texture, glm::vec4 tex_coords_and_dims);
-
-	static u32 GetTotQuadCount();
-	static u32 GetTotQuadIndexCount();
-	static u32 GetTotVertexCount();
+	/// 'position' is the start of the baseline; '\n' moves down one line. 'scale' is relative
+	/// to the size the font was imported at.
+	static void DrawText(std::string_view text, const assets::AssetHandle font, glm::vec2 position, float font_size,
+						 const glm::vec4& color);
 
 private:
-	static void AddVAO(Ref<Shader> shader, BufferLayout buffer_layout);
 	static void Flush();
+	static float TextureSlot(const Ref<Texture>& texture);
+	static void PushQuad(glm::vec2 position, glm::vec2 size, const glm::vec4& color, float texture_slot,
+						 glm::vec2 uv_min, glm::vec2 uv_max);
 };
 } // namespace bron

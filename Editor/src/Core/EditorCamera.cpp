@@ -27,9 +27,10 @@ void EditorCamera::OnUpdate(const PanelInput& input, const Timestep ts) {
 
 	// Stopping just short of the poles keeps the up vector meaningful.
 	if (input.IsKeyPressed(key::W))
-		elevation_ += (elevation_ > 0.5f * kPi ? 0.0f : dt);
+		elevation_ += dt;
 	if (input.IsKeyPressed(key::S))
-		elevation_ -= (elevation_ < -0.5f * kPi ? 0.0f : dt);
+		elevation_ -= dt;
+	elevation_ = glm::clamp(elevation_, static_cast<float>(-0.4999 * kPi), static_cast<float>(0.4999 * kPi));
 }
 
 bool EditorCamera::OnMouseScrolled(MouseScrolledEvent& e) {

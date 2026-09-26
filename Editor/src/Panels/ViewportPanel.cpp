@@ -1,5 +1,7 @@
 #include "Panels/ViewportPanel.h"
 
+#include "Bron/Graphics/BuiltinShaders.h"
+#include "Bron/Graphics/ShaderRegistry.h"
 #include "Panels/ComponentRegistry.h"
 
 #include "Bron/Scene/AssetManager.h"
@@ -78,6 +80,7 @@ void ViewportPanel::OnAttach() {
 	framebuffer_->Unbind();
 
 	viewport_size_ = {static_cast<float>(spec_.width), static_cast<float>(spec_.height)};
+	font_handle = assets::AssetManager::Instance().LoadFont("Roboto-Black.ttf", 20).value();
 }
 
 void ViewportPanel::OnUpdate(const Timestep ts) {
@@ -97,8 +100,8 @@ void ViewportPanel::OnUpdate(const Timestep ts) {
 	float aspect_ratio = viewport_size_.y > 0.0f ? viewport_size_.x / viewport_size_.y : 1.0f;
 	if (context_.active_camera == entt::null) {
 		if (IsFocussed())
-			context_.camera.OnUpdate(panel_input_, ts);
-		view_ = context_.camera.View(aspect_ratio);
+			context_.camera_3d.OnUpdate(panel_input_, ts);
+		view_ = context_.camera_3d.View(aspect_ratio);
 	} else {
 		CameraComponent& camera_component = scene->reg.get<CameraComponent>(context_.active_camera);
 		view_ = ViewFrom(camera_component, scene->WorldTransform(context_.active_camera), aspect_ratio);
@@ -113,10 +116,11 @@ void ViewportPanel::OnUpdate(const Timestep ts) {
 	// since entity 0 is a perfectly valid entity.
 	framebuffer_->ClearAttachmentInt(1, -1);
 
-	Command::EnableBlend();
-	GridRenderer::Draw(view_);
-
-	Command::EnableDepth();
+	if (context_.state == kEdit) {
+		Command::EnableBlend();
+		GridRenderer::Draw(view_);
+		Command::EnableDepth();
+	}
 	if (scene) {
 		SceneRenderer::Draw(*scene, view_);
 
@@ -127,7 +131,9 @@ void ViewportPanel::OnUpdate(const Timestep ts) {
 			SceneRenderer::DrawOutline(*scene, view_, selected_meshes);
 		}
 	}
-
+	R2D::BeginScene(glm::vec2{viewport_size_.x, viewport_size_.y});
+	R2D::DrawText("textsje", font_handle, {20, 20}, 20, {1, 1, 1, 1});
+	R2D::EndScene();
 	framebuffer_->Unbind();
 }
 
@@ -257,7 +263,7 @@ bool ViewportPanel::OnKeyPressed(KeyPressedEvent& event) const {
 
 			Scene& scene = *context_.active_scene;
 			const glm::vec3 pivot = LocalPivot(scene, context_.selection);
-			context_.camera.Focus(glm::vec3(scene.WorldTransform(context_.selection) * glm::vec4(pivot, 1.0f)));
+			context_.camera_3d.Focus(glm::vec3(scene.WorldTransform(context_.selection) * glm::vec4(pivot, 1.0f)));
 			return true;
 		}
 		default:
@@ -265,7 +271,9 @@ bool ViewportPanel::OnKeyPressed(KeyPressedEvent& event) const {
 	}
 }
 
-bool ViewportPanel::OnMouseScrolled(MouseScrolledEvent& event) const { return context_.camera.OnMouseScrolled(event); }
+bool ViewportPanel::OnMouseScrolled(MouseScrolledEvent& event) const {
+	return context_.camera_3d.OnMouseScrolled(event);
+}
 
 bool ViewportPanel::OnMouseClicked(MouseButtonPressedEvent& event) const {
 	if (IsHovered() && !guizmo_hovered_) {

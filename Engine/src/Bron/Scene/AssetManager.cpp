@@ -4,6 +4,8 @@
 
 #include "AssetManager.h"
 
+#include "FontLoader.h"
+
 #include <fstream>
 
 #include <nlohmann/json.hpp>
@@ -348,6 +350,31 @@ std::optional<AssetHandle> AssetManager::LoadScript(const std::filesystem::path&
 		asset->language = language;
 		cache_[handle] = asset;
 	}
+
+	return handle;
+}
+std::optional<AssetHandle> AssetManager::LoadFont(const std::filesystem::path& location, float initial_size) {
+	const std::filesystem::path absolute = paths::ResolveAsset(location);
+	if (!std::filesystem::exists(absolute)) {
+		BR_CORE_WARN("Font {} does not exist", absolute.string());
+		return std::nullopt;
+	}
+
+	std::optional<ImportedFont> font = FontLoader::Import(absolute, initial_size);
+	if (!font.has_value()) {
+		return std::nullopt;
+	}
+
+	AssetHandle handle = Register(location, kFont);
+	const Ref<FontAsset> asset = CreateRef<FontAsset>();
+	asset->texture = font->texture;
+	asset->font_size = font->font_size;
+	for (const auto& [key, value]: font->characters) {
+		asset->characters.emplace(
+				key,
+				FontAsset::Character{.location = value.location, .bearing = value.bearing, .advance = value.advance});
+	}
+	cache_[handle] = asset;
 
 	return handle;
 }

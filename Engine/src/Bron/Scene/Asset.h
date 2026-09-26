@@ -41,6 +41,7 @@ enum AssetType {
 	kMaterial,
 	kTexture,
 	kScript,
+	kFont,
 };
 
 struct ModelImportSettings {
@@ -149,6 +150,21 @@ struct ScriptAsset : Asset {
 	AssetType Type() const override { return kType; }
 
 	ScriptLanguage language;
+};
+
+struct FontAsset : Asset {
+	struct Character {
+		glm::ivec4 location;
+		glm::ivec2 bearing;
+		unsigned int advance;
+	};
+
+	static constexpr AssetType kType = kFont;
+	AssetType Type() const override { return kType; }
+
+	std::map<char, Character> characters;
+	Ref<TextTexture> texture;
+	float font_size;
 };
 
 } // namespace bron::assets

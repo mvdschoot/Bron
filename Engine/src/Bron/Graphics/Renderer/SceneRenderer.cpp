@@ -77,7 +77,6 @@ void Submit(Scene& scene, const CameraView& view, const RenderQueue& queue) {
 			SceneRenderer::Statistics.Materials++;
 
 			s_data.white_texture->Bind(0);
-
 			material->Bind(shader, 1);
 			SceneRenderer::Statistics.UniformCalls += material->NumberUniformCalls();
 

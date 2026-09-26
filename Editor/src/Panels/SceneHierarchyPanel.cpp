@@ -113,7 +113,7 @@ void SceneHierarchyPanel::DrawNode(const entt::entity entity) {
 
 	if (IsItemHovered() && IsMouseDoubleClicked(ImGuiMouseButton_Left)) {
 		const glm::vec3& position = context_.active_scene->reg.get<TransformComponent>(context_.selection).Position;
-		context_.camera.Focus(position);
+		context_.camera_3d.Focus(position);
 	}
 
 	if (open) {
