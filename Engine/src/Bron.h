@@ -17,6 +17,7 @@
 #include "Bron/Graphics/Renderer/2D.h"
 #include "Bron/Graphics/Renderer/Command.h"
 #include "Bron/Graphics/Renderer/SceneRenderer.h"
+#include "Bron/Graphics/Renderer/WorldRenderer.h"
 #include "Bron/Graphics/Renderer/Grid.h"
 #include "Bron/Graphics/Shader.h"
 #include "Bron/Graphics/VertexArray.h"

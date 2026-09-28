@@ -7,20 +7,6 @@
 #include "Core/EditorContext.h"
 
 namespace bron::editor {
-enum ComponentFlags {
-	kComponentFlagsNone = 0,
-
-	// Offered in the "Add Component" menu. Off for components that cannot be usefully
-	// default constructed, and for the ones every entity is guaranteed to have.
-	kComponentFlagsAddable = BR_BIT(0),
-
-	// Gets a remove button in the inspector. Off for the structural components, because
-	// the rest of the engine assumes every entity has them.
-	kComponentFlagsRemovable = BR_BIT(1),
-
-	kComponentFlagsDefault = kComponentFlagsAddable | kComponentFlagsRemovable
-};
-
 /// Everything the editor needs to know about one component type, with the type erased into
 /// plain function pointers so that all component types fit in a single list.
 struct ComponentMeta {
@@ -31,7 +17,7 @@ struct ComponentMeta {
 	/// lives outside the component (the camera preview toggle), and the rest ignore it.
 	void (*draw)(EditorContext&, Scene&, entt::entity);
 
-	// Null when the component carries the matching flag, meaning the UI does not offer the action.
+	// Null when scene.CanAdd/Remove is false.
 	void (*add)(Scene&, entt::entity);
 	void (*remove)(Scene&, entt::entity);
 };

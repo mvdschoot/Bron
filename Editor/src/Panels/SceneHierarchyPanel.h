@@ -23,7 +23,7 @@ private:
 
 	/// Creates an entity under the selection - or under the root when there is none - and
 	/// selects it, which is what every entry of the add menu wants to do first.
-	entt::entity AddEntity(const char* name);
+	void PlaceEntity(entt::entity e) const;
 
 	void DrawNode(entt::entity entity);
 	void DrawRenamePopup();

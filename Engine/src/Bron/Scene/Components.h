@@ -14,16 +14,12 @@
 
 #include <entt/entity/registry.hpp>
 
-#include <optional>
 #include <string>
 #include <vector>
 
-#include "Bron/Graphics/Components/BufferExtentions.h"
 #include "Bron/Graphics/CameraView.h"
 #include "Bron/Graphics/MaterialBase.h"
-#include "Bron/Graphics/VertexArray.h"
 #include "Bron/Scene/Asset.h"
-#include "Serialization/GlmJson.h"
 #include "nlohmann/json.hpp"
 
 namespace bron {
@@ -42,6 +38,20 @@ inline void from_json(const nlohmann::json& j, std::filesystem::path& path) {
 	const std::string text = j.get<std::string>();
 	path = std::filesystem::path(text);
 }
+
+// For Component constraining
+template<typename... Ts>
+struct ComponentList {};
+
+// Default component constraints: None
+struct DefaultComponentTraits {
+	using Requires = ComponentList<>;
+	using Conflicts = ComponentList<>;
+	using ParentRequiresAnyOf = ComponentList<>;
+};
+
+template<typename T>
+struct ComponentTraits : DefaultComponentTraits {};
 
 // A save file cannot key entities by entt::entity: those are positions in a
 // registry, so they only mean anything in the registry that produced them.
@@ -76,54 +86,44 @@ struct TagComponent {
 struct TransformComponent {
 	glm::mat4& GetMatrix() {
 		if (IsDirty()) {
-			OPosition = Position;
-			ORotationQuat = RotationQuat;
-			OScaling = Scaling;
+			o_position_ = position;
+			o_rotation_quat_ = rotation_quat;
+			o_scaling_ = scaling;
 
-			glm::mat4 rotation = glm::toMat4(glm::quat(RotationQuat));
+			glm::mat4 rotation = glm::toMat4(glm::quat(rotation_quat));
 
-			Matrix = glm::translate(glm::mat4(1.0f), Position) * rotation * glm::scale(glm::mat4(1.0f), Scaling);
+			matrix_ = glm::translate(glm::mat4(1.0f), position) * rotation * glm::scale(glm::mat4(1.0f), scaling);
 		}
-		return Matrix;
+		return matrix_;
 	}
 
 	bool IsDirty() const {
 		BR_PROFILE_FUNCTION();
-		return !(CompareFloatsBits(Position, OPosition) &&
-				 CompareFloatsBits((glm::vec4*) (&RotationQuat), (glm::vec4*) (&ORotationQuat)) &&
-				 CompareFloatsBits(Scaling, OScaling));
+		return !(CompareFloatsBits(position, o_position_) &&
+				 CompareFloatsBits((glm::vec4*) (&rotation_quat), (glm::vec4*) (&o_rotation_quat_)) &&
+				 CompareFloatsBits(scaling, o_scaling_));
 	}
 
 	TransformComponent() :
-		Position(0.0), RotationQuat({1.0f, 0.0f, 0.0f, 0.0f}), Scaling(1.0), Matrix(1.0f), OPosition(0.0),
-		ORotationQuat({1.0f, 0.0f, 0.0f, 0.0f}), OScaling(1.0) {}
+		position(0.0), rotation_quat({1.0f, 0.0f, 0.0f, 0.0f}), scaling(1.0), matrix_(1.0f), o_position_(0.0),
+		o_rotation_quat_({1.0f, 0.0f, 0.0f, 0.0f}), o_scaling_(1.0) {}
 
 	operator glm::mat4&() { return GetMatrix(); }
 	glm::mat4& operator*() { return GetMatrix(); }
 
-	glm::vec3 Position;
-	glm::quat RotationQuat; // w,x,y,z
-	glm::vec3 Scaling;
+	glm::vec3 position;
+	glm::quat rotation_quat; // w,x,y,z
+	glm::vec3 scaling;
 
 private:
-	glm::mat4 Matrix;
+	glm::mat4 matrix_;
 
-	glm::vec3 OPosition;
-	glm::quat ORotationQuat;
-	glm::vec3 OScaling;
+	glm::vec3 o_position_;
+	glm::quat o_rotation_quat_;
+	glm::vec3 o_scaling_;
 
-	template<typename BasicJsonType,
-			 nlohmann::detail::enable_if_t<nlohmann::detail::is_basic_json<BasicJsonType>::value, int> = 0>
-	friend void to_json(BasicJsonType& nlohmann_json_j, const TransformComponent& nlohmann_json_t) {
-		NLOHMANN_JSON_EXPAND(NLOHMANN_JSON_PASTE(NLOHMANN_JSON_TO, Position, RotationQuat, Scaling))
-	}
-	template<typename BasicJsonType,
-			 nlohmann::detail::enable_if_t<nlohmann::detail::is_basic_json<BasicJsonType>::value, int> = 0>
-	friend void from_json(const BasicJsonType& nlohmann_json_j, TransformComponent& nlohmann_json_t) {
-		NLOHMANN_JSON_EXPAND(NLOHMANN_JSON_PASTE(NLOHMANN_JSON_FROM, Position, RotationQuat, Scaling))
-	}
+	NLOHMANN_DEFINE_TYPE_INTRUSIVE(TransformComponent, position, rotation_quat, scaling)
 };
-
 
 // --------------------------------------------------------------------
 // Hierarchy
@@ -175,6 +175,11 @@ struct PointLightComponent {
 	explicit PointLightComponent(const glm::vec3& c) : color(c) {}
 
 	NLOHMANN_DEFINE_TYPE_INTRUSIVE(PointLightComponent, color)
+};
+
+template<>
+struct ComponentTraits<PointLightComponent> : DefaultComponentTraits {
+	using Requires = ComponentList<TransformComponent>;
 };
 
 // --------------------------------------------------------------------
@@ -251,19 +256,124 @@ struct ScriptComponent {
 	NLOHMANN_DEFINE_TYPE_INTRUSIVE(ScriptComponent, scripts)
 };
 
+struct Box2D {
+	glm::vec2 min, max;
+};
+
+// --------------------------------------------------------------------
+// CanvasComponent
+// --------------------------------------------------------------------
+
+struct CanvasComponent {
+	enum class Mode { kScreenSpace, kWorldSpace };
+
+	/// World-space canvasses get draw before screen-space
+	/// Use screen-space for UI and such, use world-space for rendering in the 3d world.
+	Mode mode = Mode::kScreenSpace;
+
+	/// The root rect that RectTransformComponents resolve against.
+	/// The rect position is always (0, 0)
+	glm::vec2 reference_size = {1920.0f, 1080.0f};
+
+	/// 100.0f canvas pixels = 1 world-space unit
+	float pixels_per_unit = 100.0f;
+
+	/// Draw order for screen-space, when there are multiple canvasses.
+	/// Hierarchy of canvasses in the scene is irrelevant, sort_order is.
+	i32 sort_order = 0;
+
+	NLOHMANN_DEFINE_TYPE_INTRUSIVE(CanvasComponent, mode, reference_size, pixels_per_unit, sort_order)
+
+	CanvasComponent() = default;
+};
+
+// --------------------------------------------------------------------
+// RectTransformComponent
+// --------------------------------------------------------------------
+
+struct RectTransformComponent {
+	// (0,0) bottom-left -> (1,1) top-right
+	glm::vec2 anchor_min, anchor_max;
+
+	// Pixels offset from the min or max anchor
+	glm::vec2 offset_min, offset_max;
+
+	// Between 0 and 1, point inside the rectangle
+	glm::vec2 pivot;
+
+	glm::vec2 scale;
+	float rotation;
+
+	RectTransformComponent() = default;
+
+	NLOHMANN_DEFINE_TYPE_INTRUSIVE(RectTransformComponent, anchor_min, anchor_max, offset_min, offset_max, pivot, scale,
+								   rotation)
+
+	Box2D Rect(Box2D parent_box);
+	glm::mat4 Mat();
+
+private:
+	Box2D rect_;
+	glm::mat4 mat_;
+
+	bool IsRectDirty() const;
+	bool IsMatDirty() const;
+
+	glm::vec2 o_anchor_min_, o_anchor_max_;
+	glm::vec2 o_offset_min_, o_offset_max_;
+	glm::vec2 o_pivot_;
+	glm::vec2 o_scale_;
+	float o_rotation_;
+};
+
+template<>
+struct ComponentTraits<RectTransformComponent> : DefaultComponentTraits {
+	using Conflicts = ComponentList<TransformComponent>;
+	using ParentRequiresAnyOf = ComponentList<RectTransformComponent, CanvasComponent>;
+};
+
+// --------------------------------------------------------------------
+// Text2D
+// --------------------------------------------------------------------
+
 struct Text2DComponent {
+	// Font MUST refer to a valid font in the asset manager
 	assets::AssetHandle font;
-	std::string_view text;
-	glm::vec2 position;
-	float font_size;
-	glm::vec4 color;
+	std::string text = "Sample text";
+	float font_size = 30;
+	glm::vec4 color{1.0};
 
 	Text2DComponent() = default;
-	Text2DComponent(const assets::AssetHandle& font, const std::string_view& text, const glm::vec2& position,
-					float font_size, const glm::vec4& color) :
-		font(font), text(text), position(position), font_size(font_size), color(color) {}
+	Text2DComponent(const assets::AssetHandle& font) : font(font) {}
 
-	NLOHMANN_DEFINE_TYPE_INTRUSIVE(Text2DComponent, font, text, position, font_size, color)
+	NLOHMANN_DEFINE_TYPE_INTRUSIVE(Text2DComponent, font, text, font_size, color)
 };
+
+template<>
+struct ComponentTraits<Text2DComponent> : DefaultComponentTraits {
+	using Requires = ComponentList<RectTransformComponent>;
+};
+
+// --------------------------------------------------------------------
+// Rectangle
+// --------------------------------------------------------------------
+struct Box2DComponent {
+	glm::vec3 color;
+
+	NLOHMANN_DEFINE_TYPE_INTRUSIVE(Box2DComponent, color);
+};
+
+template<>
+struct ComponentTraits<Box2DComponent> : DefaultComponentTraits {
+	using Requires = ComponentList<RectTransformComponent>;
+};
+
+// --------------------------------------------------------------------
+// All Components
+// --------------------------------------------------------------------
+
+using AllComponents = ComponentList<IDComponent, TagComponent, TransformComponent, HierarchyComponent,
+									MeshMaterialComponent, PointLightComponent, VisibilityComponent, CameraComponent,
+									ScriptComponent, CanvasComponent, RectTransformComponent, Text2DComponent>;
 
 } // namespace bron

@@ -23,6 +23,8 @@ add_executable(BronEditor
         src/Panels/FileExplorerPanel.h
         src/Panels/PanelInput.h
         src/Panels/PanelInput.cpp
+        src/Core/Fonts.h
+        src/Core/Fonts.cpp
 )
 
 target_include_directories(BronEditor PUBLIC src)
@@ -49,6 +51,13 @@ bron_embed_resources(BronEditor
         resources/icons/play.png
         resources/icons/pause.png
         resources/icons/stop.png
+)
+
+bron_embed_resources(BronEditor
+        NAMESPACE bron::editor::embedded
+        BASENAME EditorFonts
+        FILES
+        resources/fonts/defaultFont.ttf
 )
 
 target_compile_features(BronEditor PUBLIC cxx_std_20)

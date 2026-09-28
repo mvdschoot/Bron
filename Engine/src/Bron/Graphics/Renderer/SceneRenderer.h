@@ -1,35 +1,24 @@
 #pragma once
 
 #include "Bron/Core/Core.h"
-#include "Bron/Core/Profiling.h"
 
 #include "Bron/Graphics/CameraView.h"
 #include "Bron/Scene/Scene.h"
 
-namespace bron {
-struct RenderStatistics {
-	u32 DrawCalls;
-	u32 Shaders;
-	u32 Materials;
-	u32 Meshes;
-	u32 UniformCalls;
-};
+#include <glm/glm.hpp>
 
+#include <vector>
+
+namespace bron {
+/// Renders a whole scene into the bound target: the world through 'view' first, then its
+/// screen-space 2D elements on top, in pixels over 'target_size'.
 class SceneRenderer {
 public:
 	static void Init();
-	/// Draws every visible mesh in the scene through 'view'. The scene does not own a
-	/// camera - what it is looked at through is decided per draw, which is what lets the
-	/// editor viewport and a game camera render the same scene.
-	static void Draw(Scene& scene, const CameraView& view);
 
-	/// Draws a solid outline around the given meshes, in two passes over the same
-	/// geometry: one to mark where they are, one to draw an enlarged copy everywhere they
-	/// are not. 'width' is in world units. Expects the scene pass to have run first - it
-	/// reads the depth buffer that pass left behind.
-	static void DrawOutline(Scene& scene, const CameraView& view, const std::vector<entt::entity>& meshes,
-							glm::vec3 color = {0.8f, 0.5f, 0.1f}, float width = 0.05f);
-
-	static RenderStatistics Statistics;
+	/// 'outlined' meshes get a selection outline, drawn after the world and before the
+	/// 2D pass so it never covers the HUD.
+	static void Draw(Scene& scene, const CameraView& view, glm::vec2 target_size,
+					 const std::vector<entt::entity>& outlined = {});
 };
 } // namespace bron

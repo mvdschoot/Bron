@@ -30,6 +30,7 @@ add_library(Bron STATIC
         Bron/Graphics/Renderer/Command.cpp
         Bron/Graphics/Renderer/2D.cpp
         Bron/Graphics/Renderer/SceneRenderer.cpp
+        Bron/Graphics/Renderer/WorldRenderer.cpp
         Bron/Graphics/Renderer/Grid.cpp
 
         # Game
@@ -66,20 +67,11 @@ add_library(Bron STATIC
         Platform/Desktop/DesktopWindow.cpp
         Platform/Desktop/DesktopInput.cpp
         Bron/Scripting/LuaManager.cpp
-        Bron/Scripting/LuaManager.h
         Bron/Scripting/LuaRegister.cpp
         Bron/Scene/AssetManager.cpp
-        Bron/Scene/AssetManager.h
         Bron/Scene/Asset.cpp
-        Bron/Scene/Asset.h
         Bron/Graphics/Components/Mesh.cpp
-        Bron/Graphics/Components/Mesh.h
-        Bron/Scripting/Scripting.h
         Bron/Scripting/ScriptInput.cpp
-        Bron/Scripting/ScriptInput.h
-        # Bron/Scene/TextLoader.cpp  (file does not exist yet)
-        Bron/Scene/FontLoader.cpp
-        Bron/Scene/FontLoader.h
         Bron/Scene/FontLoader.cpp
 )
 

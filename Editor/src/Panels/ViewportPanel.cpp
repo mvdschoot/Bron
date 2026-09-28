@@ -122,14 +122,12 @@ void ViewportPanel::OnUpdate(const Timestep ts) {
 		Command::EnableDepth();
 	}
 	if (scene) {
-		SceneRenderer::Draw(*scene, view_);
-
 		// The selection is an entity of the edited scene, so it only means something there.
-		if (!playing) {
-			std::vector<entt::entity> selected_meshes;
+		std::vector<entt::entity> selected_meshes;
+		if (!playing)
 			CollectMeshes(*scene, context_.selection, selected_meshes);
-			SceneRenderer::DrawOutline(*scene, view_, selected_meshes);
-		}
+
+		SceneRenderer::Draw(*scene, view_, {viewport_size_.x, viewport_size_.y}, selected_meshes);
 	}
 	R2D::BeginScene(glm::vec2{viewport_size_.x, viewport_size_.y});
 	R2D::DrawText("textsje", font_handle, {20, 20}, 20, {1, 1, 1, 1});
@@ -327,13 +325,13 @@ void ViewportPanel::DrawGizmo() {
 	glm::vec3 skew;
 	glm::vec4 perspective;
 	glm::quat rotation_quat;
-	glm::decompose(local, comp.Scaling, rotation_quat, comp.Position, skew, perspective);
+	glm::decompose(local, comp.scaling, rotation_quat, comp.position, skew, perspective);
 
 	glm::quat new_quat = glm::normalize(rotation_quat);
-	if (glm::dot(rotation_quat, comp.RotationQuat) < 0.0f)
+	if (glm::dot(rotation_quat, comp.rotation_quat) < 0.0f)
 		new_quat = -new_quat;
 
-	comp.RotationQuat = new_quat;
+	comp.rotation_quat = new_quat;
 
 	// The properties panel caches euler angles; the gizmo just changed the quaternion under it.
 	component_registry::InvalidateEulerCache();

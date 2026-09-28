@@ -34,19 +34,19 @@ glm::vec3 s_euler_cache{0.0f};
 void DrawTransform(EditorContext& context, Scene& scene, const entt::entity entity) {
 	TransformComponent& t = scene.reg.get<TransformComponent>(entity);
 
-	DragFloat3("Position", value_ptr(t.Position));
+	DragFloat3("Position", value_ptr(t.position));
 
 	if (s_euler_cache_owner != entity) {
 		s_euler_cache_owner = entity;
-		s_euler_cache = glm::degrees(glm::eulerAngles(t.RotationQuat));
+		s_euler_cache = glm::degrees(glm::eulerAngles(t.rotation_quat));
 	}
 
 	if (DragFloat3("Rotation", value_ptr(s_euler_cache)))
-		t.RotationQuat = glm::quat(glm::radians(s_euler_cache));
+		t.rotation_quat = glm::quat(glm::radians(s_euler_cache));
 
 	// Camera's may not be scaled
 	if (!scene.reg.all_of<CameraComponent>(entity)) {
-		DragFloat3("Scaling", value_ptr(t.Scaling));
+		DragFloat3("Scaling", value_ptr(t.scaling));
 	}
 }
 
@@ -157,6 +157,91 @@ void DrawScript(EditorContext& context, Scene& scene, const entt::entity entity)
 	}
 }
 
+void DrawCanvas(EditorContext& context, Scene& scene, const entt::entity entity) {
+	CanvasComponent& canvas = scene.reg.get<CanvasComponent>(entity);
+
+	int mode = canvas.mode == CanvasComponent::Mode::kScreenSpace;
+
+	Text("Mode");
+	SameLine();
+	RadioButton("Screen space", &mode, 1);
+	SameLine();
+	RadioButton("World space", &mode, 0);
+
+	canvas.mode = mode == 0 ? CanvasComponent::Mode::kWorldSpace : CanvasComponent::Mode::kScreenSpace;
+
+	if (canvas.mode == CanvasComponent::Mode::kWorldSpace) {
+		InputFloat("Pixel per world unit", &canvas.pixels_per_unit);
+	} else if (canvas.mode == CanvasComponent::Mode::kScreenSpace) {
+		InputFloat2("Reference size", value_ptr(canvas.reference_size));
+		InputInt("Draw layer", &canvas.sort_order);
+	}
+}
+
+void DrawRectTransform(EditorContext& context, Scene& scene, const entt::entity entity) {
+	RectTransformComponent& rect = scene.reg.get<RectTransformComponent>(entity);
+
+	InputFloat2("Anchor min", value_ptr(rect.anchor_min));
+	InputFloat2("Anchor max", value_ptr(rect.anchor_max));
+
+	InputFloat2("Offset min", value_ptr(rect.offset_min));
+	InputFloat2("Offset max", value_ptr(rect.offset_max));
+
+	InputFloat2("Pivot", value_ptr(rect.pivot));
+
+	InputFloat2("Scale", value_ptr(rect.scale));
+	InputFloat("Rotation", &rect.rotation);
+}
+
+void DrawText2d(EditorContext& context, Scene& scene, const entt::entity entity) {
+	Text2DComponent& text = scene.reg.get<Text2DComponent>(entity);
+
+	char buf[4096] = {};
+	text.text.copy(buf, text.text.size());
+
+	InputText("Content", buf, 4096);
+	InputFloat("Font size", &text.font_size);
+	ColorEdit4("Font color", value_ptr(text.color));
+
+	auto asset_manager = assets::AssetManager::Instance();
+	std::vector<assets::AssetHandle> font_handles = asset_manager.GetAll(assets::kFont);
+	if (font_handles.size() > 0) {
+		std::vector<const char*> font_names =
+				Map(font_handles, [&](auto handle) { return asset_manager.Metadata(handle)->name.c_str(); });
+		int font_idx = std::find(font_handles.begin(), font_handles.end(), text.font) - font_handles.begin();
+
+		// Font selection works because font_handles & font_names have the same name
+		if (Combo("Font", &font_idx, font_names[0], font_names.size())) {
+			text.font = font_handles[font_idx];
+		}
+	}
+	if (icons::Button(icons::Id::kFile, "Upload a font into the project")) {
+		BR_CORE_ASSERT(NFD::Init(), "Failed to initialize the file picker");
+
+		NFD::UniquePath out_path;
+		nfdu8filteritem_t filter_list[]{{"Font format", "ttf"}};
+		nfdresult_t result = NFD::OpenDialog(out_path, filter_list, 1);
+		NFD_Quit();
+
+		if (result != NFD_OKAY) {
+			BR_APP_INFO("User did not pick a file.");
+			return;
+		}
+
+		std::filesystem::path font_file = out_path.get();
+
+		if (!paths::InAssetDirectory(font_file)) {
+			BR_APP_ERROR("You must pick a file inside the Asset directory");
+			return;
+		}
+
+		// We don't check if LoadFont returns an empty optional, because we already guarantee that the file exists.
+		assets::AssetHandle handle = context.asset_manager.LoadFont(font_file, 30).value();
+		BR_APP_INFO("Added font {} to entity {}", font_file.generic_string(), static_cast<u64>(entity));
+		text.font = handle;
+	}
+}
+
 
 // ----------------------------------------------------------------
 // Registration
@@ -164,14 +249,18 @@ void DrawScript(EditorContext& context, Scene& scene, const entt::entity entity)
 
 /// Fills in has/add/remove generically; only 'draw' is ever written by hand.
 template<typename T>
-void Register(std::vector<ComponentMeta>& out, const char* name, void (*draw)(EditorContext&, Scene&, entt::entity),
-			  const u32 flags = kComponentFlagsDefault) {
-	out.push_back({name, [](Scene& scene, const entt::entity e) { return scene.reg.all_of<T>(e); }, draw,
-				   flags & kComponentFlagsAddable ? +[](Scene& scene, const entt::entity e) { scene.reg.emplace<T>(e); }
-												  : nullptr,
-				   flags & kComponentFlagsRemovable
-						   ? +[](Scene& scene, const entt::entity e) { scene.reg.remove<T>(e); }
-						   : nullptr});
+void Register(std::vector<ComponentMeta>& out, const char* name, void (*draw)(EditorContext&, Scene&, entt::entity)) {
+	auto add_function = +[](Scene& scene, const entt::entity e) {
+		if (scene.CanAdd<T>(e))
+			scene.AddComponent<T>(e);
+	};
+	auto remove_function = +[](Scene& scene, const entt::entity e) {
+		if (scene.CanRemove<T>(e))
+			scene.RemoveComponent<T>(e);
+	};
+
+	out.push_back({name, [](Scene& scene, const entt::entity e) { return scene.reg.all_of<T>(e); }, draw, add_function,
+				   remove_function});
 }
 
 std::vector<ComponentMeta> Build() {
@@ -179,20 +268,24 @@ std::vector<ComponentMeta> Build() {
 
 	// Tag, Transform and Hierarchy are attached by Scene::CreateEntity and assumed everywhere,
 	// so they are shown but can neither be added nor removed.
-	Register<TagComponent>(components, "Tag", DrawTag, kComponentFlagsNone);
-	Register<TransformComponent>(components, "Transform", DrawTransform, kComponentFlagsNone);
-	Register<HierarchyComponent>(components, "Hierarchy", DrawHierarchy, kComponentFlagsNone);
-	Register<VisibilityComponent>(components, "Visibility", DrawVisibility, kComponentFlagsNone);
+	Register<TagComponent>(components, "Tag", DrawTag);
+	Register<TransformComponent>(components, "Transform", DrawTransform);
+	Register<HierarchyComponent>(components, "Hierarchy", DrawHierarchy);
+	Register<VisibilityComponent>(components, "Visibility", DrawVisibility);
 
 	// A mesh without vertices or a material cannot be drawn, so it is built by a loader or a
 	// factory rather than added from the menu.
-	Register<MeshMaterialComponent>(components, "Mesh", DrawMesh, kComponentFlagsRemovable);
+	Register<MeshMaterialComponent>(components, "Mesh", DrawMesh);
 
 	Register<PointLightComponent>(components, "Light", DrawPointLight);
 
 	Register<CameraComponent>(components, "Camera", DrawCamera);
 
 	Register<ScriptComponent>(components, "Script", DrawScript);
+
+	Register<CanvasComponent>(components, "2D Canvas", DrawCanvas);
+	Register<RectTransformComponent>(components, "2D Transform", DrawRectTransform);
+	Register<RectTransformComponent>(components, "2D Text", DrawText2d);
 
 	return components;
 }

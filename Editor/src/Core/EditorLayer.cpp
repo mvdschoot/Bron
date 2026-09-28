@@ -1,5 +1,7 @@
 #include "Core/EditorLayer.h"
 
+#include "Fonts.h"
+
 #include <ImGuizmo.h>
 
 #include "Core/Icons.h"
@@ -61,7 +63,6 @@ void EditorLayer::OnAttach() {
 	SceneRenderer::Init();
 	Command::ClearColor({0.0, 0.0, 0.0, 0.5});
 	GridRenderer::Init();
-	R2D::Init();
 
 	// Reopen where the last session left off. Nothing to reopen is fine: the editor
 	// starts with no project, and no asset root, until one is created or opened.
@@ -74,6 +75,8 @@ void EditorLayer::OnAttach() {
 	// The icons are textures, so they wait for the graphics context that Command::Init()
 	// above assumes; panels may draw one on their very first frame.
 	icons::Init();
+
+	fonts::Init();
 
 	for (const auto& panel: ValuesIt(panels_))
 		panel->OnAttach();

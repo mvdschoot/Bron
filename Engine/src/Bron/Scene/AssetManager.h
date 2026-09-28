@@ -5,6 +5,7 @@
 
 #pragma once
 #include "Asset.h"
+#include "FontLoader.h"
 
 #include <filesystem>
 #include <map>
@@ -25,6 +26,7 @@ namespace bron::assets {
 class AssetManager {
 public:
 	static AssetManager& Instance();
+	static Ref<FontAsset> ImportFont(ImportedFont font);
 
 	// Forgets every project asset and rebuilds the registry from the .meta files under
 	// the asset root. Nothing is loaded until something asks for it.
@@ -40,7 +42,7 @@ public:
 
 	// Registers an asset that has no file, e.g. a material built at runtime. It lasts until
 	// the next Refresh(), so a scene saved while pointing at one will not find it again.
-	AssetHandle AddMemoryAsset(AssetType type, Ref<Asset> asset);
+	AssetHandle AddMemoryAsset(std::string name, AssetType type, Ref<Asset> asset);
 
 	// The asset behind 'handle', loading it if needed. Null when the handle is unknown,
 	// the file cannot be loaded, or the asset is not a T.
@@ -51,6 +53,8 @@ public:
 			return nullptr;
 		return std::static_pointer_cast<T>(asset);
 	}
+
+	std::vector<AssetHandle> GetAll(const AssetType type);
 
 	[[nodiscard]] const AssetMetadata* Metadata(const AssetHandle& handle) const;
 
@@ -66,7 +70,7 @@ private:
 
 	// Adds a file-backed asset to the registry, reading its .meta or writing a new one.
 	// Returns the handle it is known by.
-	AssetHandle Register(const std::filesystem::path& absolute, AssetType type);
+	AssetHandle Register(std::string name, const std::filesystem::path& absolute, AssetType type);
 
 	// Registers the sub-assets a model's .meta lists.
 	void RegisterSubAssets(const AssetHandle& model);

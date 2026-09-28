@@ -18,13 +18,6 @@
 #include "Bron/Util/Paths.h"
 
 namespace bron::assets {
-NLOHMANN_JSON_SERIALIZE_ENUM(AssetType, {
-												{kModel, "model"},
-												{kMesh, "mesh"},
-												{kMaterial, "material"},
-												{kTexture, "texture"},
-												{kScript, "script"},
-										})
 
 namespace {
 constexpr const char* kMetaExtension = ".meta";
@@ -72,10 +65,24 @@ AssetManager& AssetManager::Instance() {
 	return instance;
 }
 
+Ref<FontAsset> AssetManager::ImportFont(ImportedFont font) {
+	Ref<FontAsset> asset = CreateRef<FontAsset>();
+	asset->texture = font.texture;
+	asset->font_size = font.font_size;
+	for (const auto& [key, value]: font.characters) {
+		asset->characters.emplace(
+				key,
+				FontAsset::Character{.location = value.location, .bearing = value.bearing, .advance = value.advance});
+	}
+
+	return asset;
+}
+
 AssetManager::AssetManager() {
 	// Registered up front but built on first use: the GL context may not exist yet.
-	registry_[builtin::kCubeMesh] = AssetMetadata{.type = kMesh, .builtin = true};
-	registry_[builtin::kDefaultMaterial] = AssetMetadata{.type = kMaterial, .builtin = true};
+	registry_[builtin::kCubeMesh] = AssetMetadata{.name = "Cube mesh", .type = kMesh, .builtin = true};
+	registry_[builtin::kDefaultMaterial] =
+			AssetMetadata{.name = "Default material", .type = kMaterial, .builtin = true};
 }
 
 void AssetManager::Refresh() {
@@ -107,19 +114,26 @@ void AssetManager::Refresh() {
 			BR_CORE_WARN("{} is not a valid asset .meta file", entry.path().string());
 			continue;
 		}
+		std::string name;
+		if (meta.contains("name")) {
+			name = meta.at("name").get<std::string>();
+		} else {
+			name = source.stem().string();
+		}
 
-		Register(source, meta.at("type").get<AssetType>());
+		Register(name, source, meta.at("type").get<AssetType>());
 	}
 
 	BR_CORE_INFO("Found {} assets under {}", registry_.size(), paths::AssetRoot().string());
 }
 
-AssetHandle AssetManager::Register(const std::filesystem::path& absolute, const AssetType type) {
+AssetHandle AssetManager::Register(const std::string name, const std::filesystem::path& absolute,
+								   const AssetType type) {
 	const std::filesystem::path relative = paths::RelativeToAsset(absolute).lexically_normal();
 	if (const auto known = by_path_.find(relative); known != by_path_.end())
 		return known->second;
 
-	AssetMetadata metadata{.type = type, .path = relative};
+	AssetMetadata metadata{.name = name, .type = type, .path = relative};
 	if (type == kModel)
 		metadata.settings = ModelImportSettings{};
 
@@ -189,6 +203,7 @@ void AssetManager::WriteMeta(const AssetHandle& handle) const {
 	const AssetMetadata& metadata = registry_.at(handle);
 
 	nlohmann::json meta;
+	meta["name"] = metadata.name;
 	meta["handle"] = handle;
 	meta["type"] = metadata.type;
 
@@ -212,7 +227,7 @@ std::optional<AssetHandle> AssetManager::LoadModel(const std::filesystem::path& 
 	const std::filesystem::path absolute = paths::ResolveAsset(location);
 
 	const bool first_import = !std::filesystem::exists(MetaPath(absolute));
-	const AssetHandle handle = Register(absolute, kModel);
+	const AssetHandle handle = Register(location.stem().string(), absolute, kModel);
 	if (cache_.contains(handle))
 		return handle;
 
@@ -326,7 +341,7 @@ std::optional<AssetHandle> AssetManager::LoadTexture(const std::filesystem::path
 		return std::nullopt;
 	}
 
-	const AssetHandle handle = Register(absolute, kTexture);
+	const AssetHandle handle = Register(location.stem().string(), absolute, kTexture);
 	if (!cache_.contains(handle)) {
 		const Ref<TextureAsset> asset = CreateRef<TextureAsset>();
 		asset->texture = Texture2D::Create(absolute.string().c_str());
@@ -344,7 +359,7 @@ std::optional<AssetHandle> AssetManager::LoadScript(const std::filesystem::path&
 		return std::nullopt;
 	}
 
-	const AssetHandle handle = Register(absolute, kScript);
+	const AssetHandle handle = Register(location.stem().string(), absolute, kScript);
 	if (!cache_.contains(handle)) {
 		const Ref<ScriptAsset> asset = CreateRef<ScriptAsset>();
 		asset->language = language;
@@ -362,30 +377,35 @@ std::optional<AssetHandle> AssetManager::LoadFont(const std::filesystem::path& l
 
 	std::optional<ImportedFont> font = FontLoader::Import(absolute, initial_size);
 	if (!font.has_value()) {
+		BR_CORE_ERROR("Failed to load font {}", location.string());
 		return std::nullopt;
 	}
 
-	AssetHandle handle = Register(location, kFont);
-	const Ref<FontAsset> asset = CreateRef<FontAsset>();
-	asset->texture = font->texture;
-	asset->font_size = font->font_size;
-	for (const auto& [key, value]: font->characters) {
-		asset->characters.emplace(
-				key,
-				FontAsset::Character{.location = value.location, .bearing = value.bearing, .advance = value.advance});
-	}
+	AssetHandle handle = Register(location.stem().string(), location, kFont);
+	auto asset = ImportFont(*font);
 	cache_[handle] = asset;
-
 	return handle;
 }
 
-AssetHandle AssetManager::AddMemoryAsset(const AssetType type, Ref<Asset> asset) {
+AssetHandle AssetManager::AddMemoryAsset(const std::string name, const AssetType type, Ref<Asset> asset) {
 	BR_CORE_ASSERT(asset && asset->Type() == type, "Memory asset does not match its declared type");
 
 	const AssetHandle handle;
-	registry_[handle] = AssetMetadata{.type = type};
+	registry_[handle] = AssetMetadata{.name = name, .type = type};
 	cache_[handle] = std::move(asset);
 	return handle;
+}
+
+std::vector<AssetHandle> AssetManager::GetAll(const AssetType type) {
+	std::vector<AssetHandle> result;
+
+	for (auto& [handle, metadata]: registry_) {
+		if (metadata.type == type) {
+			result.push_back(handle);
+		}
+	}
+
+	return result;
 }
 
 const AssetMetadata* AssetManager::Metadata(const AssetHandle& handle) const {

@@ -20,6 +20,10 @@ bool CompareFloats(glm::vec3 a, glm::vec3 b, float epsilon) {
 
 bool CompareFloatBits(float x, float y) { return *reinterpret_cast<u32*>(&x) == *reinterpret_cast<u32*>(&y); }
 
+bool CompareFloatsBits(const glm::vec2& a, const glm::vec2& b) {
+	return CompareFloatBits(a.x, b.x) && CompareFloatBits(a.y, b.y);
+}
+
 bool CompareFloatsBits(const glm::vec3& a, const glm::vec3& b) {
 	return CompareFloatBits(a.x, b.x) && CompareFloatBits(a.y, b.y) && CompareFloatBits(a.z, b.z);
 }
@@ -103,5 +107,6 @@ std::string ToLowerCase(const std::string& str) {
 	std::ranges::transform(result, result.begin(), tolower);
 	return result;
 }
+
 
 } // namespace bron

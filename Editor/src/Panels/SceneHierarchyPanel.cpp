@@ -1,8 +1,7 @@
 #include "Panels/SceneHierarchyPanel.h"
 
 #include "nfd.hpp"
-
-#include <imgui_internal.h>
+#include "Core/Fonts.h"
 
 #include "Core/Icons.h"
 
@@ -62,11 +61,11 @@ void SceneHierarchyPanel::DrawAddMenu() {
 		return;
 
 	if (MenuItem("Empty Entity"))
-		AddEntity("Entity");
+		PlaceEntity(context_.active_scene->Create3DEntity());
 
 	if (MenuItem("Point Light")) {
-		const entt::entity light = AddEntity("Point Light");
-		context_.active_scene->reg.emplace<PointLightComponent>(light);
+		const entt::entity light = context_.active_scene->CreatePointLight();
+		PlaceEntity(light);
 	}
 
 	if (MenuItem("Model")) {
@@ -74,25 +73,25 @@ void SceneHierarchyPanel::DrawAddMenu() {
 		if (!path.empty()) {
 			const entt::entity model = context_.active_scene->CreateModel(path);
 			if (model != entt::null) {
-				const entt::entity parent = context_.HasSelection() ? context_.selection : context_.active_scene->root;
-				context_.active_scene->AddChild(parent, model);
+				PlaceEntity(model);
 			}
 		}
+	}
+	if (MenuItem("Canvas 2D")) {
+		PlaceEntity(context_.active_scene->CreateCanvas());
+	}
+	if (MenuItem("Text 2D")) {
+		PlaceEntity(context_.active_scene->CreateText(context_.selection, fonts::GetDefaultFont()));
 	}
 
 	EndPopup();
 }
 
-entt::entity SceneHierarchyPanel::AddEntity(const char* name) {
+void SceneHierarchyPanel::PlaceEntity(entt::entity e) const {
 	Scene& scene = *context_.active_scene;
-
-	// Under the selection, so building a hierarchy does not mean creating at the root
-	// and dragging afterwards. With nothing selected the root is the parent.
 	const entt::entity parent = context_.HasSelection() ? context_.selection : scene.root;
-
-	context_.selection = scene.CreateEntity(name, parent);
-
-	return context_.selection;
+	scene.AddChild(parent, e);
+	context_.selection = e;
 }
 
 void SceneHierarchyPanel::DrawNode(const entt::entity entity) {
@@ -112,7 +111,7 @@ void SceneHierarchyPanel::DrawNode(const entt::entity entity) {
 		context_.selection = entity;
 
 	if (IsItemHovered() && IsMouseDoubleClicked(ImGuiMouseButton_Left)) {
-		const glm::vec3& position = context_.active_scene->reg.get<TransformComponent>(context_.selection).Position;
+		const glm::vec3& position = context_.active_scene->reg.get<TransformComponent>(context_.selection).position;
 		context_.camera_3d.Focus(position);
 	}
 

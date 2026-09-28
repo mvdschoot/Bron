@@ -100,7 +100,7 @@ void WorldLayer::OnUpdate(const Timestep ts) {
 	const CameraView view = ViewFrom(scene_->reg.get<CameraComponent>(camera), scene_->WorldTransform(camera),
 									 height > 0.0f ? width / height : 1.0f);
 
-	SceneRenderer::Draw(*scene_, view);
+	SceneRenderer::Draw(*scene_, view, {width, height});
 }
 
 void WorldLayer::OnEvent(Event& event) { scene_->OnEvent(event); }

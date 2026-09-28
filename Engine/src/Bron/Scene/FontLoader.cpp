@@ -5,9 +5,6 @@
 #include "FontLoader.h"
 
 #include "Bron/Core/Logger.h"
-
-#include <ft2build.h>
-#include FT_FREETYPE_H
 #include "Bron/Graphics/Texture.h"
 
 namespace bron {
@@ -19,13 +16,33 @@ std::optional<ImportedFont> FontLoader::Import(const std::filesystem::path& path
 		FT_Init_FreeType(&ft_library);
 	}
 
-	ImportedFont font;
 	FT_Face ft_font;
 
 	if (FT_New_Face(ft_library, path.string().c_str(), 0, &ft_font)) {
 		BR_CORE_ERROR("Failed to load font from location {}", path.string());
 		return std::nullopt;
 	}
+
+	return Import(ft_font);
+}
+
+std::optional<ImportedFont> FontLoader::Import(const u8* buffer, const usize buffer_size, float import_font_size) {
+	if (!ft_library) {
+		FT_Init_FreeType(&ft_library);
+	}
+
+	FT_Face ft_font;
+
+	if (FT_New_Memory_Face(ft_library, buffer, buffer_size, 0, &ft_font)) {
+		BR_CORE_ERROR("Failed to load font from buffer");
+		return std::nullopt;
+	}
+
+	return Import(ft_font);
+}
+
+std::optional<ImportedFont> FontLoader::Import(FT_Face ft_font, float import_font_size) {
+	ImportedFont font;
 
 	FT_Set_Pixel_Sizes(ft_font, 0, import_font_size);
 	FT_Select_Charmap(ft_font, ft_encoding_unicode);
@@ -47,10 +64,10 @@ std::optional<ImportedFont> FontLoader::Import(const std::filesystem::path& path
 	for (unsigned char c = 32; c < 127; c++) {
 		// load character glyph
 		const FT_UInt glyph = FT_Get_Char_Index(ft_font, c);
-		BR_CORE_ASSERT(glyph != 0, "Character not present in font file {}", path.string());
+		BR_CORE_ASSERT(glyph != 0, "Character not present in font file");
 
 		if (FT_Load_Glyph(ft_font, glyph, FT_LOAD_RENDER)) {
-			BR_CORE_ERROR("Failed to load character from font {}.", path.string());
+			BR_CORE_ERROR("Failed to load character from font.");
 			continue;
 		}
 

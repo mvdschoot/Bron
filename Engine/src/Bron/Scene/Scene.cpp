@@ -11,23 +11,43 @@
 
 namespace bron {
 Scene::Scene() : light_management(*this), lua_manager(CreateScope<lua::LuaManager>(this)) {
-	root = CreateEntity("Root node");
+	root = Create3DEntity();
+	SetName(root, "Root");
 }
 
 Scene::~Scene() = default;
 
-entt::entity Scene::CreateEntity(const std::string& name, const entt::entity parent) {
+entt::entity Scene::Create3DEntity(entt::entity parent) {
 	const entt::entity entity = reg.create();
 
-	reg.emplace<IDComponent>(entity);
-	reg.emplace<TagComponent>(entity, name);
-	reg.emplace<TransformComponent>(entity);
-	reg.emplace<HierarchyComponent>(entity);
-	reg.emplace<VisibilityComponent>(entity);
+	std::string name = std::format("3D Entity #{}", static_cast<u64>(entity));
 
-	if (parent != entt::null) {
+	AddComponent<IDComponent>(entity);
+	AddComponent<TagComponent>(entity, name);
+	AddComponent<TransformComponent>(entity);
+	AddComponent<HierarchyComponent>(entity);
+	AddComponent<VisibilityComponent>(entity);
+
+	if (parent != entt::null)
 		AddChild(parent, entity);
-	}
+
+	return entity;
+}
+
+entt::entity Scene::Create2DEntity(entt::entity parent) {
+	const entt::entity entity = reg.create();
+
+	std::string name = std::format("2D Entity #{}", static_cast<u64>(entity));
+
+	AddComponent<IDComponent>(entity);
+	AddComponent<TagComponent>(entity, name);
+	AddComponent<HierarchyComponent>(entity);
+	AddComponent<VisibilityComponent>(entity);
+
+	AddChild(parent, entity);
+
+	// This component requires to have a parent with RectTransform or Canvas, so first the parent had to be set.
+	AddComponent<RectTransformComponent>(entity);
 
 	return entity;
 }
@@ -76,19 +96,43 @@ void Scene::RemoveChild(const entt::entity parent, const entt::entity child) {
 	reg.get<HierarchyComponent>(child).parent = entt::null;
 }
 
-glm::mat4 Scene::WorldTransform(const entt::entity entity) {
+glm::mat4 Scene::WorldTransform(const entt::entity& entity) {
 	BR_PROFILE_FUNCTION();
 
-	glm::mat4 transform = *reg.get<TransformComponent>(entity);
+	auto transform_if = [&](const entt::entity& e) {
+		return reg.all_of<TransformComponent>(e) ? *reg.get<TransformComponent>(e) : glm::mat4(1.0f);
+	};
+
+	glm::mat4 transform = transform_if(entity);
 
 	entt::entity parent = reg.get<HierarchyComponent>(entity).parent;
 	while (parent != entt::null) {
-		transform = *reg.get<TransformComponent>(parent) * transform;
+		// If parent does not have a transformcomponent, use mat4(1.0)
+		transform = transform_if(parent) * transform;
 		parent = reg.get<HierarchyComponent>(parent).parent;
 	}
 
 	return transform;
 }
+Box2D Scene::ScreenTransform(entt::entity entity) {
+	BR_PROFILE_FUNCTION();
+
+	entt::entity parent = reg.get<HierarchyComponent>(entity).parent;
+	std::vector<entt::entity> parents;
+
+	while (!reg.all_of<CanvasComponent>(parent)) {
+		parents.push_back(parent);
+		parent = reg.get<HierarchyComponent>(parent).parent;
+	}
+
+	Box2D box{.min = {0, 0}, .max = reg.get<CanvasComponent>(parent).reference_size};
+	for (auto child = parents.rbegin(); child != parents.rend(); ++child) {
+		box = reg.get<RectTransformComponent>(*child).Rect(box);
+	}
+
+	return box;
+}
+
 bool Scene::IsVisible(entt::entity entity) {
 
 	bool is_visible = reg.get<VisibilityComponent>(entity).visible;
@@ -106,7 +150,7 @@ bool Scene::IsVisible(entt::entity entity) {
 	return is_visible;
 }
 
-entt::entity Scene::Instantiate(const assets::AssetHandle& model) {
+entt::entity Scene::InstantiateModel(const assets::AssetHandle& model) {
 	const Ref<assets::ModelAsset> asset = assets::AssetManager::Instance().Get<assets::ModelAsset>(model);
 	if (!asset || asset->nodes.empty())
 		return entt::null;
@@ -117,23 +161,25 @@ entt::entity Scene::Instantiate(const assets::AssetHandle& model) {
 		const assets::ModelAsset::Node& node = asset->nodes[i];
 
 		const entt::entity parent = node.parent.has_value() ? created[*node.parent] : entt::null;
-		const entt::entity entity = CreateEntity(node.name, parent);
+		const entt::entity entity = Create3DEntity(parent);
+		SetName(entity, node.name);
 		created[i] = entity;
 
 		TransformComponent& transform = reg.get<TransformComponent>(entity);
-		transform.Position = node.position;
-		transform.RotationQuat = node.rotation;
-		transform.Scaling = node.scale;
+		transform.position = node.position;
+		transform.rotation_quat = node.rotation;
+		transform.scaling = node.scale;
 
 		if (node.meshes.size() == 1) {
-			reg.emplace<MeshMaterialComponent>(entity, node.meshes[0].mesh, node.meshes[0].material);
+			AddComponent<MeshMaterialComponent>(entity, node.meshes[0].mesh, node.meshes[0].material);
 			continue;
 		}
 
 		// A mesh has no transform of its own, so each child sits exactly on the node.
 		for (const assets::ModelAsset::Submesh& submesh: node.meshes) {
-			const entt::entity child = CreateEntity(submesh.name, entity);
-			reg.emplace<MeshMaterialComponent>(child, submesh.mesh, submesh.material);
+			const entt::entity child = Create3DEntity(entity);
+			SetName(child, submesh.name);
+			AddComponent<MeshMaterialComponent>(child, submesh.mesh, submesh.material);
 		}
 	}
 
@@ -142,7 +188,24 @@ entt::entity Scene::Instantiate(const assets::AssetHandle& model) {
 
 entt::entity Scene::CreateModel(const std::filesystem::path& path, const MaterialWorkflow workflow) {
 	const std::optional<assets::AssetHandle> model = assets::AssetManager::Instance().LoadModel(path, workflow);
-	return model.has_value() ? Instantiate(*model) : entt::null;
+	return model.has_value() ? InstantiateModel(*model) : entt::null;
+}
+entt::entity Scene::CreatePointLight() {
+	const entt::entity e = Create3DEntity();
+	AddComponent<PointLightComponent>(e);
+	return e;
+}
+
+entt::entity Scene::CreateCanvas() {
+	entt::entity e = Create3DEntity();
+	AddComponent<CanvasComponent>(e);
+	return e;
+}
+
+entt::entity Scene::CreateText(entt::entity parent, assets::AssetHandle font) {
+	entt::entity e = Create2DEntity(parent);
+	AddComponent<Text2DComponent>(e, font);
+	return e;
 }
 
 

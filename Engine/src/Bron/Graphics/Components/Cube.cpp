@@ -69,7 +69,9 @@ MeshData CubeMeshData() {
 }
 
 entt::entity CreateCube(Scene& target, const assets::AssetHandle& material) {
-	const entt::entity cube = target.CreateEntity("Cube");
+	const entt::entity cube = target.Create3DEntity(target.root);
+	target.reg.get<TagComponent>(cube).name = "Cube";
+
 	target.reg.emplace<MeshMaterialComponent>(cube, assets::builtin::kCubeMesh, material);
 
 	return cube;
@@ -86,6 +88,7 @@ entt::entity CreatePhongCube(Scene& target, const glm::vec3 color) {
 	const Ref<assets::MaterialAsset> asset = CreateRef<assets::MaterialAsset>();
 	asset->material = material;
 
-	return CreateCube(target, assets::AssetManager::Instance().AddMemoryAsset(assets::kMaterial, asset));
+	return CreateCube(target,
+					  assets::AssetManager::Instance().AddMemoryAsset("Phong material", assets::kMaterial, asset));
 }
 } // namespace bron

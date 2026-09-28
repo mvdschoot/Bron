@@ -10,11 +10,11 @@ void StatisticsPanel::ImGuiContent() {
 
 	if (ImGui::CollapsingHeader("3D scene renderer", ImGuiTreeNodeFlags_DefaultOpen)) {
 		ImGui::Indent();
-		ImGui::Text("Shaders: %d", SceneRenderer::Statistics.Shaders);
-		ImGui::Text("Materials: %d", SceneRenderer::Statistics.Materials);
-		ImGui::Text("Meshes: %d", SceneRenderer::Statistics.Meshes);
-		ImGui::Text("Draw calls: %d", SceneRenderer::Statistics.DrawCalls);
-		ImGui::Text("Uniform calls: %d", SceneRenderer::Statistics.UniformCalls);
+		ImGui::Text("Shaders: %d", WorldRenderer::Statistics.Shaders);
+		ImGui::Text("Materials: %d", WorldRenderer::Statistics.Materials);
+		ImGui::Text("Meshes: %d", WorldRenderer::Statistics.Meshes);
+		ImGui::Text("Draw calls: %d", WorldRenderer::Statistics.DrawCalls);
+		ImGui::Text("Uniform calls: %d", WorldRenderer::Statistics.UniformCalls);
 		ImGui::Unindent();
 	}
 }

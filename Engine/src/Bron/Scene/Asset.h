@@ -9,10 +9,10 @@
 #include "Bron/Graphics/Texture.h"
 #include "Bron/Graphics/VertexArray.h"
 #include "Bron/Graphics/Components/Mesh.h"
-#include "Bron/Physics/Components.h"
 #include "Bron/Scripting/Scripting.h"
 
 #include <glm/gtc/quaternion.hpp>
+#include <nlohmann/json.hpp>
 
 #include <filesystem>
 #include <map>
@@ -44,6 +44,13 @@ enum AssetType {
 	kFont,
 };
 
+NLOHMANN_JSON_SERIALIZE_ENUM(AssetType, {{kModel, "model"},
+										 {kMesh, "mesh"},
+										 {kMaterial, "material"},
+										 {kTexture, "texture"},
+										 {kScript, "script"},
+										 {kFont, "font"}})
+
 struct ModelImportSettings {
 	MaterialWorkflow workflow = kPhong;
 
@@ -55,6 +62,8 @@ struct ModelImportSettings {
 };
 
 struct AssetMetadata {
+	std::string name;
+
 	AssetType type;
 
 	// The file the asset is loaded from, relative to the asset root. A sub-asset has no

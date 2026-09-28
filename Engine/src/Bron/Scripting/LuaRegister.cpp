@@ -414,8 +414,8 @@ void RegisterComponents(sol::state& state) {
 	state.new_usertype<TagComponent>("Tag", sol::no_constructor, "name", &TagComponent::name);
 
 	state.new_usertype<TransformComponent>(
-			"Transform", sol::no_constructor, "position", &TransformComponent::Position, "rotation",
-			&TransformComponent::RotationQuat, "scale", &TransformComponent::Scaling,
+			"Transform", sol::no_constructor, "position", &TransformComponent::position, "rotation",
+			&TransformComponent::rotation_quat, "scale", &TransformComponent::scaling,
 			// Local matrix; the entity's world_transform() includes the parents.
 			"matrix", sol::readonly_property([](TransformComponent& t) -> glm::mat4 { return t.GetMatrix(); }));
 
@@ -522,7 +522,9 @@ void RegisterScene(sol::state& state, Scene& scene) {
 			Registry(*s, *parent);
 			parent_handle = parent->handle;
 		}
-		return Entity{s->CreateEntity(name, parent_handle)};
+		const entt::entity e = s->Create3DEntity(parent_handle);
+		Registry(*s, *parent).get<TagComponent>(e).name = name;
+		return Entity{e};
 	};
 
 	// Destroys the entity and its children at the end of the frame; they stop being

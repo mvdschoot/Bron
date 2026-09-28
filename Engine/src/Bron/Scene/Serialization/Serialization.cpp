@@ -14,6 +14,8 @@
 #include "Bron/Core/Logger.h"
 #include "Bron/Util/Paths.h"
 
+#include "GlmJson.h"
+
 namespace bron {
 namespace {
 // Bumped whenever the layout below changes in a way older files cannot satisfy.
@@ -33,10 +35,13 @@ void WriteEntity(const Scene& scene, const entt::entity entity, nlohmann::json& 
 	nlohmann::json entry;
 	entry["id"] = reg.get<IDComponent>(entity).id;
 	entry["name"] = reg.get<TagComponent>(entity).name;
-	entry["transform"] = reg.get<TransformComponent>(entity);
 	entry["visible"] = reg.get<VisibilityComponent>(entity).visible;
 	entry["parent"] = hierarchy.parent == entt::null ? nlohmann::json(nullptr)
 													 : nlohmann::json(reg.get<IDComponent>(hierarchy.parent).id);
+
+	if (const TransformComponent* transform = reg.try_get<TransformComponent>(entity)) {
+		entry["transform"] = *transform;
+	}
 
 	if (const PointLightComponent* light = reg.try_get<PointLightComponent>(entity)) {
 		entry["pointLight"] = *light;
@@ -54,43 +59,22 @@ void WriteEntity(const Scene& scene, const entt::entity entity, nlohmann::json& 
 		entry["script"] = *script;
 	}
 
+	if (const CanvasComponent* script = reg.try_get<CanvasComponent>(entity)) {
+		entry["canvas"] = *script;
+	}
+
+	if (const RectTransformComponent* script = reg.try_get<RectTransformComponent>(entity)) {
+		entry["rectTransform"] = *script;
+	}
+
+	if (const Text2DComponent* script = reg.try_get<Text2DComponent>(entity)) {
+		entry["text2d"] = *script;
+	}
+
 	out.push_back(std::move(entry));
 
 	for (const entt::entity child: hierarchy.children) {
 		WriteEntity(scene, child, out);
-	}
-}
-
-// Version 1 scenes saved a model as its root entity plus {"model": {"path", "workflow"}}
-// and left the meshes out. The model is placed again here and its entities are moved under
-// the root that was read from the file, which keeps the transform the user gave it. The
-// next save writes the meshes out like any other entity.
-void InstantiateLegacyModels(Scene& scene, const nlohmann::json& entities, const std::vector<entt::entity>& created) {
-	for (std::size_t i = 0; i < created.size(); ++i) {
-		if (!entities[i].contains("model"))
-			continue;
-
-		const nlohmann::json& model = entities[i].at("model");
-		const std::filesystem::path path = paths::ResolveAsset(model.at("path").get<std::string>());
-		const MaterialWorkflow workflow = model.value("workflow", kPhong);
-
-		const entt::entity imported = scene.CreateModel(path, workflow);
-		if (imported == entt::null) {
-			BR_CORE_WARN("Could not place model {} again", path.string());
-			continue;
-		}
-
-		// The imported root carries the model file's own root transform and meshes; the
-		// saved entity takes its place, so both have to be moved across.
-		if (const MeshMaterialComponent* mesh = scene.reg.try_get<MeshMaterialComponent>(imported))
-			scene.reg.emplace<MeshMaterialComponent>(created[i], *mesh);
-
-		// Copied, because AddChild mutates the vector it is read from.
-		const std::vector<entt::entity> children = scene.reg.get<HierarchyComponent>(imported).children;
-		for (const entt::entity child: children)
-			scene.AddChild(created[i], child);
-
-		scene.DestroyEntity(imported);
 	}
 }
 } // namespace
@@ -156,9 +140,12 @@ void Serialization::DeserializeScene(Scene& scene, const std::filesystem::path& 
 
 		scene.reg.emplace<IDComponent>(entity, entry.at("id").get<UUID>());
 		scene.reg.emplace<TagComponent>(entity, entry.at("name").get<std::string>());
-		scene.reg.emplace<TransformComponent>(entity, entry.at("transform").get<TransformComponent>());
 		scene.reg.emplace<HierarchyComponent>(entity);
 		scene.reg.emplace<VisibilityComponent>(entity, entry.value("visible", true));
+
+		if (entry.contains("transform")) {
+			scene.reg.emplace<TransformComponent>(entity, entry.at("transform").get<TransformComponent>());
+		}
 
 		if (entry.contains("pointLight")) {
 			scene.reg.emplace<PointLightComponent>(entity, entry.at("pointLight").get<PointLightComponent>());
@@ -174,6 +161,18 @@ void Serialization::DeserializeScene(Scene& scene, const std::filesystem::path& 
 
 		if (entry.contains("script")) {
 			scene.reg.emplace<ScriptComponent>(entity, entry.at("script").get<ScriptComponent>());
+		}
+
+		if (entry.contains("canvas")) {
+			scene.reg.emplace<CanvasComponent>(entity, entry.at("canvas").get<CanvasComponent>());
+		}
+
+		if (entry.contains("rectTransform")) {
+			scene.reg.emplace<RectTransformComponent>(entity, entry.at("rectTransform").get<RectTransformComponent>());
+		}
+
+		if (entry.contains("text2d")) {
+			scene.reg.emplace<Text2DComponent>(entity, entry.at("text2d").get<Text2DComponent>());
 		}
 
 		by_id.emplace(entry.at("id").get<std::string>(), entity);
@@ -194,9 +193,6 @@ void Serialization::DeserializeScene(Scene& scene, const std::filesystem::path& 
 
 		scene.AddChild(it->second, created[i]);
 	}
-
-	if (version == 1)
-		InstantiateLegacyModels(scene, entities, created);
 
 	if (const nlohmann::json& root = document.at("root"); !root.is_null()) {
 		const auto it = by_id.find(root.get<std::string>());
