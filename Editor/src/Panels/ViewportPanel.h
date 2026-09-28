@@ -55,6 +55,5 @@ private:
 	bool guizmo_hovered_ = false;
 
 	/// tmp
-	assets::AssetHandle font_handle;
 };
 } // namespace bron::editor

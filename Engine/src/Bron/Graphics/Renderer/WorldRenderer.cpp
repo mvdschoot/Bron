@@ -3,6 +3,7 @@
 #include "Command.h"
 #include "Bron/Graphics/Texture.h"
 #include "Bron/Graphics/ShaderRegistry.h"
+#include "Bron/Graphics/Phong/PhongMaterial.h"
 #include "Bron/Scene/AssetManager.h"
 
 #include <map>
@@ -14,6 +15,10 @@ RenderStatistics WorldRenderer::Statistics = {};
 
 struct WorldRendererData {
 	Ref<Texture> white_texture;
+
+	// Drawn in place of a material that cannot be found. Not an asset: nothing can point at
+	// it, it only makes the problem visible.
+	Ref<MaterialBase> missing_material;
 
 	static constexpr u32 kTextureSlots = 32;
 	u32 texture_array[kTextureSlots]{};
@@ -44,15 +49,13 @@ void Enqueue(Scene& scene, const entt::entity entity, RenderQueue& queue) {
 	if (mesh == nullptr)
 		return;
 
-	// A missing material draws in the default one: a grey mesh is easy to spot, a
-	// missing one is not.
-	assets::AssetManager& manager = assets::AssetManager::Instance();
-	Ref<assets::MaterialAsset> material = manager.Get<assets::MaterialAsset>(component.material);
-	if (!material)
-		material = manager.Get<assets::MaterialAsset>(assets::builtin::kDefaultMaterial);
+	// A missing material draws in a loud colour: a magenta mesh is easy to spot, a missing
+	// one is not.
+	const Ref<assets::MaterialAsset> material =
+			assets::AssetManager::Instance().Get<assets::MaterialAsset>(component.material);
 
 	// Held by the asset manager's cache for as long as the frame lasts.
-	MaterialBase* base = material->material.get();
+	MaterialBase* base = material ? material->material.get() : s_data.missing_material.get();
 	queue[base->shader_name][base].emplace_back(entity, mesh);
 }
 
@@ -107,6 +110,14 @@ void WorldRenderer::Init() {
 	for (int i = 0; i < bron::WorldRendererData::kTextureSlots; i++) {
 		s_data.texture_array[i] = i;
 	}
+
+	const Ref<PhongMaterial> missing = CreateRef<PhongMaterial>();
+	missing->Set(PhongMaterialVariables::kDiffuse, glm::vec3(1.0f, 0.0f, 1.0f));
+	missing->Set(PhongMaterialVariables::kSpecular, glm::vec3(0.0f));
+	missing->Set(PhongMaterialVariables::kShininess, 1.0f);
+	missing->Set(PhongMaterialVariables::kShininessStrength, 0.0f);
+	missing->Set(PhongMaterialVariables::kAmbientFactor, 0.5f);
+	s_data.missing_material = missing;
 }
 
 void WorldRenderer::Draw(Scene& scene, const CameraView& view) {

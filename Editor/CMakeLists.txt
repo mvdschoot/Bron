@@ -23,8 +23,8 @@ add_executable(BronEditor
         src/Panels/FileExplorerPanel.h
         src/Panels/PanelInput.h
         src/Panels/PanelInput.cpp
-        src/Core/Fonts.h
-        src/Core/Fonts.cpp
+        src/Core/DefaultAssets.h
+        src/Core/DefaultAssets.cpp
 )
 
 target_include_directories(BronEditor PUBLIC src)
@@ -53,11 +53,13 @@ bron_embed_resources(BronEditor
         resources/icons/stop.png
 )
 
+# The assets every project is given (src/Core/DefaultAssets.h). Embedded so the editor can
+# write them into a project wherever it runs from; the symbol is the file name, as above.
 bron_embed_resources(BronEditor
-        NAMESPACE bron::editor::embedded
-        BASENAME EditorFonts
+        NAMESPACE bron::editor::embedded::defaults
+        BASENAME EditorDefaults
         FILES
-        resources/fonts/defaultFont.ttf
+        resources/defaults/DefaultFont.ttf
 )
 
 target_compile_features(BronEditor PUBLIC cxx_std_20)

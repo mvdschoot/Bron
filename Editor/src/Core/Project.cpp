@@ -1,4 +1,5 @@
 #include "Core/Project.h"
+#include "Core/DefaultAssets.h"
 
 #include <fstream>
 
@@ -113,6 +114,7 @@ bool Project::Save() const {
 void Project::MakeActive() const {
 	paths::SetRoots(directory_, AssetRoot());
 	assets::AssetManager::Instance().Refresh();
+	defaults::Seed(AssetRoot());
 }
 
 void Project::OpenStartupScene() {

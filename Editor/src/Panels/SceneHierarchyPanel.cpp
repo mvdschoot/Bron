@@ -1,7 +1,7 @@
 #include "Panels/SceneHierarchyPanel.h"
 
 #include "nfd.hpp"
-#include "Core/Fonts.h"
+#include "Core/DefaultAssets.h"
 
 #include "Core/Icons.h"
 
@@ -81,7 +81,10 @@ void SceneHierarchyPanel::DrawAddMenu() {
 		PlaceEntity(context_.active_scene->CreateCanvas());
 	}
 	if (MenuItem("Text 2D")) {
-		PlaceEntity(context_.active_scene->CreateText(context_.selection, fonts::GetDefaultFont()));
+		PlaceEntity(context_.active_scene->CreateText(context_.selection, defaults::kFont));
+	}
+	if (MenuItem("Box 2D")) {
+		PlaceEntity(context_.active_scene->CreateBox(context_.selection));
 	}
 
 	EndPopup();

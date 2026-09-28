@@ -144,8 +144,8 @@ struct HierarchyComponent {
 // that uses them; placing a model copies its choice of mesh and material in here, and from
 // then on this is the only place the renderer looks.
 struct MeshMaterialComponent {
-	assets::AssetHandle mesh = assets::builtin::kCubeMesh;
-	assets::AssetHandle material = assets::builtin::kDefaultMaterial;
+	assets::AssetHandle mesh = assets::kNullHandle;
+	assets::AssetHandle material = assets::kNullHandle;
 
 	MeshMaterialComponent() = default;
 	MeshMaterialComponent(const assets::AssetHandle& mesh, const assets::AssetHandle& material) :
@@ -271,8 +271,10 @@ struct CanvasComponent {
 	/// Use screen-space for UI and such, use world-space for rendering in the 3d world.
 	Mode mode = Mode::kScreenSpace;
 
-	/// The root rect that RectTransformComponents resolve against.
-	/// The rect position is always (0, 0)
+	/// The size the UI is designed at. In world space it is the root rect that
+	/// RectTransformComponents resolve against. In screen space only its height counts:
+	/// the canvas is scaled so that height fills the screen, and its width follows the
+	/// screen's aspect. The root rect always starts at (0, 0).
 	glm::vec2 reference_size = {1920.0f, 1080.0f};
 
 	/// 100.0f canvas pixels = 1 world-space unit
@@ -292,38 +294,33 @@ struct CanvasComponent {
 // --------------------------------------------------------------------
 
 struct RectTransformComponent {
-	// (0,0) bottom-left -> (1,1) top-right
-	glm::vec2 anchor_min, anchor_max;
+	// Where the rect's corners sit inside the parent's rect: (0, 0) its bottom-left, (1, 1)
+	// its top-right. Equal anchors pin the rect to a point; apart, it stretches with the parent.
+	glm::vec2 anchor_min{0.0f}, anchor_max{0.0f};
 
-	// Pixels offset from the min or max anchor
-	glm::vec2 offset_min, offset_max;
+	// Pixels added to each anchor, giving the rect's corners.
+	glm::vec2 offset_min{0.0f}, offset_max{100.0f};
 
-	// Between 0 and 1, point inside the rectangle
-	glm::vec2 pivot;
+	// The point scale and rotation happen around, in the rect itself: (0, 0) its
+	// bottom-left, (1, 1) its top-right.
+	glm::vec2 pivot{0.5f};
 
-	glm::vec2 scale;
-	float rotation;
+	glm::vec2 scale{1.0f};
+
+	// Counter-clockwise, in degrees.
+	float rotation = 0.0f;
 
 	RectTransformComponent() = default;
 
 	NLOHMANN_DEFINE_TYPE_INTRUSIVE(RectTransformComponent, anchor_min, anchor_max, offset_min, offset_max, pivot, scale,
 								   rotation)
 
-	Box2D Rect(Box2D parent_box);
-	glm::mat4 Mat();
+	// The rect in its parent's space, before this rect's own scale and rotation.
+	[[nodiscard]] Box2D Rect(const Box2D& parent) const;
 
-private:
-	Box2D rect_;
-	glm::mat4 mat_;
-
-	bool IsRectDirty() const;
-	bool IsMatDirty() const;
-
-	glm::vec2 o_anchor_min_, o_anchor_max_;
-	glm::vec2 o_offset_min_, o_offset_max_;
-	glm::vec2 o_pivot_;
-	glm::vec2 o_scale_;
-	float o_rotation_;
+	// Scales and rotates 'rect' around the pivot. Applies to everything drawn in the rect,
+	// children included.
+	[[nodiscard]] glm::mat4 Local(const Box2D& rect) const;
 };
 
 template<>
@@ -357,8 +354,9 @@ struct ComponentTraits<Text2DComponent> : DefaultComponentTraits {
 // --------------------------------------------------------------------
 // Rectangle
 // --------------------------------------------------------------------
+// Fills its rect with a colour.
 struct Box2DComponent {
-	glm::vec3 color;
+	glm::vec4 color{1.0f};
 
 	NLOHMANN_DEFINE_TYPE_INTRUSIVE(Box2DComponent, color);
 };
@@ -372,8 +370,9 @@ struct ComponentTraits<Box2DComponent> : DefaultComponentTraits {
 // All Components
 // --------------------------------------------------------------------
 
-using AllComponents = ComponentList<IDComponent, TagComponent, TransformComponent, HierarchyComponent,
-									MeshMaterialComponent, PointLightComponent, VisibilityComponent, CameraComponent,
-									ScriptComponent, CanvasComponent, RectTransformComponent, Text2DComponent>;
+using AllComponents =
+		ComponentList<IDComponent, TagComponent, TransformComponent, HierarchyComponent, MeshMaterialComponent,
+					  PointLightComponent, VisibilityComponent, CameraComponent, ScriptComponent, CanvasComponent,
+					  RectTransformComponent, Text2DComponent, Box2DComponent>;
 
 } // namespace bron

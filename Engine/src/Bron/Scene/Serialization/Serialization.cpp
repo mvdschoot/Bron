@@ -71,6 +71,10 @@ void WriteEntity(const Scene& scene, const entt::entity entity, nlohmann::json& 
 		entry["text2d"] = *script;
 	}
 
+	if (const Box2DComponent* box = reg.try_get<Box2DComponent>(entity)) {
+		entry["box2d"] = *box;
+	}
+
 	out.push_back(std::move(entry));
 
 	for (const entt::entity child: hierarchy.children) {
@@ -173,6 +177,10 @@ void Serialization::DeserializeScene(Scene& scene, const std::filesystem::path& 
 
 		if (entry.contains("text2d")) {
 			scene.reg.emplace<Text2DComponent>(entity, entry.at("text2d").get<Text2DComponent>());
+		}
+
+		if (entry.contains("box2d")) {
+			scene.reg.emplace<Box2DComponent>(entity, entry.at("box2d").get<Box2DComponent>());
 		}
 
 		by_id.emplace(entry.at("id").get<std::string>(), entity);

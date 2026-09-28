@@ -41,6 +41,9 @@ std::vector<std::filesystem::path> CollectAssets(const Scene& scene) {
 			add(handle);
 	}
 
+	for (const auto [entity, text]: scene.reg.view<const Text2DComponent>().each())
+		add(text.font);
+
 	// Every other component that comes to refer to an asset belongs here, next to these.
 
 	return {found.begin(), found.end()};

@@ -114,25 +114,6 @@ glm::mat4 Scene::WorldTransform(const entt::entity& entity) {
 
 	return transform;
 }
-Box2D Scene::ScreenTransform(entt::entity entity) {
-	BR_PROFILE_FUNCTION();
-
-	entt::entity parent = reg.get<HierarchyComponent>(entity).parent;
-	std::vector<entt::entity> parents;
-
-	while (!reg.all_of<CanvasComponent>(parent)) {
-		parents.push_back(parent);
-		parent = reg.get<HierarchyComponent>(parent).parent;
-	}
-
-	Box2D box{.min = {0, 0}, .max = reg.get<CanvasComponent>(parent).reference_size};
-	for (auto child = parents.rbegin(); child != parents.rend(); ++child) {
-		box = reg.get<RectTransformComponent>(*child).Rect(box);
-	}
-
-	return box;
-}
-
 bool Scene::IsVisible(entt::entity entity) {
 
 	bool is_visible = reg.get<VisibilityComponent>(entity).visible;
@@ -198,13 +179,21 @@ entt::entity Scene::CreatePointLight() {
 
 entt::entity Scene::CreateCanvas() {
 	entt::entity e = Create3DEntity();
+	reg.get<TagComponent>(e).name = std::format("Canvas #{}", static_cast<u64>(e));
 	AddComponent<CanvasComponent>(e);
 	return e;
 }
 
 entt::entity Scene::CreateText(entt::entity parent, assets::AssetHandle font) {
 	entt::entity e = Create2DEntity(parent);
+	reg.get<TagComponent>(e).name = std::format("Text #{}", static_cast<u64>(e));
 	AddComponent<Text2DComponent>(e, font);
+	return e;
+}
+
+entt::entity Scene::CreateBox(entt::entity parent) {
+	entt::entity e = Create2DEntity(parent);
+	AddComponent<Box2DComponent>(e);
 	return e;
 }
 

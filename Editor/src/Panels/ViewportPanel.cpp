@@ -6,6 +6,7 @@
 
 #include "Bron/Scene/AssetManager.h"
 #include "Bron/Scripting/LuaManager.h"
+#include "Core/DefaultAssets.h"
 #include "Core/Icons.h"
 
 #include <ImGuizmo.h>
@@ -51,8 +52,10 @@ void AccumulateBounds(Scene& scene, const entt::entity entity, const glm::mat4& 
 		}
 	}
 
-	for (const entt::entity child: scene.reg.get<HierarchyComponent>(entity).children)
-		AccumulateBounds(scene, child, to_space * *scene.reg.get<TransformComponent>(child), min, max, found);
+	for (const entt::entity child: scene.reg.get<HierarchyComponent>(entity).children) {
+		if (scene.reg.all_of<TransformComponent>(child))
+			AccumulateBounds(scene, child, to_space * *scene.reg.get<TransformComponent>(child), min, max, found);
+	}
 }
 
 // The centre of what the entity draws - its own mesh and every mesh below it - in the
@@ -80,7 +83,6 @@ void ViewportPanel::OnAttach() {
 	framebuffer_->Unbind();
 
 	viewport_size_ = {static_cast<float>(spec_.width), static_cast<float>(spec_.height)};
-	font_handle = assets::AssetManager::Instance().LoadFont("Roboto-Black.ttf", 20).value();
 }
 
 void ViewportPanel::OnUpdate(const Timestep ts) {
@@ -129,9 +131,6 @@ void ViewportPanel::OnUpdate(const Timestep ts) {
 
 		SceneRenderer::Draw(*scene, view_, {viewport_size_.x, viewport_size_.y}, selected_meshes);
 	}
-	R2D::BeginScene(glm::vec2{viewport_size_.x, viewport_size_.y});
-	R2D::DrawText("textsje", font_handle, {20, 20}, 20, {1, 1, 1, 1});
-	R2D::EndScene();
 	framebuffer_->Unbind();
 }
 
@@ -283,7 +282,7 @@ bool ViewportPanel::OnMouseClicked(MouseButtonPressedEvent& event) const {
 }
 
 void ViewportPanel::DrawGizmo() {
-	if (!context_.HasSelection())
+	if (!context_.HasSelection() || !context_.active_scene->reg.all_of<TransformComponent>(context_.selection))
 		return;
 
 	Scene& scene = *context_.active_scene;

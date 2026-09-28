@@ -190,7 +190,11 @@ void DrawRectTransform(EditorContext& context, Scene& scene, const entt::entity 
 	InputFloat2("Pivot", value_ptr(rect.pivot));
 
 	InputFloat2("Scale", value_ptr(rect.scale));
-	InputFloat("Rotation", &rect.rotation);
+	InputFloat("Rotation (degrees)", &rect.rotation);
+}
+
+void DrawBox2d(EditorContext& context, Scene& scene, const entt::entity entity) {
+	ColorEdit4("Color", value_ptr(scene.reg.get<Box2DComponent>(entity).color));
 }
 
 void DrawText2d(EditorContext& context, Scene& scene, const entt::entity entity) {
@@ -203,7 +207,7 @@ void DrawText2d(EditorContext& context, Scene& scene, const entt::entity entity)
 	InputFloat("Font size", &text.font_size);
 	ColorEdit4("Font color", value_ptr(text.color));
 
-	auto asset_manager = assets::AssetManager::Instance();
+	auto& asset_manager = assets::AssetManager::Instance();
 	std::vector<assets::AssetHandle> font_handles = asset_manager.GetAll(assets::kFont);
 	if (font_handles.size() > 0) {
 		std::vector<const char*> font_names =
@@ -285,7 +289,8 @@ std::vector<ComponentMeta> Build() {
 
 	Register<CanvasComponent>(components, "2D Canvas", DrawCanvas);
 	Register<RectTransformComponent>(components, "2D Transform", DrawRectTransform);
-	Register<RectTransformComponent>(components, "2D Text", DrawText2d);
+	Register<Text2DComponent>(components, "2D Text", DrawText2d);
+	Register<Box2DComponent>(components, "2D Box", DrawBox2d);
 
 	return components;
 }

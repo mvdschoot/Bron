@@ -40,8 +40,6 @@ public:
 	// Local transform composed with every parent transform up to the root.
 	glm::mat4 WorldTransform(const entt::entity& entity);
 
-	Box2D ScreenTransform(entt::entity entity);
-
 	// Checks all parents for visibility
 	bool IsVisible(entt::entity entity);
 
@@ -50,6 +48,7 @@ public:
 	entt::entity CreatePointLight();
 	entt::entity CreateCanvas();
 	entt::entity CreateText(entt::entity parent, assets::AssetHandle font);
+	entt::entity CreateBox(entt::entity parent);
 
 	// The entity holding the CameraComponent the scene is meant to be looked through,
 	// or entt::null when it has no camera at all.

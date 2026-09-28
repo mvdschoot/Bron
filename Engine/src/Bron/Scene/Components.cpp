@@ -40,37 +40,20 @@ CameraView ViewFrom(const CameraComponent& camera, const glm::mat4& world_transf
 	return view;
 }
 
-Box2D RectTransformComponent::Rect(Box2D parent_box) {
-	if (IsRectDirty()) {
-		o_anchor_min_ = anchor_min;
-		o_anchor_max_ = anchor_max;
-		o_offset_min_ = offset_min;
-		o_offset_max_ = offset_max;
-		o_pivot_ = pivot;
-		o_scale_ = scale;
-		o_rotation_ = rotation;
-
-		rect_ = {
-				.min = parent_box.min + anchor_min * parent_box.max + offset_min,
-				.max = parent_box.min + anchor_max * parent_box.max + offset_max,
-		};
-	}
-	return rect_;
+Box2D RectTransformComponent::Rect(const Box2D& parent) const {
+	const glm::vec2 size = parent.max - parent.min;
+	return {
+			.min = parent.min + anchor_min * size + offset_min,
+			.max = parent.min + anchor_max * size + offset_max,
+	};
 }
 
-glm::mat4 RectTransformComponent::Mat() {
-	if (IsMatDirty()) {
-		mat_ = glm::rotate(glm::scale(glm::mat4(1.0f), {scale, 1}), rotation, {0, 0, 1});
-	}
-	return mat_;
-}
-bool RectTransformComponent::IsRectDirty() const {
-	return !CompareFloatsBits(o_anchor_min_, anchor_min) || !CompareFloatsBits(o_anchor_max_, anchor_max) ||
-		   !CompareFloatsBits(o_offset_min_, offset_min) || !CompareFloatsBits(o_offset_max_, offset_max) ||
-		   !CompareFloatsBits(o_pivot_, pivot);
-}
+glm::mat4 RectTransformComponent::Local(const Box2D& rect) const {
+	const glm::vec3 origin(rect.min + pivot * (rect.max - rect.min), 0.0f);
 
-bool RectTransformComponent::IsMatDirty() const {
-	return !CompareFloatsBits(o_scale_, scale) || !CompareFloatBits(o_rotation_, rotation);
+	glm::mat4 local = glm::translate(glm::mat4(1.0f), origin);
+	local = glm::rotate(local, glm::radians(rotation), {0.0f, 0.0f, 1.0f});
+	local = glm::scale(local, {scale, 1.0f});
+	return glm::translate(local, -origin);
 }
 } // namespace bron

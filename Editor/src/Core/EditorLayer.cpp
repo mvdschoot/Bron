@@ -1,6 +1,5 @@
 #include "Core/EditorLayer.h"
 
-#include "Fonts.h"
 
 #include <ImGuizmo.h>
 
@@ -75,8 +74,6 @@ void EditorLayer::OnAttach() {
 	// The icons are textures, so they wait for the graphics context that Command::Init()
 	// above assumes; panels may draw one on their very first frame.
 	icons::Init();
-
-	fonts::Init();
 
 	for (const auto& panel: ValuesIt(panels_))
 		panel->OnAttach();

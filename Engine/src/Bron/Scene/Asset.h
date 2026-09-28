@@ -25,15 +25,13 @@ namespace bron::assets {
 
 using AssetHandle = UUID;
 
-// A handle that is the same in every build and every project, for the assets the engine
-// provides itself. Handles are 28 characters, so the name has to fit in that.
+// A handle that is the same in every build and every project, for assets an application
+// ships and needs to find again by name. Handles are 28 characters, so the name has to fit
+// in that.
 AssetHandle FixedHandle(const char* name);
 
-// Assets that exist without a file. A scene can reference them like any other.
-namespace builtin {
-inline const AssetHandle kCubeMesh = FixedHandle("builtin-mesh-cube");
-inline const AssetHandle kDefaultMaterial = FixedHandle("builtin-material-default");
-} // namespace builtin
+// Points at nothing. A default-constructed handle is random, so "no asset" needs a name.
+inline const AssetHandle kNullHandle = FixedHandle("");
 
 enum AssetType {
 	kModel,
@@ -61,22 +59,26 @@ struct ModelImportSettings {
 	std::map<std::string, AssetHandle> sub_assets;
 };
 
+struct FontImportSettings {
+	// The pixel size the glyphs are rasterised at. Text drawn at other sizes is scaled from
+	// this, so it decides how sharp the font stays.
+	float size;
+};
+
 struct AssetMetadata {
 	std::string name;
 
 	AssetType type;
 
 	// The file the asset is loaded from, relative to the asset root. A sub-asset has no
-	// file of its own and names its parent's. Empty for built-in and memory-only assets.
+	// file of its own and names its parent's. Empty for memory-only assets.
 	std::filesystem::path path;
 
 	// Set for sub-assets: the model that a mesh, material or embedded texture came from.
 	// Loading one means loading its parent, which produces all of them.
 	std::optional<AssetHandle> parent;
 
-	bool builtin = false;
-
-	std::variant<std::monostate, ModelImportSettings> settings;
+	std::variant<std::monostate, ModelImportSettings, FontImportSettings> settings;
 };
 
 struct Asset {

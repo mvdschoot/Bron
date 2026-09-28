@@ -26,7 +26,6 @@ namespace bron::assets {
 class AssetManager {
 public:
 	static AssetManager& Instance();
-	static Ref<FontAsset> ImportFont(ImportedFont font);
 
 	// Forgets every project asset and rebuilds the registry from the .meta files under
 	// the asset root. Nothing is loaded until something asks for it.
@@ -38,7 +37,13 @@ public:
 	std::optional<AssetHandle> LoadModel(const std::filesystem::path& location, MaterialWorkflow workflow = kPhong);
 	std::optional<AssetHandle> LoadTexture(const std::filesystem::path& location);
 	std::optional<AssetHandle> LoadScript(const std::filesystem::path& location, ScriptLanguage language);
-	std::optional<AssetHandle> LoadFont(const std::filesystem::path& location, float initial_size);
+	// 'size' only applies to a first import, like a model's workflow.
+	std::optional<AssetHandle> LoadFont(const std::filesystem::path& location, float size = kImportFontSize);
+
+	// Registers a file under a handle the caller chose, for an asset an application ships
+	// and has to find by the same handle in every project. A .meta already there has the
+	// final say, so this only decides the handle of a first import. Loads nothing.
+	std::optional<AssetHandle> Import(const std::filesystem::path& location, AssetType type, const AssetHandle& handle);
 
 	// Registers an asset that has no file, e.g. a material built at runtime. It lasts until
 	// the next Refresh(), so a scene saved while pointing at one will not find it again.
@@ -59,18 +64,18 @@ public:
 	[[nodiscard]] const AssetMetadata* Metadata(const AssetHandle& handle) const;
 
 	// The file an asset is loaded from, relative to the asset root: its own, or its
-	// parent's for a sub-asset. Nothing for built-in and memory-only assets.
+	// parent's for a sub-asset. Nothing for memory-only assets.
 	[[nodiscard]] std::optional<std::filesystem::path> SourceFile(const AssetHandle& handle) const;
 
 private:
-	AssetManager();
+	AssetManager() = default;
 
 	Ref<Asset> GetOrLoad(const AssetHandle& handle);
-	Ref<Asset> LoadBuiltin(const AssetHandle& handle);
 
 	// Adds a file-backed asset to the registry, reading its .meta or writing a new one.
-	// Returns the handle it is known by.
-	AssetHandle Register(std::string name, const std::filesystem::path& absolute, AssetType type);
+	// Returns the handle it is known by: the .meta's, else 'preferred', else a new one.
+	AssetHandle Register(std::string name, const std::filesystem::path& absolute, AssetType type,
+						 const std::optional<AssetHandle>& preferred = std::nullopt);
 
 	// Registers the sub-assets a model's .meta lists.
 	void RegisterSubAssets(const AssetHandle& model);

@@ -22,7 +22,6 @@ add_library(Bron STATIC
         Bron/Graphics/Framebuffer.cpp
         Bron/Graphics/LightManagement.cpp
         Bron/Graphics/Phong/PhongMaterial.cpp
-        Bron/Graphics/Components/Cube.cpp
         Bron/Scene/ModelLoader.cpp
 
         # Renderers
@@ -30,6 +29,7 @@ add_library(Bron STATIC
         Bron/Graphics/Renderer/Command.cpp
         Bron/Graphics/Renderer/2D.cpp
         Bron/Graphics/Renderer/SceneRenderer.cpp
+        Bron/Graphics/Renderer/CanvasRenderer.cpp
         Bron/Graphics/Renderer/WorldRenderer.cpp
         Bron/Graphics/Renderer/Grid.cpp
 

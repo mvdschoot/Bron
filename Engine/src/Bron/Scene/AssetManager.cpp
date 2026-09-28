@@ -11,7 +11,6 @@
 #include <nlohmann/json.hpp>
 
 #include "Bron/Core/Logger.h"
-#include "Bron/Graphics/Components/Cube.h"
 #include "Bron/Graphics/Phong/PhongMaterial.h"
 #include "Bron/Scene/Components.h"
 #include "Bron/Scene/ModelLoader.h"
@@ -58,14 +57,8 @@ Ref<Texture> CreateEmbeddedTexture(const ImportedTexture& imported) {
 	texture->SetData(const_cast<u8*>(imported.bytes.data()), static_cast<u32>(imported.bytes.size()));
 	return texture;
 }
-} // namespace
 
-AssetManager& AssetManager::Instance() {
-	static AssetManager instance;
-	return instance;
-}
-
-Ref<FontAsset> AssetManager::ImportFont(ImportedFont font) {
+Ref<FontAsset> CreateFontAsset(const ImportedFont& font) {
 	Ref<FontAsset> asset = CreateRef<FontAsset>();
 	asset->texture = font.texture;
 	asset->font_size = font.font_size;
@@ -77,17 +70,16 @@ Ref<FontAsset> AssetManager::ImportFont(ImportedFont font) {
 
 	return asset;
 }
+} // namespace
 
-AssetManager::AssetManager() {
-	// Registered up front but built on first use: the GL context may not exist yet.
-	registry_[builtin::kCubeMesh] = AssetMetadata{.name = "Cube mesh", .type = kMesh, .builtin = true};
-	registry_[builtin::kDefaultMaterial] =
-			AssetMetadata{.name = "Default material", .type = kMaterial, .builtin = true};
+AssetManager& AssetManager::Instance() {
+	static AssetManager instance;
+	return instance;
 }
 
 void AssetManager::Refresh() {
-	std::erase_if(registry_, [](const auto& entry) { return !entry.second.builtin; });
-	std::erase_if(cache_, [this](const auto& entry) { return !registry_.contains(entry.first); });
+	registry_.clear();
+	cache_.clear();
 	by_path_.clear();
 
 	if (!paths::HasRoots())
@@ -127,8 +119,8 @@ void AssetManager::Refresh() {
 	BR_CORE_INFO("Found {} assets under {}", registry_.size(), paths::AssetRoot().string());
 }
 
-AssetHandle AssetManager::Register(const std::string name, const std::filesystem::path& absolute,
-								   const AssetType type) {
+AssetHandle AssetManager::Register(const std::string name, const std::filesystem::path& absolute, const AssetType type,
+								   const std::optional<AssetHandle>& preferred) {
 	const std::filesystem::path relative = paths::RelativeToAsset(absolute).lexically_normal();
 	if (const auto known = by_path_.find(relative); known != by_path_.end())
 		return known->second;
@@ -136,6 +128,8 @@ AssetHandle AssetManager::Register(const std::string name, const std::filesystem
 	AssetMetadata metadata{.name = name, .type = type, .path = relative};
 	if (type == kModel)
 		metadata.settings = ModelImportSettings{};
+	else if (type == kFont)
+		metadata.settings = FontImportSettings{.size = kImportFontSize};
 
 	std::optional<AssetHandle> handle;
 	bool write = true;
@@ -156,6 +150,11 @@ AssetHandle AssetManager::Register(const std::string name, const std::filesystem
 				settings.workflow = json.value("workflow", kPhong);
 				settings.sub_assets = json.value("subAssets", std::map<std::string, AssetHandle>());
 			}
+
+			if (type == kFont && meta.contains("settings")) {
+				FontImportSettings& settings = std::get<FontImportSettings>(metadata.settings);
+				settings.size = meta.at("settings").value("size", settings.size);
+			}
 		}
 	}
 
@@ -169,6 +168,9 @@ AssetHandle AssetManager::Register(const std::string name, const std::filesystem
 			settings->sub_assets.clear();
 		write = true;
 	}
+
+	if (!handle.has_value() && preferred.has_value() && !registry_.contains(*preferred))
+		handle = *preferred;
 
 	if (!handle.has_value())
 		handle = AssetHandle();
@@ -211,6 +213,9 @@ void AssetManager::WriteMeta(const AssetHandle& handle) const {
 		meta["settings"]["workflow"] = settings->workflow;
 		meta["settings"]["subAssets"] = settings->sub_assets;
 	}
+
+	if (const FontImportSettings* settings = std::get_if<FontImportSettings>(&metadata.settings))
+		meta["settings"]["size"] = settings->size;
 
 	const std::filesystem::path file = MetaPath(paths::ResolveAsset(metadata.path));
 	std::ofstream stream(file);
@@ -320,7 +325,7 @@ std::optional<AssetHandle> AssetManager::LoadModel(const std::filesystem::path& 
 			node.meshes.push_back({
 					.name = imported->meshes[mesh].name,
 					.mesh = meshes[mesh],
-					.material = material < materials.size() ? materials[material] : builtin::kDefaultMaterial,
+					.material = material < materials.size() ? materials[material] : kNullHandle,
 			});
 		}
 	}
@@ -368,23 +373,43 @@ std::optional<AssetHandle> AssetManager::LoadScript(const std::filesystem::path&
 
 	return handle;
 }
-std::optional<AssetHandle> AssetManager::LoadFont(const std::filesystem::path& location, float initial_size) {
+std::optional<AssetHandle> AssetManager::LoadFont(const std::filesystem::path& location, const float size) {
 	const std::filesystem::path absolute = paths::ResolveAsset(location);
 	if (!std::filesystem::exists(absolute)) {
 		BR_CORE_WARN("Font {} does not exist", absolute.string());
 		return std::nullopt;
 	}
 
-	std::optional<ImportedFont> font = FontLoader::Import(absolute, initial_size);
+	const bool first_import = !std::filesystem::exists(MetaPath(absolute));
+	const AssetHandle handle = Register(location.stem().string(), absolute, kFont);
+	if (cache_.contains(handle))
+		return handle;
+
+	FontImportSettings& settings = std::get<FontImportSettings>(registry_.at(handle).settings);
+	if (first_import) {
+		settings.size = size;
+		WriteMeta(handle);
+	}
+
+	const std::optional<ImportedFont> font = FontLoader::Import(absolute, settings.size);
 	if (!font.has_value()) {
 		BR_CORE_ERROR("Failed to load font {}", location.string());
 		return std::nullopt;
 	}
 
-	AssetHandle handle = Register(location.stem().string(), location, kFont);
-	auto asset = ImportFont(*font);
-	cache_[handle] = asset;
+	cache_[handle] = CreateFontAsset(*font);
 	return handle;
+}
+
+std::optional<AssetHandle> AssetManager::Import(const std::filesystem::path& location, const AssetType type,
+												const AssetHandle& handle) {
+	const std::filesystem::path absolute = paths::ResolveAsset(location);
+	if (!std::filesystem::exists(absolute)) {
+		BR_CORE_WARN("{} does not exist", absolute.string());
+		return std::nullopt;
+	}
+
+	return Register(location.stem().string(), absolute, type, handle);
 }
 
 AssetHandle AssetManager::AddMemoryAsset(const std::string name, const AssetType type, Ref<Asset> asset) {
@@ -431,12 +456,6 @@ Ref<Asset> AssetManager::GetOrLoad(const AssetHandle& handle) {
 	// Copied, because loading writes to the registry.
 	const AssetMetadata metadata = entry->second;
 
-	if (metadata.builtin) {
-		Ref<Asset> asset = LoadBuiltin(handle);
-		cache_[handle] = asset;
-		return asset;
-	}
-
 	if (metadata.parent.has_value()) {
 		// A sub-asset: loading its model produces it, along with its siblings.
 		const AssetMetadata* model = Metadata(*metadata.parent);
@@ -455,6 +474,9 @@ Ref<Asset> AssetManager::GetOrLoad(const AssetHandle& handle) {
 				// second arrives it has to be written there, the way a model's workflow is.
 				LoadScript(metadata.path, kLua);
 				break;
+			case kFont:
+				LoadFont(metadata.path);
+				break;
 			default:
 				BR_CORE_WARN("{} is a kind of asset that cannot be loaded from a file yet", metadata.path.string());
 				break;
@@ -465,17 +487,4 @@ Ref<Asset> AssetManager::GetOrLoad(const AssetHandle& handle) {
 	return loaded == cache_.end() ? nullptr : loaded->second;
 }
 
-Ref<Asset> AssetManager::LoadBuiltin(const AssetHandle& handle) {
-	if (handle == builtin::kCubeMesh)
-		return CreateRef<MeshAsset>(CubeMeshData());
-
-	if (handle == builtin::kDefaultMaterial) {
-		const Ref<MaterialAsset> asset = CreateRef<MaterialAsset>();
-		asset->material = CreatePhong(glm::vec3(0.8f), glm::vec3(0.5f), 5.0f, 1.0f);
-		return asset;
-	}
-
-	BR_CORE_ASSERT(false, "Built-in asset {} is registered but has no loader", handle.value);
-	return nullptr;
-}
 } // namespace bron::assets

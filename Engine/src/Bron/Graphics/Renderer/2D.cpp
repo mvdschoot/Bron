@@ -6,6 +6,8 @@
 #include "Bron/Scene/Asset.h"
 #include "Bron/Scene/AssetManager.h"
 
+#include <glm/gtc/matrix_transform.hpp>
+
 #include <array>
 #include <numeric>
 #include <vector>
@@ -13,7 +15,8 @@
 namespace bron {
 namespace {
 struct QuadVertex {
-	glm::vec2 position;
+	// Three components, so a world-space canvas can be tilted out of the screen's plane.
+	glm::vec3 position;
 	glm::vec4 color;
 	glm::vec2 tex_coord;
 	float tex_index;
@@ -49,7 +52,7 @@ void R2D::Init() {
 	BR_PROFILE_FUNCTION();
 
 	render_data.vertex_buffer = VertexBuffer::Create(kMaxVertices * sizeof(QuadVertex));
-	render_data.vertex_buffer->SetBufferLayout({{"a_Position", ShaderDataType::kFloat2},
+	render_data.vertex_buffer->SetBufferLayout({{"a_Position", ShaderDataType::kFloat3},
 												{"a_Color", ShaderDataType::kFloat4},
 												{"a_TexCoord", ShaderDataType::kFloat2},
 												{"a_TexIndex", ShaderDataType::kFloat}});
@@ -92,34 +95,48 @@ void R2D::BeginScene(const glm::vec2 target_size) { BeginScene(Camera2D().View(t
 
 void R2D::EndScene() { Flush(); }
 
-void R2D::DrawQuad(const glm::vec2 position, const glm::vec2 size, const glm::vec4& color) {
-	PushQuad(position, size, color, 0.0f, {0.0f, 0.0f}, {1.0f, 1.0f});
+void R2D::DrawQuad(const glm::mat4& transform, const glm::vec4& color) {
+	PushQuad(transform, color, 0.0f, {0.0f, 0.0f}, {1.0f, 1.0f});
 }
 
-void R2D::DrawQuad(const glm::vec2 position, const glm::vec2 size, const Ref<Texture>& texture) {
-	DrawQuad(position, size, texture, {0.0f, 0.0f, 1.0f, 1.0f});
+void R2D::DrawQuad(const glm::mat4& transform, const Ref<Texture>& texture, const glm::vec4& uv_rect,
+				   const glm::vec4& tint) {
+	// Before picking a slot: a flush for room would clear the slot this quad was given.
+	if (render_data.vertices.size() == kMaxVertices)
+		Flush();
+	const float slot = TextureSlot(texture);
+	PushQuad(transform, tint, slot, {uv_rect.x, uv_rect.y}, {uv_rect.x + uv_rect.z, uv_rect.y + uv_rect.w});
+}
+
+namespace {
+glm::mat4 Placement(const glm::vec2 position, const glm::vec2 size) {
+	return glm::scale(glm::translate(glm::mat4(1.0f), glm::vec3(position, 0.0f)), glm::vec3(size, 1.0f));
+}
+} // namespace
+
+void R2D::DrawQuad(const glm::vec2 position, const glm::vec2 size, const glm::vec4& color) {
+	DrawQuad(Placement(position, size), color);
 }
 
 void R2D::DrawQuad(const glm::vec2 position, const glm::vec2 size, const Ref<Texture>& texture,
 				   const glm::vec4& uv_rect, const glm::vec4& tint) {
-	// Before picking a slot: a flush for room would clear the slot this quad was given.
-	if (render_data.vertices.size() == kMaxVertices)
-		Flush();
-
-	const float slot = TextureSlot(texture);
-	PushQuad(position, size, tint, slot, {uv_rect.x, uv_rect.y}, {uv_rect.x + uv_rect.z, uv_rect.y + uv_rect.w});
+	DrawQuad(Placement(position, size), texture, uv_rect, tint);
 }
 
-void R2D::DrawText(const std::string_view text, const assets::AssetHandle font_handle, const glm::vec2 position,
-				   const float font_size, const glm::vec4& color) {
+void R2D::DrawText(const std::string_view text, const assets::AssetHandle& font_handle, const float font_size,
+				   const glm::vec4& color, const glm::mat4& transform) {
+	// A font that was deleted, or a memory-only one from a previous session.
 	const assets::FontAsset* font = ResolveFont(font_handle);
+	if (font == nullptr)
+		return;
+
 	const glm::vec2 atlas_size(font->texture->GetWidth(), font->texture->GetHeight());
-	glm::vec2 pen = position;
 	const float scale = font_size / font->font_size;
+	glm::vec2 pen(0.0f);
 
 	for (const char c: text) {
 		if (c == '\n') {
-			pen = {position.x, pen.y - font->font_size * scale};
+			pen = {0.0f, pen.y - font_size};
 			continue;
 		}
 
@@ -132,11 +149,16 @@ void R2D::DrawText(const std::string_view text, const assets::AssetHandle font_h
 		const glm::vec2 origin = pen + glm::vec2(glyph.bearing.x, -glyph.bearing.y) * scale;
 		const glm::vec4 uv_rect = glm::vec4(glyph.location) / glm::vec4(atlas_size, atlas_size);
 
-		DrawQuad(origin, size, font->texture, uv_rect, color);
+		DrawQuad(transform * Placement(origin, size), font->texture, uv_rect, color);
 
 		// FreeType advances are in 1/64 pixel.
 		pen.x += static_cast<float>(glyph.advance >> 6) * scale;
 	}
+}
+
+void R2D::DrawText(const std::string_view text, const assets::AssetHandle& font, const glm::vec2 position,
+				   const float font_size, const glm::vec4& color) {
+	DrawText(text, font, font_size, color, glm::translate(glm::mat4(1.0f), glm::vec3(position, 0.0f)));
 }
 
 float R2D::TextureSlot(const Ref<Texture>& texture) {
@@ -152,16 +174,16 @@ float R2D::TextureSlot(const Ref<Texture>& texture) {
 	return static_cast<float>(render_data.texture_count++);
 }
 
-void R2D::PushQuad(const glm::vec2 position, const glm::vec2 size, const glm::vec4& color, const float texture_slot,
-				   const glm::vec2 uv_min, const glm::vec2 uv_max) {
+void R2D::PushQuad(const glm::mat4& transform, const glm::vec4& color, const float texture_slot, const glm::vec2 uv_min,
+				   const glm::vec2 uv_max) {
 	if (render_data.vertices.size() == kMaxVertices)
 		Flush();
 
-	const glm::vec2 max = position + size;
-	render_data.vertices.push_back({position, color, uv_min, texture_slot});
-	render_data.vertices.push_back({{max.x, position.y}, color, {uv_max.x, uv_min.y}, texture_slot});
-	render_data.vertices.push_back({max, color, uv_max, texture_slot});
-	render_data.vertices.push_back({{position.x, max.y}, color, {uv_min.x, uv_max.y}, texture_slot});
+	auto corner = [&](const float x, const float y) { return glm::vec3(transform * glm::vec4(x, y, 0.0f, 1.0f)); };
+	render_data.vertices.push_back({corner(0.0f, 0.0f), color, uv_min, texture_slot});
+	render_data.vertices.push_back({corner(1.0f, 0.0f), color, {uv_max.x, uv_min.y}, texture_slot});
+	render_data.vertices.push_back({corner(1.0f, 1.0f), color, uv_max, texture_slot});
+	render_data.vertices.push_back({corner(0.0f, 1.0f), color, {uv_min.x, uv_max.y}, texture_slot});
 }
 
 void R2D::Flush() {
