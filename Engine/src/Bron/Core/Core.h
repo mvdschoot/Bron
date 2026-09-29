@@ -5,7 +5,6 @@
 
 #include "Config.h"
 
-#include <__msvc_ranges_to.hpp>
 #include <ranges>
 
 #define BR_BIT(x) (1 << (x))
