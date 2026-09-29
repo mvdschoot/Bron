@@ -205,6 +205,31 @@ FetchContent_Declare(
 )
 FetchContent_MakeAvailable(sol2)
 
+# sol2 3.5.0 does not build with Clang 18+. Binding a member variable
+# (new_usertype<T>(..., "x", &T::x)) takes the address of
+# upvalue_this_member_variable<...>::call<is_yielding, no_trampoline>, and Clang
+# rejects that template as a match for lua_CFunction because of its dependent
+# noexcept. Two edits to the two affected structs, and both are needed:
+#  - drop the noexcept from call. Nothing changes at runtime: a noexcept
+#    function converts to a plain lua_CFunction anyway. This fixes Clang.
+#  - operator() calls call(L), which can never compile: call's two bool
+#    parameters cannot be deduced. GCC only lets that slide while call is
+#    noexcept, so spell out the <false, false> every other call site uses.
+# Idempotent, so it survives reconfigures and the CI dependency cache.
+set(_sol2_stateless ${sol2_SOURCE_DIR}/include/sol/function_types_stateless.hpp)
+file(READ ${_sol2_stateless} _sol2_source)
+string(REPLACE
+        "static int call(lua_State* L) noexcept(std::is_nothrow_copy_assignable_v<T>) {"
+        "static int call(lua_State* L) {"
+        _sol2_patched "${_sol2_source}")
+string(REPLACE
+        "int operator()(lua_State* L) noexcept(std::is_nothrow_copy_assignable_v<T>) {\n\t\t\treturn call(L);"
+        "int operator()(lua_State* L) noexcept(std::is_nothrow_copy_assignable_v<T>) {\n\t\t\treturn call<false, false>(L);"
+        _sol2_patched "${_sol2_patched}")
+if (NOT _sol2_patched STREQUAL _sol2_source)
+    file(WRITE ${_sol2_stateless} "${_sol2_patched}")
+endif ()
+
 add_library(sol2 INTERFACE)
 target_include_directories(sol2 INTERFACE ${sol2_SOURCE_DIR}/include)
 target_link_libraries(sol2 INTERFACE lua)
