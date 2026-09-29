@@ -50,7 +50,5 @@ void SelectionOutlineOverlay::DrawWorld(const OverlayContext& context) {
 		WorldRenderer::DrawOutline(*context.scene, context.view, meshes);
 }
 
-void DebugTextOverlay::DrawScreen(const OverlayContext& context) {
-	R2D::DrawText("textsje", defaults::kFont, {20, 20}, 20, {1, 1, 1, 1});
-}
+void DebugTextOverlay::DrawScreen(const OverlayContext& context) {}
 } // namespace bron::editor
