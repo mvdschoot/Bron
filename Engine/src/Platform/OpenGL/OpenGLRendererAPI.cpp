@@ -19,8 +19,7 @@ void OpenGLRendererAPI::OnResize(float x, float y, float width, float height) {
 }
 
 // Blending and depth are tracked apart from each other so an overlay pass can drop the
-// depth test on its own. The two Enable* calls keep their old meaning: each one puts the
-// pipeline fully into 2D or 3D mode.
+// depth test on its own, and a blended pass can keep it.
 void OpenGLRendererAPI::SetDepthTest(const bool enabled) {
 	if (depth_enabled_ == enabled)
 		return;
@@ -40,8 +39,6 @@ void OpenGLRendererAPI::EnableBlend() {
 		glEnable(GL_BLEND);
 		glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 	}
-
-	SetDepthTest(false);
 }
 
 void OpenGLRendererAPI::EnableDepth() {

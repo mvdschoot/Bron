@@ -8,28 +8,13 @@
 #include "Bron/Scripting/LuaManager.h"
 #include "Core/DefaultAssets.h"
 #include "Core/Icons.h"
+#include "Overlays/BuiltinOverlays.h"
 
 #include <ImGuizmo.h>
 #include <glm/gtx/matrix_decompose.hpp>
 
 namespace bron::editor {
 namespace {
-// What is selected is not always what is drawn: a loaded model is a parent entity whose
-// meshes hang off it as children, and only the children carry geometry. Outlining a
-// selection means outlining every mesh underneath it.
-void CollectMeshes(Scene& scene, const entt::entity entity, std::vector<entt::entity>& out) {
-	if (entity == entt::null)
-		return;
-
-	if (scene.reg.all_of<MeshMaterialComponent>(entity))
-		out.push_back(entity);
-
-	if (const HierarchyComponent* hierarchy = scene.reg.try_get<HierarchyComponent>(entity)) {
-		for (const entt::entity child: hierarchy->children)
-			CollectMeshes(scene, child, out);
-	}
-}
-
 // Grows [min, max] by the bounds of every mesh at or below 'entity'. 'to_space' takes the
 // entity's local space into the space the bounds are gathered in.
 void AccumulateBounds(Scene& scene, const entt::entity entity, const glm::mat4& to_space, glm::vec3& min,
@@ -83,6 +68,11 @@ void ViewportPanel::OnAttach() {
 	framebuffer_->Unbind();
 
 	viewport_size_ = {static_cast<float>(spec_.width), static_cast<float>(spec_.height)};
+
+	// Drawn in this order within each pass: the outline over the grid.
+	overlays_.push_back(CreateScope<GridOverlay>());
+	overlays_.push_back(CreateScope<SelectionOutlineOverlay>());
+	overlays_.push_back(CreateScope<DebugTextOverlay>());
 }
 
 void ViewportPanel::OnUpdate(const Timestep ts) {
@@ -118,19 +108,26 @@ void ViewportPanel::OnUpdate(const Timestep ts) {
 	// since entity 0 is a perfectly valid entity.
 	framebuffer_->ClearAttachmentInt(1, -1);
 
-	if (context_.state == kEdit) {
-		Command::EnableBlend();
-		GridRenderer::Draw(view_);
-		Command::EnableDepth();
-	}
-	if (scene) {
-		// The selection is an entity of the edited scene, so it only means something there.
-		std::vector<entt::entity> selected_meshes;
-		if (!playing)
-			CollectMeshes(*scene, context_.selection, selected_meshes);
+	// The scene, with the editor's overlays drawn over its world and under its UI - the
+	// frame described in notes/editor-overlays.md.
+	const glm::vec2 target_size(viewport_size_.x, viewport_size_.y);
+	const OverlayContext overlay_context{
+			.editor = context_, .scene = scene, .view = view_, .target_size = target_size, .playing = playing};
 
-		SceneRenderer::Draw(*scene, view_, {viewport_size_.x, viewport_size_.y}, selected_meshes);
-	}
+	if (scene)
+		SceneRenderer::DrawWorld(*scene, view_);
+
+	for (const Scope<ViewportOverlay>& overlay: overlays_)
+		overlay->DrawWorld(overlay_context);
+
+	if (scene)
+		SceneRenderer::DrawScreen(*scene, target_size);
+
+	R2D::BeginScene(target_size);
+	for (const Scope<ViewportOverlay>& overlay: overlays_)
+		overlay->DrawScreen(overlay_context);
+	R2D::EndScene();
+
 	framebuffer_->Unbind();
 }
 

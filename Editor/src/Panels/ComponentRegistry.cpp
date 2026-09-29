@@ -1,6 +1,7 @@
 #include "ComponentRegistry.h"
 
 #include "imgui.h"
+#include "imgui_stdlib.h"
 #include "nfd.hpp"
 #include "Bron/Scene/AssetManager.h"
 #include "Bron/Scripting/LuaManager.h"
@@ -18,12 +19,7 @@ namespace {
 void DrawTag(EditorContext& context, Scene& scene, const entt::entity entity) {
 	TagComponent& tag = scene.reg.get<TagComponent>(entity);
 
-	char buffer[256];
-	std::strncpy(buffer, tag.name.c_str(), sizeof(buffer) - 1);
-	buffer[sizeof(buffer) - 1] = '\0';
-
-	if (InputText("Name", buffer, sizeof(buffer)))
-		tag.name = buffer;
+	InputText("Name", &tag.name);
 }
 
 // Converting a quaternion to euler angles is lossy, so the result is cached per entity:
@@ -200,10 +196,8 @@ void DrawBox2d(EditorContext& context, Scene& scene, const entt::entity entity) 
 void DrawText2d(EditorContext& context, Scene& scene, const entt::entity entity) {
 	Text2DComponent& text = scene.reg.get<Text2DComponent>(entity);
 
-	char buf[4096] = {};
-	text.text.copy(buf, text.text.size());
+	InputTextMultiline("Content", &text.text);
 
-	InputText("Content", buf, 4096);
 	InputFloat("Font size", &text.font_size);
 	ColorEdit4("Font color", value_ptr(text.color));
 

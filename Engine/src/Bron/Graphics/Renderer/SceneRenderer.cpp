@@ -11,14 +11,19 @@ void SceneRenderer::Init() {
 	R2D::Init();
 }
 
-void SceneRenderer::Draw(Scene& scene, const CameraView& view, const glm::vec2 target_size,
-						 const std::vector<entt::entity>& outlined) {
+void SceneRenderer::Draw(Scene& scene, const CameraView& view, const glm::vec2 target_size) {
 	BR_PROFILE_FUNCTION();
 
-	WorldRenderer::Draw(scene, view);
-	WorldRenderer::DrawOutline(scene, view, outlined);
+	DrawWorld(scene, view);
+	DrawScreen(scene, target_size);
+}
 
+void SceneRenderer::DrawWorld(Scene& scene, const CameraView& view) {
+	WorldRenderer::Draw(scene, view);
 	CanvasRenderer::DrawWorld(scene, view);
+}
+
+void SceneRenderer::DrawScreen(Scene& scene, const glm::vec2 target_size) {
 	CanvasRenderer::DrawScreen(scene, target_size);
 }
 } // namespace bron

@@ -7,18 +7,24 @@
 
 #include <glm/glm.hpp>
 
-#include <vector>
-
 namespace bron {
 /// Renders a whole scene into the bound target: the world through 'view' first, then its
 /// screen-space 2D elements on top, in pixels over 'target_size'.
+///
+/// Draws the scene and nothing else. Whatever an application wants to add - the editor's
+/// grid, outlines and gizmos - goes between DrawWorld and DrawScreen, so it sits over the
+/// world and under the HUD.
 class SceneRenderer {
 public:
 	static void Init();
 
-	/// 'outlined' meshes get a selection outline, drawn after the world and before the
-	/// 2D pass so it never covers the HUD.
-	static void Draw(Scene& scene, const CameraView& view, glm::vec2 target_size,
-					 const std::vector<entt::entity>& outlined = {});
+	/// Both passes, for an application that adds nothing in between.
+	static void Draw(Scene& scene, const CameraView& view, glm::vec2 target_size);
+
+	/// Meshes, then world-space canvases.
+	static void DrawWorld(Scene& scene, const CameraView& view);
+
+	/// Screen-space canvases.
+	static void DrawScreen(Scene& scene, glm::vec2 target_size);
 };
 } // namespace bron

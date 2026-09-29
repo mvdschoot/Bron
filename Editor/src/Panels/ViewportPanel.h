@@ -1,7 +1,10 @@
 #pragma once
 
 #include "PanelInput.h"
+#include "Overlays/ViewportOverlay.h"
 #include "Panels/Panel.h"
+
+#include <vector>
 
 namespace bron::editor {
 /// Renders the scene into an offscreen framebuffer and shows it as an image, with the
@@ -53,6 +56,9 @@ private:
 	ImVec2 viewport_position_{0.0f, 0.0f};
 
 	bool guizmo_hovered_ = false;
+
+	/// What the editor draws over the scene, in draw order. See ViewportOverlay.
+	std::vector<Scope<ViewportOverlay>> overlays_;
 
 	/// tmp
 };

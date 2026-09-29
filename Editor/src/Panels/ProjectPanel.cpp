@@ -1,8 +1,8 @@
 #include "Panels/ProjectPanel.h"
 
-#include <cstdio>
-
 #include "Core/Icons.h"
+
+#include "imgui_stdlib.h"
 
 
 namespace bron::editor {
@@ -43,22 +43,18 @@ void ProjectPanel::DrawSettings() {
 
 	Indent();
 
-	char name[128];
-	std::snprintf(name, sizeof(name), "%s", settings.name.c_str());
-	if (InputText("Name", name, sizeof(name)))
-		settings.name = name;
+	InputText("Name", &settings.name);
 
-	char scene[260];
-	std::snprintf(scene, sizeof(scene), "%s", settings.startup_scene.generic_string().c_str());
-	if (InputText("Startup scene", scene, sizeof(scene)))
+	// A path has no std::string to edit in place, so it goes through a copy.
+	std::string scene = settings.startup_scene.generic_string();
+	if (InputText("Startup scene", &scene))
 		settings.startup_scene = scene;
 
 	// The asset directory is not editable here: changing it invalidates every path
 	// already stored in the scenes, so it belongs in a migration, not a text field.
 	BeginDisabled();
-	char assets[260];
-	std::snprintf(assets, sizeof(assets), "%s", settings.asset_directory.generic_string().c_str());
-	InputText("Asset directory", assets, sizeof(assets));
+	std::string assets = settings.asset_directory.generic_string();
+	InputText("Asset directory", &assets);
 	EndDisabled();
 
 	Unindent();

@@ -25,6 +25,9 @@ add_executable(BronEditor
         src/Panels/PanelInput.cpp
         src/Core/DefaultAssets.h
         src/Core/DefaultAssets.cpp
+        src/Overlays/ViewportOverlay.h
+        src/Overlays/BuiltinOverlays.h
+        src/Overlays/BuiltinOverlays.cpp
 )
 
 target_include_directories(BronEditor PUBLIC src)
