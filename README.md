@@ -10,10 +10,7 @@
 
 ## Demo
 
-<!-- To play inline: edit this file on github.com, drag docs/demo.mp4 onto this line,
-     and GitHub replaces it with a github.com/user-attachments/... link. -->
-
-[▶ Watch the demo](docs/demo.mp4)
+https://github.com/user-attachments/assets/1380c66f-0c24-4ed8-9934-174606640bcc
 
 ## Features
 
